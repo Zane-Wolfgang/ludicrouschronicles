@@ -30,7 +30,15 @@ function readDataDir(dir) {
 }
 
 // Generate gallery index
-const gallery = readDataDir('_data/gallery');
+const galleryRaw = readDataDir('_data/gallery');
+// Build slideshow arrays from image2/3/4 fields
+const gallery = galleryRaw.map(item => {
+  const images = [item.image].filter(Boolean);
+  if (item.image2) images.push(item.image2);
+  if (item.image3) images.push(item.image3);
+  if (item.image4) images.push(item.image4);
+  return { ...item, images };
+});
 fs.writeFileSync('_data/gallery-index.json', JSON.stringify(gallery, null, 2));
 console.log(`Gallery: ${gallery.length} items`);
 
@@ -159,3 +167,42 @@ if (contentHtml.includes('<!-- CMS-START -->') && contentHtml.includes('<!-- CMS
 fs2.writeFileSync('content.html', updatedHtml);
 console.log(`Content cards injected: ${allContent.filter(i => !hardcodedTitles.includes(i.title)).length}`);
 
+// ── Image compression ──
+// Compresses images in images/uploads/ to max 1200px wide
+// Originals are preserved, compressed versions overwrite for web serving
+const sharp = require('sharp');
+const path = require('path');
+
+async function compressImages() {
+  const uploadsDir = 'images/uploads';
+  if (!fs.existsSync(uploadsDir)) return;
+
+  const files = fs.readdirSync(uploadsDir).filter(f =>
+    /\.(jpg|jpeg|png|webp)$/i.test(f) && !f.startsWith('.')
+  );
+
+  let compressed = 0;
+  for (const file of files) {
+    const filePath = path.join(uploadsDir, file);
+    const tmpPath = filePath + '.tmp';
+    try {
+      const meta = await sharp(filePath).metadata();
+      // Only compress if wider than 1200px or larger than 500KB
+      const stats = fs.statSync(filePath);
+      if (meta.width <= 1200 && stats.size <= 512000) continue;
+
+      await sharp(filePath)
+        .resize({ width: 1200, withoutEnlargement: true })
+        .jpeg({ quality: 82, progressive: true })
+        .toFile(tmpPath);
+
+      fs.renameSync(tmpPath, filePath);
+      compressed++;
+    } catch(e) {
+      if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
+    }
+  }
+  console.log(`Images compressed: ${compressed} of ${files.length}`);
+}
+
+compressImages().catch(console.error);
