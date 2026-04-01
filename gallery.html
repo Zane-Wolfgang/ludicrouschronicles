@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Content — Ludicrous Chronicles</title>
+<title>Gallery — Ludicrous Chronicles</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
@@ -11,173 +11,204 @@
   <link rel="icon" type="image/png" href="images/favicon.png">
 <link rel="stylesheet" href="style.css">
 <style>
-  .filter-bar {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+  .gallery-grid {
+    columns: 3;
+    column-gap: 12px;
     margin-top: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border);
   }
 
-  .filter-btn {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    background: transparent;
-    border: 1px solid var(--border);
-    padding: 0.5em 1.2em;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .filter-btn:hover,
-  .filter-btn.active {
-    color: var(--gold);
-    border-color: var(--gold-dim);
-  }
-
-  .content-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-    margin-top: 2.5rem;
-  }
-
-  .content-card {
-    background: var(--deep);
+  .gallery-item {
+    break-inside: avoid;
+    margin-bottom: 12px;
+    position: relative;
     overflow: hidden;
-    position: relative;
     cursor: pointer;
-    transition: background 0.2s;
-    text-decoration: none;
     display: block;
+    border: 1px solid var(--border);
+    transition: border-color 0.25s, transform 0.25s;
   }
 
-  .content-card:hover { background: var(--mid); }
+  .gallery-item:hover {
+    border-color: var(--gold-dim);
+    transform: scale(1.01);
+  }
 
-  .content-thumb {
+  .gallery-item img {
     width: 100%;
-    aspect-ratio: 4/3;
-    background: var(--surface);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-bottom: 1px solid var(--border);
-    position: relative;
+    display: block;
+    filter: brightness(0.92);
+    transition: filter 0.3s;
   }
 
-  .content-thumb-label {
+  .gallery-item:hover img {
+    filter: brightness(1.05);
+  }
+
+  .gallery-overlay {
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    right: 0;
+    padding: 2rem 1rem 1.2rem;
+    background: linear-gradient(0deg, rgba(10,8,6,0.85) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .gallery-item:hover .gallery-overlay {
+    opacity: 1;
+  }
+
+  .gallery-overlay-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    color: var(--parchment);
+    margin-bottom: 0.2rem;
+  }
+
+  .gallery-overlay-type {
     font-family: 'Cinzel', serif;
     font-size: 9px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--text-muted);
+    color: var(--gold-dim);
   }
 
-  .content-lock {
+      /* Lightbox */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,8,6,0.96);
+    z-index: 200;
+  }
+  .lightbox.open { display: flex; align-items: center; justify-content: center; }
+  .lightbox-inner {
+    position: relative;
+    display: inline-block;
+    max-width: 90vw;
+    max-height: 88vh;
+    overflow: auto;
+  }
+  .lightbox.zoomed .lightbox-img { cursor: zoom-out; }
+  .lightbox-img {
+    display: block;
+    max-width: 88vw;
+    max-height: 85vh;
+    object-fit: contain;
+    border: 1px solid var(--border);
+    -webkit-user-drag: none;
+    user-select: none;
+    cursor: zoom-in;
+  }
+  .lightbox.zoomed .lightbox-inner { max-width: 95vw; max-height: 92vh; overflow: auto; transition: none; }
+  .lightbox.zoomed .lightbox-img { max-width: none; max-height: none; width: 160vw; }
+  .lightbox-close {
+    position: fixed; top: 1.5rem; right: 2rem;
+    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--text-muted);
+    background: none; border: none; cursor: pointer; z-index: 202;
+    transition: color 0.2s;
+  }
+  .lightbox-close:hover { color: var(--gold); }
+  .lightbox-caption {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 1.5rem 1rem 0.8rem;
+    font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--parchment); text-align: center;
+    background: linear-gradient(0deg, rgba(10,8,6,0.85) 0%, transparent 100%);
+    transition: transform 0.35s ease, opacity 0.35s ease;
+    pointer-events: none;
+  }
+  .lightbox.zoomed .lightbox-caption { transform: translateY(110%); opacity: 0; }
+  .lightbox-hint {
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--text-muted); opacity: 0.6;
+    pointer-events: none; z-index: 202; transition: opacity 0.3s;
+  }
+  .lightbox.zoomed .lightbox-hint { opacity: 0; }
+
+  .gallery-item.locked {
+    position: relative;
+  }
+
+  .gallery-item.locked img {
+    filter: brightness(0.92) blur(6px);
+    transform: scale(1.05);
+  }
+
+  .gallery-item.locked:hover img {
+    filter: brightness(1.0) blur(5px);
+  }
+
+  .gallery-lock-badge {
     position: absolute;
     top: 0.75rem;
     right: 0.75rem;
     width: 24px;
     height: 24px;
-    border: 1px solid var(--border-bright);
+    border: 1px solid rgba(201,168,76,0.5);
+    background: rgba(10,8,6,0.8);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(10,8,6,0.8);
+    z-index: 2;
   }
 
-  .content-lock svg { width: 10px; height: 10px; fill: var(--gold-dim); }
-
-  .content-info {
-    padding: 1.25rem 1.5rem;
+  .gallery-lock-badge svg {
+    width: 10px;
+    height: 10px;
+    fill: var(--gold-dim);
   }
 
-  .content-type {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    margin-bottom: 0.4rem;
-  }
-
-  .content-title {
-    font-family: 'Cinzel', serif;
-    font-size: 0.95rem;
-    color: var(--parchment);
-    margin-bottom: 0.4rem;
-  }
-
-  .content-desc {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    font-style: italic;
-  }
-
-  .content-free-badge {
+  .gallery-tier-label {
     position: absolute;
-    top: 0.75rem;
+    bottom: 0.75rem;
     left: 0.75rem;
     font-family: 'Cinzel', serif;
     font-size: 8px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--ink);
-    background: var(--gold);
-    padding: 0.2em 0.7em;
-  }
-
-  .members-cta {
-    background: var(--surface);
+    color: var(--gold-dim);
+    background: rgba(10,8,6,0.8);
+    padding: 0.2em 0.6em;
     border: 1px solid var(--border);
-    padding: 3rem;
-    text-align: center;
-    margin-top: 4rem;
-  }
-
-  .members-cta p {
-    font-style: italic;
-    color: var(--text-muted);
-    margin-bottom: 1.5rem;
-  }
-
-  .content-thumb.blurred {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .content-thumb.blurred::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: var(--preview-img);
-    background-size: cover;
-    background-position: center;
-    filter: blur(8px) brightness(0.6);
-    transform: scale(1.1);
-    z-index: 0;
-  }
-
-  .content-thumb.blurred .content-thumb-label {
-    position: relative;
-    z-index: 1;
-  }
-
-  .content-thumb.blurred .content-lock {
     z-index: 2;
   }
 
-  .blur-overlay {
+  .lightbox-nav {
     position: absolute;
-    inset: 0;
-    background: rgba(10,8,6,0.35);
-    z-index: 1;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(10,8,6,0.7);
+    border: 1px solid var(--border-bright);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+    transition: border-color 0.2s;
+  }
+
+  .lightbox-nav:hover { border-color: var(--gold); }
+  .lightbox-nav svg { width: 14px; height: 14px; fill: var(--gold); }
+  .lightbox-nav.prev { left: 0.75rem; }
+  .lightbox-nav.next { right: 0.75rem; }
+  .lightbox-nav.hidden { display: none; }
+
+  .lightbox-page-count {
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    z-index: 20;
   }
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
@@ -188,8 +219,8 @@
   <a href="index.html" class="nav-brand">Ludicrous Chronicles</a>
   <ul class="nav-links">
     <li><a href="about.html">About</a></li>
-    <li><a href="content.html" class="active">Content</a></li>
-    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="content.html">Content</a></li>
+    <li><a href="gallery.html" class="active">Gallery</a></li>
     <li><a href="videos.html">Videos</a></li>
     <li class="nav-news-item">
       <a href="news.html">News<span class="nav-news-dot" id="news-dot"></span></a>
@@ -205,147 +236,181 @@
 </nav>
 
 <div class="page-header">
-  <div class="section-label fade-up fade-up-1">The Archive</div>
-  <h1 class="section-title fade-up fade-up-2">Content</h1>
-  <p class="section-body fade-up fade-up-3">Stories, illustrations, and voice recordings. Some free. Some for members.</p>
+  <div class="section-label fade-up fade-up-1">Original Art</div>
+  <h1 class="section-title fade-up fade-up-2">The Gallery</h1>
+  <p class="section-body fade-up fade-up-3">Illustrations made for the Chronicles — every piece drawn by hand.</p>
 </div>
 
 <section>
   <div class="section-inner">
-    <div class="filter-bar">
-      <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="story">Story</button>
-      <button class="filter-btn" data-filter="voice">Voice</button>
-      <button class="filter-btn" data-filter="art">Art</button>
-      <button class="filter-btn" data-filter="behind">Behind the Scenes</button>
-        <button class="filter-btn" data-filter="video">Video</button>
-    </div>
+    <div class="gallery-grid">
 
-    <div class="content-grid">
-      <!-- Free -->
-      <a href="chapter-1.html" class="content-card" data-type="story">
-        <div class="content-thumb" style="background-image: url('images/art-04-train.png'); background-size: cover; background-position: center;">
-          <span class="content-thumb-label" style="position:relative;z-index:1;">Chapter Art</span>
-          <div class="content-free-badge">Free</div>
+      <div class="gallery-item" onclick="openLightbox('images/art-01-witch-lantern.png', 'Nearly There', 'Character Art')">
+        <img loading="lazy" decoding="async" src="images/art-01-witch-lantern.png" alt="Nearly There" />
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">Nearly There</div>
+          <div class="gallery-overlay-type">Character Art</div>
         </div>
-        <div class="content-info">
-          <div class="content-type">Story</div>
-          <div class="content-title">Chapter I — The Beginning</div>
-          <div class="content-desc">The opening passage. Free to all readers.</div>
-        </div>
-      </a>
+      </div>
 
-      <!-- Locked -->
-      <a href="membership.html" class="content-card" data-type="art">
-        <div class="content-thumb blurred" style="--preview-img: url('images/art-birthday.png')">
-          <div class="blur-overlay"></div>
-          <span class="content-thumb-label">Illustration</span>
-          <div class="content-lock">
-            <svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg>
-          </div>
+      <div class="gallery-item" onclick="openLightbox('images/art-02-dark-garden.png', 'The Dark Garden', 'Character Art')">
+        <img loading="lazy" decoding="async" src="images/art-02-dark-garden.png" alt="The Dark Garden" />
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">The Dark Garden</div>
+          <div class="gallery-overlay-type">Character Art</div>
         </div>
-        <div class="content-info">
-          <div class="content-type">Art · Patron</div>
-          <div class="content-title">Happy Birthday</div>
-          <div class="content-desc">Members only.</div>
-        </div>
-      </a>
+      </div>
 
-      <a href="membership.html" class="content-card" data-type="art">
-        <div class="content-thumb blurred" style="--preview-img: url('images/art-dont-miss-legs.png')">
-          <div class="blur-overlay"></div>
-          <span class="content-thumb-label">Illustration</span>
-          <div class="content-lock">
-            <svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg>
-          </div>
+      <div class="gallery-item" onclick="openLightbox('images/art-03-bridge.png', 'The Offer', 'Character Art')">
+        <img loading="lazy" decoding="async" src="images/art-03-bridge.png" alt="The Offer" />
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">The Offer</div>
+          <div class="gallery-overlay-type">Character Art</div>
         </div>
-        <div class="content-info">
-          <div class="content-type">Art · Patron</div>
-          <div class="content-title">Don't You Miss Your Legs?</div>
-          <div class="content-desc">Members only.</div>
-        </div>
-      </a>
+      </div>
 
-      <a href="membership.html" class="content-card" data-type="story">
-        <div class="content-thumb blurred" style="--preview-img: url('images/art-blue-threads.png')">
-          <div class="blur-overlay"></div>
-          <span class="content-thumb-label">Story Preview</span>
-          <div class="content-lock">
-            <svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg>
-          </div>
+      <div class="gallery-item" onclick="openLightbox('images/art-04-train.png', 'The Beginning', 'Chapter Art')">
+        <img loading="lazy" decoding="async" src="images/art-04-train.png" alt="The Beginning" />
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">The Beginning</div>
+          <div class="gallery-overlay-type">Chapter Art</div>
         </div>
-        <div class="content-info">
-          <div class="content-type">Story · Patron</div>
-          <div class="content-title">Blue Threads</div>
-          <div class="content-desc">Members only.</div>
-        </div>
-      </a>
+      </div>
 
-      <a href="membership.html" class="content-card" data-type="art">
-        <div class="content-thumb blurred" style="--preview-img: url('images/art-helping-hand.png')">
-          <div class="blur-overlay"></div>
-          <span class="content-thumb-label">Illustration</span>
-          <div class="content-lock">
-            <svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg>
-          </div>
+      <div class="gallery-item" onclick="openLightbox('images/art-05-asteroid.png', 'Among Asteroids', 'Character Art')">
+        <img loading="lazy" decoding="async" src="images/art-05-asteroid.png" alt="Among Asteroids" />
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">Among Asteroids</div>
+          <div class="gallery-overlay-type">Character Art</div>
         </div>
-        <div class="content-info">
-          <div class="content-type">Art · Patron</div>
-          <div class="content-title">A Helping Hand</div>
-          <div class="content-desc">Members only.</div>
-        </div>
-      </a>
+      </div>
 
-      <a href="membership.html" class="content-card" data-type="art">
-        <div class="content-thumb blurred" style="--preview-img: url('images/art-nobody-special.png')">
-          <div class="blur-overlay"></div>
-          <span class="content-thumb-label">Illustration</span>
-          <div class="content-lock">
-            <svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg>
-          </div>
+      <div class="gallery-item" onclick="openLightbox('images/art-06-tunnel.png', 'The Tunnel', 'Character Art')">
+        <img loading="lazy" decoding="async" src="images/art-06-tunnel.png" alt="The Tunnel" />
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">The Tunnel</div>
+          <div class="gallery-overlay-type">Character Art</div>
         </div>
-        <div class="content-info">
-          <div class="content-type">Art · Patron</div>
-          <div class="content-title">Nobody Special</div>
-          <div class="content-desc">Members only.</div>
-        </div>
-      </a>
-      <!-- CMS-START -->
-      <a href="videos.html?play=Boo." class="content-card" data-type="video">
-        <div class="content-thumb" style="">
-          
-          <span class="content-thumb-label" style="position:relative;z-index:1;">Video</span>
-          
-        </div>
-        <div class="content-info">
-          <div class="content-type">Video</div>
-          <div class="content-title">Boo.</div>
-          <div class="content-desc"></div>
-        </div>
-      </a>
-      <a href="membership.html" class="content-card" data-type="video">
-        <div class="content-thumb blurred" style="">
-          <div class="blur-overlay"></div>
-          <span class="content-thumb-label" style="position:relative;z-index:1;">Video</span>
-          <div class="content-lock"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        </div>
-        <div class="content-info">
-          <div class="content-type">Video · Patron</div>
-          <div class="content-title">I Am the Victor</div>
-          <div class="content-desc">Members only.</div>
-        </div>
-      </a>
-      <!-- CMS-END -->
-    </div>
+      </div>
 
-    <div class="members-cta">
-      <div class="section-label" style="justify-content:center;">Unlock the vault</div>
-      <h2 class="section-title">Want more?</h2>
-      <p>Most content is reserved for members. Join to access the full archive.</p>
-      <a href="membership.html" class="btn-primary">View Membership Tiers</a>
+      <div class="gallery-item" onclick="openLightbox('images/art-07-steampunk.png', 'Fix You Up', 'Character Art')">
+        <img loading="lazy" decoding="async" src="images/art-07-steampunk.png" alt="Fix You Up" />
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">Fix You Up</div>
+          <div class="gallery-overlay-type">Character Art</div>
+        </div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox('images/art-08-lightning.png', 'The Storm', 'Chapter Art')">
+        <img loading="lazy" decoding="async" src="images/art-08-lightning.png" alt="The Storm" />
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">The Storm</div>
+          <div class="gallery-overlay-type">Chapter Art</div>
+        </div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox('images/art-09-needle.png', 'Patching Up', 'Character Art')">
+        <img loading="lazy" decoding="async" src="images/art-09-needle.png" alt="Patching Up" />
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">Patching Up</div>
+          <div class="gallery-overlay-type">Character Art</div>
+        </div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox('images/art-10-cards.png', 'Faces of the Suits', 'Character Art')">
+        <img loading="lazy" decoding="async" src="images/art-10-cards.png" alt="Faces of the Suits" />
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">Faces of the Suits</div>
+          <div class="gallery-overlay-type">Character Art</div>
+        </div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox('images/art-11-portraits.png', 'Oh What Could Have Been', 'Character Art')">
+        <img loading="lazy" decoding="async" src="images/art-11-portraits.png" alt="Oh What Could Have Been" />
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">Oh What Could Have Been</div>
+          <div class="gallery-overlay-type">Character Art</div>
+        </div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox('images/art-12-gentleman.png', 'To Law And Order', 'Character Art')">
+        <img loading="lazy" decoding="async" src="images/art-12-gentleman.png" alt="To Law And Order" />
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">To Law And Order</div>
+          <div class="gallery-overlay-type">Character Art</div>
+        </div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox('images/art-13-rain.png', 'In the Rain', 'Character Art')">
+        <img loading="lazy" decoding="async" src="images/art-13-rain.png" alt="In the Rain" />
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">In the Rain</div>
+          <div class="gallery-overlay-type">Character Art</div>
+        </div>
+      </div>
+
+      <div class="gallery-item locked" onclick="window.location.href='membership.html'">
+        <img loading="lazy" decoding="async" src="images/art-birthday.png" alt="Happy Birthday" />
+        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
+        <div class="gallery-tier-label">Patron</div>
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">Happy Birthday</div>
+          <div class="gallery-overlay-type">Patron Art</div>
+        </div>
+      </div>
+
+      <div class="gallery-item locked" onclick="window.location.href='membership.html'">
+        <img loading="lazy" decoding="async" src="images/art-dont-miss-legs.png" alt="Don't You Miss Your Legs?" />
+        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
+        <div class="gallery-tier-label">Patron</div>
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">Don't You Miss Your Legs?</div>
+          <div class="gallery-overlay-type">Patron Art</div>
+        </div>
+      </div>
+
+      <div class="gallery-item locked" onclick="window.location.href='membership.html'">
+        <img loading="lazy" decoding="async" src="images/art-helping-hand.png" alt="A Helping Hand" />
+        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
+        <div class="gallery-tier-label">Patron</div>
+        <div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:2.5rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / 2</div>
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">A Helping Hand</div>
+          <div class="gallery-overlay-type">Patron Art · 2 pages</div>
+        </div>
+      </div>
+
+
+
+      <div class="gallery-item locked" onclick="window.location.href='membership.html'">
+        <img loading="lazy" decoding="async" src="images/art-blue-threads.png" alt="Blue Threads" />
+        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
+        <div class="gallery-tier-label">Patron</div>
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-title">Blue Threads</div>
+          <div class="gallery-overlay-type">Patron Art</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lb-close">Close ✕</button>
+  <div class="lightbox-inner" id="lb-inner">
+    <img class="lightbox-img" id="lb-img" src="" alt="" />
+    <div class="lightbox-caption" id="lb-caption"></div>
+  </div>
+  <div class="lightbox-nav prev hidden" id="lb-prev">
+    <svg viewBox="0 0 14 14"><path d="M9 2L4 7l5 5"/></svg>
+  </div>
+  <div class="lightbox-nav next hidden" id="lb-next">
+    <svg viewBox="0 0 14 14"><path d="M5 2l5 5-5 5"/></svg>
+  </div>
+  <div class="lightbox-page-count" id="lb-pages"></div>
+  <div class="lightbox-hint" id="lb-hint">Click image to zoom</div>
+</div>
 
 
 <!-- Socials Sidebar -->
@@ -389,27 +454,120 @@
 </footer>
 
 <script>
-  const filterBtns = document.querySelectorAll('.filter-btn');
+  let slideImages = [];
+  let slideTitles = [];
+  let slideType = '';
+  let slideIndex = 0;
 
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  function openSlideshow(images, titles, type) {
+    slideImages = images;
+    slideTitles = titles;
+    slideType = type;
+    slideIndex = 0;
+    showSlide(0);
+    lb.classList.add('open');
+    lb.classList.remove('zoomed');
+    document.body.style.overflow = 'hidden';
+    zoomed = false;
+  }
 
-      const filter = btn.dataset.filter;
-      // Re-query every click so dynamically added CMS cards are included
-      const cards = document.querySelectorAll('.content-card');
+  function showSlide(index) {
+    lbImg.src = slideImages[index];
+    lbCaption.textContent = slideTitles[index] + ' — ' + slideType;
+    document.getElementById('lb-pages').textContent = slideImages.length > 1 ? (index + 1) + ' / ' + slideImages.length : '';
+    document.getElementById('lb-prev').classList.toggle('hidden', index === 0);
+    document.getElementById('lb-next').classList.toggle('hidden', index === slideImages.length - 1);
+    lbHint.textContent = 'Click image to zoom';
+    lbHint.style.opacity = '0.6';
+  }
 
-      cards.forEach(card => {
-        if (filter === 'all' || card.dataset.type === filter) {
-          card.style.display = 'block';
-        } else {
-          card.style.display = 'none';
-        }
+  document.getElementById('lb-prev').addEventListener('click', e => {
+    e.stopPropagation();
+    if (slideIndex > 0) { slideIndex--; showSlide(slideIndex); }
+  });
+
+  document.getElementById('lb-next').addEventListener('click', e => {
+    e.stopPropagation();
+    if (slideIndex < slideImages.length - 1) { slideIndex++; showSlide(slideIndex); }
+  });
+
+  const lb = document.getElementById('lightbox');
+  const lbInner = document.getElementById('lb-inner');
+  const lbImg = document.getElementById('lb-img');
+  const lbCaption = document.getElementById('lb-caption');
+  const lbHint = document.getElementById('lb-hint');
+  let zoomed = false;
+
+  function openLightbox(src, title, type) {
+    lbImg.src = src;
+    lbCaption.textContent = title + ' — ' + type;
+    lb.classList.add('open');
+    lb.classList.remove('zoomed');
+    lbHint.style.opacity = '0.6';
+    lbHint.textContent = 'Click image to zoom';
+    document.body.style.overflow = 'hidden';
+    zoomed = false;
+    lbInner.scrollTop = 0;
+    lbInner.scrollLeft = 0;
+  }
+
+  function closeLightbox() {
+    lb.classList.remove('open','zoomed');
+    document.body.style.overflow = '';
+    zoomed = false;
+  }
+
+  document.getElementById('lb-close').addEventListener('click', e => {
+    e.stopPropagation();
+    closeLightbox();
+  });
+
+  lbImg.addEventListener('click', e => {
+    e.stopPropagation();
+    if (!zoomed) {
+      const rect = lbImg.getBoundingClientRect();
+      const clickX = (e.clientX - rect.left) / rect.width;
+      const clickY = (e.clientY - rect.top) / rect.height;
+
+      // Disable scroll transition so position snaps instantly with zoom
+      lbInner.style.scrollBehavior = 'auto';
+
+      lb.classList.add('zoomed');
+      lbHint.style.opacity = '0';
+      zoomed = true;
+
+      // Use requestAnimationFrame to apply scroll right after layout update
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          lbInner.scrollLeft = (lbImg.offsetWidth * clickX) - (lbInner.clientWidth / 2);
+          lbInner.scrollTop = (lbImg.offsetHeight * clickY) - (lbInner.clientHeight / 2);
+        });
       });
-    });
+    } else {
+      lb.classList.remove('zoomed');
+      lbHint.textContent = 'Click image to zoom';
+      lbHint.style.opacity = '0.6';
+      zoomed = false;
+    }
+  });
+
+  lb.addEventListener('click', e => {
+    if (e.target !== lbImg) closeLightbox();
+  });
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+  // Block right-click on ALL images
+  document.addEventListener('contextmenu', e => {
+    if (e.target.tagName === 'IMG') e.preventDefault();
+  });
+  document.querySelectorAll('img').forEach(img => {
+    img.setAttribute('draggable', 'false');
+    img.style.userSelect = 'none';
+    img.style.webkitUserDrag = 'none';
   });
 </script>
+
 <script>
   if (window.netlifyIdentity) {
     window.netlifyIdentity.on("init", user => {
@@ -439,110 +597,94 @@
 </script>
 
 <script>
-// CMS Content Loader — reads from _data folders and renders cards
-// User tier would come from Netlify Identity in future
-// For now shows all content with correct lock state
+// Dynamic CMS Gallery Loader
+// Reads from _data/gallery JSON index (generated by cms-build.js on deploy)
+// Falls back to hardcoded items if no CMS data found
 
-const userTier = 'free'; // Will be replaced by actual auth check
-
-const tierRank = { free: 0, devoted: 1, bound: 2 };
-
-function canAccess(tier) {
-  return tierRank[userTier] >= tierRank[tier];
-}
-
-function makeLockIcon() {
-  return `<div class="content-lock">
-    <svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg>
-  </div>`;
-}
-
-function makeCard({ href, thumb, blurred, label, type, title, desc, locked, tier }) {
-  const thumbStyle = thumb
-    ? `background-image:url('${thumb}');background-size:cover;background-position:center;`
-    : '';
-  const blurClass = blurred ? 'blurred' : '';
-  const blurOverlay = blurred ? '<div class="blur-overlay"></div>' : '';
-  const lock = locked ? makeLockIcon() : '';
-  const tierBadge = locked
-    ? `<span style="position:absolute;top:0.5rem;left:0.5rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">${tier === 'devoted' ? '$5' : '$12'}</span>`
-    : '<span class="content-free-badge">FREE</span>';
-
-  return `<a href="${href}" class="content-card" data-type="${type}">
-    <div class="content-thumb ${blurClass}" style="${thumbStyle}">
-      ${blurOverlay}
-      <span class="content-thumb-label" style="position:relative;z-index:1;">${label}</span>
-      ${lock}
-      ${!locked ? tierBadge : tierBadge}
-    </div>
-    <div class="content-info">
-      <div class="content-type">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
-      <div class="content-title">${title}</div>
-      <div class="content-desc">${desc}</div>
-    </div>
-  </a>`;
-}
-</script>
-
-<script>
-// Dynamic CMS Content Loader
-async function loadCMSContent() {
+async function loadCMSGallery() {
   try {
-    const res = await fetch('/_data/content-index.json');
-    if (!res.ok) return;
+    const res = await fetch('/_data/gallery-index.json');
+    if (!res.ok) return; // No CMS data yet, keep hardcoded items
     const items = await res.json();
     if (!items || items.length === 0) return;
 
-    const grid = document.querySelector('.content-grid');
+    const grid = document.querySelector('.masonry-grid');
     if (!grid) return;
 
+    // Group items into sets (slideshows)
+    const sets = {};
+    const singles = [];
     items.forEach(item => {
-      const isLocked = item.tier !== 'free';
-
-      // Videos always go to videos.html, locked ones go to membership
-      let href = 'membership.html';
-      if (!isLocked) {
-        if (item.type === 'Video') href = 'videos.html';
-        else href = item.href || '#';
+      if (item.set) {
+        if (!sets[item.set]) sets[item.set] = [];
+        sets[item.set].push(item);
+      } else {
+        singles.push(item);
       }
-
-      const card = document.createElement('a');
-      card.href = href;
-      card.className = 'content-card';
-      card.dataset.type = item.type === 'Video' ? 'video' : (item.filter_type || 'story');
-
-      const thumbStyle = item.thumbnail
-        ? `background-image:url('${item.thumbnail}');background-size:cover;background-position:center;`
-        : '';
-      const blurClass = isLocked ? 'blurred' : '';
-      const blurOverlay = isLocked ? '<div class="blur-overlay"></div>' : '';
-      const lockIcon = isLocked
-        ? `<div class="content-lock"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>`
-        : '';
-      const tierLabel = isLocked
-        ? `${item.type} · ${item.tier === 'devoted' ? 'Patron' : 'Bound'}`
-        : item.type;
-
-      card.innerHTML = `
-        <div class="content-thumb ${blurClass}" style="${thumbStyle}">
-          ${blurOverlay}
-          <span class="content-thumb-label" style="position:relative;z-index:1;">${item.label || item.type}</span>
-          ${lockIcon}
-        </div>
-        <div class="content-info">
-          <div class="content-type">${tierLabel}</div>
-          <div class="content-title">${item.title}</div>
-          <div class="content-desc">${item.description || (isLocked ? 'Members only.' : '')}</div>
-        </div>`;
-
-      grid.appendChild(card);
     });
+
+    // Sort sets by set_order
+    Object.values(sets).forEach(s => s.sort((a,b) => a.set_order - b.set_order));
+
+    // Render singles
+    singles.forEach(item => {
+      const el = makeCMSGalleryItem(item);
+      grid.appendChild(el);
+    });
+
+    // Render sets (first image shows, rest are slideshow pages)
+    Object.entries(sets).forEach(([setName, items]) => {
+      const first = items[0];
+      const images = items.map(i => i.image);
+      const titles = items.map(i => i.title);
+      const el = makeCMSGalleryItem(first, images, titles);
+      grid.appendChild(el);
+    });
+
   } catch(e) {
-    // Silent fail — hardcoded cards remain
+    // Silent fail — hardcoded items show
   }
 }
 
-loadCMSContent();
+function makeCMSGalleryItem(item) {
+  const isLocked = item.tier !== 'free';
+  // Use images array if available (multiple images), fall back to single image
+  const images = item.images && item.images.length > 0 ? item.images : [item.image];
+  const titles = images.map((_, i) => i === 0 ? item.title : `${item.title} (${i+1})`);
+  const isSlideshow = images.length > 1;
+  const div = document.createElement('div');
+
+  if (isLocked) {
+    div.className = 'gallery-item locked';
+    div.setAttribute('onclick', "window.location.href='membership.html'");
+    div.innerHTML = `
+      <img loading="lazy" src="${images[0]}" alt="${item.title}" />
+      <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
+      <div class="gallery-tier-label">${item.tier === 'devoted' ? 'Patron' : 'Bound'}</div>
+      ${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:2.5rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}
+      <div class="gallery-overlay">
+        <div class="gallery-overlay-title">${item.title}</div>
+        <div class="gallery-overlay-type">${item.type}${isSlideshow ? ' · ' + images.length + ' pages' : ''}</div>
+      </div>`;
+  } else {
+    div.className = 'gallery-item';
+    if (isSlideshow) {
+      div.setAttribute('onclick', `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, '${item.type}')`);
+    } else {
+      div.setAttribute('onclick', `openLightbox('${images[0]}', '${item.title}', '${item.type}')`);
+    }
+    div.innerHTML = `
+      <img loading="lazy" src="${images[0]}" alt="${item.title}" />
+      ${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}
+      <div class="gallery-overlay">
+        <div class="gallery-overlay-title">${item.title}</div>
+        <div class="gallery-overlay-type">${item.type}${isSlideshow ? ' · ' + images.length + ' pages' : ''}</div>
+      </div>`;
+  }
+  return div;
+}
+
+loadCMSGallery();
 </script>
 <script src="socials.js"></script>
 </body>
