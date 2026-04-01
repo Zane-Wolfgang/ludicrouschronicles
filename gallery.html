@@ -604,9 +604,12 @@
 async function loadCMSGallery() {
   try {
     const res = await fetch('/_data/gallery-index.json');
-    if (!res.ok) return; // No CMS data yet, keep hardcoded items
+    if (!res.ok) return;
     const items = await res.json();
     if (!items || items.length === 0) return;
+
+    const userTier = window.getUserTier ? await window.getUserTier() : 'free';
+    const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
 
     const grid = document.querySelector('.masonry-grid');
     if (!grid) return;
@@ -647,7 +650,7 @@ async function loadCMSGallery() {
 }
 
 function makeCMSGalleryItem(item) {
-  const isLocked = item.tier !== 'free';
+  const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
   // Use images array if available (multiple images), fall back to single image
   const images = item.images && item.images.length > 0 ? item.images : [item.image];
   const titles = images.map((_, i) => i === 0 ? item.title : `${item.title} (${i+1})`);
@@ -685,7 +688,34 @@ function makeCMSGalleryItem(item) {
 }
 
 loadCMSGallery();
+
+// Check hardcoded locked gallery items against real auth
+async function checkHardcodedLocks() {
+  const userTier = window.getUserTier ? await window.getUserTier() : 'free';
+  const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
+  if (tRank[userTier] === 0) return;
+
+  document.querySelectorAll('.gallery-item.locked').forEach(item => {
+    const tierLabel = item.querySelector('.gallery-tier-label');
+    if (!tierLabel) return;
+    const itemTier = tierLabel.textContent === 'Patron' ? 'devoted' : 'bound';
+    if (tRank[userTier] >= tRank[itemTier]) {
+      item.classList.remove('locked');
+      const img = item.querySelector('img');
+      const title = item.querySelector('.gallery-overlay-title')?.textContent || '';
+      const type = item.querySelector('.gallery-overlay-type')?.textContent || '';
+      if (img) {
+        item.setAttribute('onclick', `openLightbox('${img.getAttribute('src')}', '${title}', '${type}')`);
+        item.querySelector('.gallery-lock-badge')?.remove();
+        tierLabel.remove();
+      }
+    }
+  });
+}
+
+checkHardcodedLocks();
 </script>
+<script src="auth.js"></script>
 <script src="socials.js"></script>
 </body>
 </html>
