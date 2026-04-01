@@ -3,7 +3,7 @@ const path = require('path');
 
 // Parse frontmatter from markdown files
 function parseFrontmatter(fileContent) {
-  const match = fileContent.match(/^---\n([\s\S]*?)\n---/);
+  const match = fileContent.match(/^---\n([\s\S]*?)\n---([\s\S]*)$/);
   if (!match) return {};
   const fm = {};
   match[1].split('\n').forEach(line => {
@@ -12,6 +12,9 @@ function parseFrontmatter(fileContent) {
       fm[key.trim()] = rest.join(':').trim().replace(/^["']|["']$/g, '');
     }
   });
+  // Capture body content below the frontmatter
+  const body = match[2] ? match[2].trim() : '';
+  if (body) fm.body = body;
   return fm;
 }
 
@@ -154,4 +157,4 @@ if (contentHtml.includes('<!-- CMS-START -->') && contentHtml.includes('<!-- CMS
 
 fs2.writeFileSync('content.html', updatedHtml);
 console.log(`Content cards injected: ${allContent.filter(i => !hardcodedTitles.includes(i.title)).length}`);
-;
+
