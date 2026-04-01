@@ -1,6 +1,7 @@
 [build]
   command = "npm install && node cms-build.js"
   publish = "."
+  functions = "netlify/functions"
 
 [[headers]]
   for = "/images/*"
