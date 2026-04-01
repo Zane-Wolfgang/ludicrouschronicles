@@ -303,11 +303,20 @@ async function loadChapter() {
   }
 }
 
-// Simple markdown renderer
+// Simple markdown + HTML renderer
 function markdownToHtml(md) {
   if (!md) return '';
+
+  // If CMS already converted to HTML (contains tags), use it directly
+  // but wrap bare text blocks in paragraphs
+  if (md.includes('<p>') || md.includes('<em>') || md.includes('<strong>')) {
+    // Already HTML from CMS rich text editor — use as-is
+    return md;
+  }
+
+  // Raw markdown — convert ourselves
   let html = md
-    // Bold italic
+    // Bold italic first
     .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
     // Bold
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -316,7 +325,7 @@ function markdownToHtml(md) {
     // Italic underscore
     .replace(/_(.*?)_/g, '<em>$1</em>');
 
-  // Paragraphs
+  // Wrap in paragraphs
   const paragraphs = html.split(/\n\n+/);
   return paragraphs
     .map(p => p.trim())
