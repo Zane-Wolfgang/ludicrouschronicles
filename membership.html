@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Membership — Ludicrous Chronicles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+  <link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  .tiers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 3rem;
+  }
+
+  .tier-card {
+    background: var(--surface);
+    padding: 2.5rem 2rem;
+    position: relative;
+    transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
+    z-index: 1;
+  }
+
+  .tier-card:hover {
+    background: var(--mid);
+    transform: scale(1.03);
+    box-shadow: 0 0 32px rgba(201,168,76,0.18), 0 0 8px rgba(201,168,76,0.1);
+    z-index: 2;
+  }
+
+  .tier-card.featured {
+    background: var(--mid);
+    border-top: 2px solid var(--gold);
+  }
+
+  .tier-card.featured:hover {
+    box-shadow: 0 0 40px rgba(201,168,76,0.28), 0 0 12px rgba(201,168,76,0.15);
+  }
+
+  .tier-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--gold);
+    padding: 0.3em 0.9em;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+  }
+
+  .tier-badge.dim {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .tier-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--parchment);
+    margin-bottom: 0.5rem;
+  }
+
+  .tier-price {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 2.2rem;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+    line-height: 1;
+  }
+
+  .tier-price span {
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .tier-perks {
+    list-style: none;
+    margin-bottom: 2.5rem;
+    font-size: 0.95rem;
+  }
+
+  .tier-perks li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-body);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .tier-perks li::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background: var(--gold-dim);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+  }
+
+  .faq-section {
+    margin-top: 5rem;
+    padding-top: 4rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .faq-list {
+    margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .faq-item {
+    background: var(--surface);
+    padding: 1.75rem 2rem;
+    transition: background 0.2s;
+  }
+
+  .faq-item:hover { background: var(--mid); }
+
+  .faq-q {
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    color: var(--parchment);
+    margin-bottom: 0.75rem;
+  }
+
+  .faq-a {
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+</style>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">Ludicrous Chronicles</a>
+  <ul class="nav-links">
+    <li><a href="about.html">About</a></li>
+    <li><a href="content.html">Content</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="videos.html">Videos</a></li>
+    <li class="nav-news-item">
+      <a href="news.html">News<span class="nav-news-dot" id="news-dot"></span></a>
+      <div class="nav-cord-wrap" id="cord-wrap" title="Pull to dismiss">
+        <img src="images/cord.png" alt="pull cord" class="nav-cord-img" />
+        <div class="nav-cord-glow"></div>
+      </div>
+    </li>
+    <li><a href="membership.html" class="active">Membership</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li><a href="merch.html">Merch</a></li>
+  </ul>
+</nav>
+
+<div class="page-header">
+  <div class="section-label fade-up fade-up-1">Join the Chronicles</div>
+  <h1 class="section-title fade-up fade-up-2">Membership</h1>
+  <p class="section-body fade-up fade-up-3">Support the work. Unlock the vault. Every tier helps keep this going.</p>
+</div>
+
+<section>
+  <div class="section-inner">
+    <div class="tiers-grid">
+      <div class="tier-card fade-up fade-up-1">
+        <div class="tier-badge dim">Reader</div>
+        <div class="tier-name">The Curious</div>
+        <div class="tier-price">Free</div>
+        <ul class="tier-perks">
+          <li>Public chapters</li>
+          <li>Free story previews</li>
+          <li>YouTube updates</li>
+        </ul>
+        <a href="content.html" class="btn-ghost" style="display:block; text-align:center;">Start Reading</a>
+      </div>
+
+      <div class="tier-card featured fade-up fade-up-2">
+        <div class="tier-badge">Patron</div>
+        <div class="tier-name">The Devoted</div>
+        <div class="tier-price">$5<span>/mo</span></div>
+        <ul class="tier-perks">
+          <li>All public content</li>
+          <li>Early chapter access</li>
+          <li>Full voice recordings</li>
+          <li>Process art & sketches</li>
+          <li>Behind-the-scenes clips</li>
+        </ul>
+        <a href="https://buy.stripe.com/14A3cu88Eamh24I5eab7y00" class="btn-primary" style="display:block; text-align:center;">Join Now</a>
+      </div>
+
+      <div class="tier-card fade-up fade-up-3">
+        <div class="tier-badge dim">Benefactor</div>
+        <div class="tier-name">The Bound</div>
+        <div class="tier-price">$12<span>/mo</span></div>
+        <ul class="tier-perks">
+          <li>Everything above</li>
+          <li>Story notes & lore</li>
+          <li>Worldbuilding documents</li>
+          <li>Name in the credits</li>
+          <li>Direct Q&amp;A access</li>
+        </ul>
+        <a href="https://buy.stripe.com/9B628q74A51XgZCgWSb7y01" class="btn-ghost" style="display:block; text-align:center;">Join Now</a>
+      </div>
+    </div>
+
+    <div class="faq-section">
+      <div class="section-label">Questions</div>
+      <h2 class="section-title">Common Questions</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <div class="faq-q">What do I get at the free tier?</div>
+          <div class="faq-a">Public chapters, story previews, drawings, and access to whatever goes up on YouTube.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">How often is new content posted?</div>
+          <div class="faq-a">The story is worked on daily in little bits and pieces, but it comes as no surprise when I say that art takes ages to create. And robs you of your sanity. But forget that part. Members get content — whenever it's released or teased — first.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Can I cancel anytime?</div>
+          <div class="faq-a">Yes, of course. What do I look like, your prison guard?</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">What's the difference between Devoted and The Bound (ignore the prison guard bit up above)?</div>
+          <div class="faq-a">Devoted gets you access to all the content. The Bound adds the lore, worldbuilding documents, direct Q&A, and your name in the credits of videos.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Socials Sidebar -->
+<div class="socials-trigger" id="socials-trigger">
+  <div class="socials-panel" id="socials-panel">
+    <div class="socials-title">Find Me</div>
+    <a class="socials-link" href="https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+      YouTube
+    </a>
+    <a class="socials-link" href="https://discord.gg/gBeqSG8mD" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>
+      Discord
+    </a>
+    <a class="socials-link" href="https://x.com/spite_mstrs" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>
+      X / Twitter
+    </a>
+    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank" title="Note: This work is for authorized viewers only. However, it's available on this site to read for free">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>
+      AO3
+    </a>
+  </div>
+  <div class="socials-arrow" id="socials-arrow">
+    <svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg>
+  </div>
+</div>
+<script>
+  const trigger = document.getElementById('socials-trigger');
+  const panel = document.getElementById('socials-panel');
+  document.getElementById('socials-arrow').addEventListener('click', () => {
+    trigger.classList.toggle('open');
+    panel.classList.toggle('open');
+  });
+</script>
+
+<footer>
+  <span class="footer-brand">Ludicrous Chronicles</span>
+  <p class="footer-copy">© 2026 Ludicrous Chronicles. All rights reserved.</p>
+  <p class="footer-copy" style="margin-top:0.4rem;">Story, Art &amp; Voice by Mistress Spite &nbsp;·&nbsp; Animation by Pineapple Taco</p>
+</footer>
+
+<script>
+  if (window.netlifyIdentity) {
+    window.netlifyIdentity.on("init", user => {
+      if (!user) {
+        window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; });
+      }
+    });
+  }
+</script>
+<script>
+  (function() {
+    const cord = document.getElementById('cord-wrap');
+    const dot = document.getElementById('news-dot');
+    const dismissed = localStorage.getItem('news-dismissed');
+    if (dismissed) {
+      if (cord) cord.classList.add('pulled');
+      if (dot) dot.classList.add('off');
+    }
+    if (cord) {
+      cord.addEventListener('click', () => {
+        cord.classList.add('pulled');
+        if (dot) dot.classList.add('off');
+        localStorage.setItem('news-dismissed', '1');
+      });
+    }
+  })();
+</script>
+<script src="socials.js"></script>
+</body>
+</html>

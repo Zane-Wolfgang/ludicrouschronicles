@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Videos — Ludicrous Chronicles</title>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<style>
+  body, html { margin: 0; padding: 0; overflow-x: hidden; }
+
+  /* ── Full page fireplace background ── */
+  .fireplace-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .fireplace-bg video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* Dark overlay */
+  .fireplace-overlay {
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(10,8,6,0.7) 0%, rgba(10,8,6,0.3) 30%, rgba(10,8,6,0.3) 70%, rgba(10,8,6,0.8) 100%);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* ── Page layout ── */
+  .videos-page {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    padding: 5.5rem 3rem 4rem;
+    gap: 3rem;
+  }
+
+  /* ── Left panel — video list ── */
+  .videos-left {
+    width: 340px;
+    flex-shrink: 0;
+    padding-top: 0;
+  }
+
+  .videos-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .videos-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.6rem;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(201,168,76,0.4);
+  }
+
+  .video-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .video-item {
+    background: rgba(10,8,6,0.82);
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: none;
+    text-align: left;
+    width: 100%;
+    display: flex;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .video-item:hover { background: rgba(20,15,8,0.92); }
+  .video-item.active { background: rgba(25,18,8,0.95); border-left: 2px solid var(--gold); }
+
+  /* Thumbnail */
+  .video-thumb {
+    width: 100px;
+    height: 65px;
+    flex-shrink: 0;
+    background: #111;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .video-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .video-thumb-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1208, #0d0a05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .video-thumb-placeholder svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--gold-dim);
+    opacity: 0.4;
+  }
+
+  .video-duration {
+    position: absolute;
+    bottom: 3px;
+    right: 4px;
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: #fff;
+    background: rgba(0,0,0,0.75);
+    padding: 1px 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Video info */
+  .video-info {
+    padding: 0.7rem 0.9rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .video-item-type {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 0.3rem;
+  }
+
+  .video-item-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    color: var(--parchment);
+    line-height: 1.3;
+  }
+
+  /* ── Right — player hidden until video clicked ── */
+  .videos-right {
+    flex: 1;
+    max-width: 600px;
+    display: none;
+    position: relative;
+  }
+
+  .videos-right.visible { display: block; }
+
+  .tv-wrap {
+    position: relative;
+    width: 100%;
+    background: #000;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(0,0,0,0.8);
+  }
+
+  .tv-wrap video {
+    width: 100%;
+    display: block;
+  }
+
+  .tv-filter {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 1;
+    transition: opacity 1.2s ease;
+  }
+
+  .tv-filter.gone { opacity: 0; }
+
+  .tv-filter::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px,
+      transparent 1px, transparent 3px
+    );
+    z-index: 1;
+  }
+
+  .tv-filter::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(80,55,10,0.55);
+    mix-blend-mode: multiply;
+    z-index: 2;
+    animation: tvFlicker 0.08s infinite;
+  }
+
+  @keyframes tvFlicker {
+    0%   { opacity: 0.9; } 25% { opacity: 0.75; }
+    50%  { opacity: 0.95; } 75% { opacity: 0.7; }
+    100% { opacity: 0.88; }
+  }
+
+  .tv-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.7) 100%);
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .tv-scratch {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    animation: scratchMove 3s linear infinite;
+    background: repeating-linear-gradient(
+      90deg, transparent 0px, transparent 120px,
+      rgba(255,230,150,0.06) 121px, rgba(255,230,150,0.06) 122px,
+      transparent 123px, transparent 300px
+    );
+  }
+
+  @keyframes scratchMove {
+    0% { background-position: 0 0; } 100% { background-position: 400px 0; }
+  }
+
+  .video-now-playing {
+    margin-top: 0.75rem;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+
+  /* ── X close button on player ── */
+  .video-close {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    width: 32px;
+    height: 32px;
+    background: rgba(10,8,6,0.6);
+    border: 1px solid rgba(201,168,76,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.2s, border-color 0.2s, background 0.2s;
+  }
+
+  .tv-wrap:hover .video-close { opacity: 0.35; }
+  .video-close:hover { opacity: 1 !important; border-color: var(--gold); background: rgba(10,8,6,0.9); }
+
+  .video-close svg {
+    width: 12px;
+    height: 12px;
+    fill: var(--gold);
+  }
+
+  .video-description {
+    margin-top: 1rem;
+    padding: 1rem 1.2rem;
+    background: rgba(10,8,6,0.7);
+    border: 1px solid var(--border);
+    border-top: 1px solid var(--gold-dim);
+    font-family: 'EB Garamond', serif;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #c9a84c;
+    display: none;
+  }
+
+  .video-description.visible { display: block; }
+  .video-description em { font-style: italic; color: #e0bc6a; }
+  .video-description a { color: var(--gold); }
+  .video-description p { margin: 0 0 0.5em; }
+  .video-description p:last-child { margin: 0; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">Ludicrous Chronicles</a>
+  <ul class="nav-links">
+    <li><a href="about.html">About</a></li>
+    <li><a href="content.html">Content</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="videos.html" class="active">Videos</a></li>
+    <li class="nav-news-item">
+      <a href="news.html">News<span class="nav-news-dot" id="news-dot"></span></a>
+      <div class="nav-cord-wrap" id="cord-wrap" title="Pull to dismiss">
+        <img src="images/cord.png" alt="pull cord" class="nav-cord-img" />
+        <div class="nav-cord-glow"></div>
+      </div>
+    </li>
+    <li><a href="membership.html">Membership</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li><a href="merch.html">Merch</a></li>
+  </ul>
+</nav>
+
+<!-- Full page fireplace background -->
+<div class="fireplace-bg">
+  <video id="fireplace-vid" autoplay loop muted playsinline>
+    <source src="images/Fire_Place.mp4" type="video/mp4">
+  </video>
+</div>
+<div class="fireplace-overlay"></div>
+
+<div class="videos-page">
+
+  <!-- LEFT: video list -->
+  <div class="videos-left">
+    <div class="videos-header">
+      <h1 class="videos-title">Videos</h1>
+    </div>
+
+    <div class="video-list" id="video-list">
+      <!-- Hardcoded entries — also populated by CMS loader -->
+      <button class="video-item active" onclick="loadVideo('images/video-pants.mp4', this)"
+        data-thumbnail="" data-duration="" data-description="">
+        <div class="video-thumb">
+          <div class="video-thumb-placeholder">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+        <div class="video-info">
+          <div class="video-item-type">Behind the Scenes</div>
+          <div class="video-item-title">Boo.</div>
+        </div>
+      </button>
+
+      <button class="video-item" onclick="loadVideo('images/video-victor.mp4', this)"
+        data-thumbnail="" data-duration="" data-description="">
+        <div class="video-thumb">
+          <div class="video-thumb-placeholder">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+        <div class="video-info">
+          <div class="video-item-type">Behind the Scenes</div>
+          <div class="video-item-title">I Am the Victor</div>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT: player -->
+  <div class="videos-right">
+    <div class="tv-wrap" id="tv-wrap">
+      <video id="main-video" preload="none" controls>
+        <source src="images/video-pants.mp4" type="video/mp4">
+      </video>
+      <div class="tv-filter" id="tv-filter">
+        <div class="tv-vignette"></div>
+        <div class="tv-scratch"></div>
+      </div>
+      <div class="video-close" id="video-close" title="Close">
+        <svg viewBox="0 0 12 12"><path d="M1 1l10 10M11 1L1 11" stroke="#c9a84c" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <div class="video-now-playing" id="now-playing">Now Playing: Boo.</div>
+    <div class="video-description" id="video-description"></div>
+  </div>
+
+</div>
+
+<!-- Socials Sidebar -->
+<div class="socials-trigger" id="socials-trigger">
+  <div class="socials-panel" id="socials-panel">
+    <div class="socials-title">Find Me</div>
+    <a class="socials-link" href="https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+      YouTube
+    </a>
+    <a class="socials-link" href="https://discord.gg/gBeqSG8mD" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>
+      Discord
+    </a>
+    <a class="socials-link" href="https://x.com/spite_mstrs" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>
+      X / Twitter
+    </a>
+    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank" title="Note: This work is for authorized viewers only. However, it's available on this site to read for free">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>
+      AO3
+    </a>
+  </div>
+  <div class="socials-arrow" id="socials-arrow">
+    <svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg>
+  </div>
+</div>
+
+<footer>
+  <span class="footer-brand">Ludicrous Chronicles</span>
+  <p class="footer-copy">© 2026 Ludicrous Chronicles. All rights reserved.</p>
+  <p class="footer-copy" style="margin-top:0.4rem;">Story, Art &amp; Voice by Mistress Spite &nbsp;·&nbsp; Animation by Pineapple Taco</p>
+</footer>
+
+<script>
+  // ── Video player ──
+  const video = document.getElementById('main-video');
+  const filter = document.getElementById('tv-filter');
+  const nowPlaying = document.getElementById('now-playing');
+
+  const videosRight = document.querySelector('.videos-right');
+
+  function loadVideo(src, btn) {
+    // If clicking the already active video — toggle it off
+    if (btn.classList.contains('active') && videosRight.classList.contains('visible')) {
+      video.pause();
+      videosRight.classList.remove('visible');
+      btn.classList.remove('active');
+      filter.classList.remove('gone');
+      nowPlaying.textContent = '';
+      return;
+    }
+    video.pause();
+    video.src = src;
+    video.load();
+    filter.classList.remove('gone');
+    document.querySelectorAll('.video-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const title = btn.querySelector('.video-item-title').textContent;
+    nowPlaying.textContent = 'Now Playing: ' + title;
+    // Show description if available
+    const desc = btn.dataset.description || '';
+    const descEl = document.getElementById('video-description');
+    if (desc && desc.trim()) {
+      descEl.innerHTML = desc;
+      descEl.classList.add('visible');
+    } else {
+      descEl.innerHTML = '';
+      descEl.classList.remove('visible');
+    }
+    videosRight.classList.add('visible');
+    video.play();
+  }
+
+  document.getElementById('video-close').addEventListener('click', () => {
+    video.pause();
+    videosRight.classList.remove('visible');
+    document.querySelectorAll('.video-item').forEach(b => b.classList.remove('active'));
+    filter.classList.remove('gone');
+    nowPlaying.textContent = '';
+    document.getElementById('video-description').classList.remove('visible');
+  });
+
+  video.addEventListener('play', () => {
+    setTimeout(() => { filter.classList.add('gone'); }, 1500);
+  });
+  video.addEventListener('ended', () => { filter.classList.remove('gone'); });
+
+  // ── Auto-load duration for each video item ──
+  document.querySelectorAll('.video-item').forEach(btn => {
+    const src = btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+    if (!src) return;
+    const thumb = btn.dataset.thumbnail;
+    const thumbEl = btn.querySelector('.video-thumb');
+
+    // Set thumbnail if provided
+    if (thumb) {
+      thumbEl.innerHTML = `<img src="${thumb}" alt="thumbnail">`;
+    }
+
+    // Get duration via hidden video element
+    const tmp = document.createElement('video');
+    tmp.preload = 'metadata';
+    tmp.src = src;
+    tmp.addEventListener('loadedmetadata', () => {
+      const d = Math.round(tmp.duration);
+      const m = Math.floor(d / 60);
+      const s = String(d % 60).padStart(2, '0');
+      const dur = document.createElement('div');
+      dur.className = 'video-duration';
+      dur.textContent = `${m}:${s}`;
+      thumbEl.appendChild(dur);
+    });
+  });
+
+  // ── Fireplace character rotation ──
+  const characters = [
+    'images/Fire_Place.mp4',
+    'images/Fire_Place_2.mp4',
+    'images/Fire_Place_3.mp4',
+    'images/Fire_Place_4.mp4',
+  ];
+
+  async function pickCharacter() {
+    const fp = document.getElementById('fireplace-vid');
+    if (!fp) return;
+    const available = [];
+    for (const src of characters) {
+      try {
+        const r = await fetch(src, { method: 'HEAD' });
+        if (r.ok) available.push(src);
+      } catch(e) {}
+    }
+    if (available.length === 0) return;
+    const pick = available[Math.floor(Math.random() * available.length)];
+    fp.querySelector('source').src = pick;
+    fp.load();
+    fp.play();
+  }
+
+  pickCharacter();
+
+  // ── Auto-open video from URL parameter ──
+  function autoPlayFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const play = params.get('play');
+    if (!play) return;
+
+    // Wait a moment for CMS loader to finish
+    setTimeout(() => {
+      const buttons = document.querySelectorAll('.video-item');
+      for (const btn of buttons) {
+        const title = btn.querySelector('.video-item-title');
+        if (title && title.textContent.trim() === play) {
+          btn.click();
+          btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+      }
+    }, 300);
+  }
+
+  autoPlayFromURL();
+
+  // ── Socials ──
+  const trigger = document.getElementById('socials-trigger');
+  const panel = document.getElementById('socials-panel');
+  document.getElementById('socials-arrow').addEventListener('click', () => {
+    trigger.classList.toggle('open');
+    panel.classList.toggle('open');
+  });
+</script>
+
+<script>
+  (function() {
+    const cord = document.getElementById('cord-wrap');
+    const dot = document.getElementById('news-dot');
+    const dismissed = localStorage.getItem('news-dismissed');
+    if (dismissed) {
+      if (cord) cord.classList.add('pulled');
+      if (dot) dot.classList.add('off');
+    }
+    if (cord) {
+      cord.addEventListener('click', () => {
+        cord.classList.add('pulled');
+        if (dot) dot.classList.add('off');
+        localStorage.setItem('news-dismissed', '1');
+      });
+    }
+  })();
+</script>
+<script>
+  if (window.netlifyIdentity) {
+    window.netlifyIdentity.on("init", user => {
+      if (!user) {
+        window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; });
+      }
+    });
+  }
+</script>
+
+<script src="socials.js"></script>
+
+<script>
+// Dynamic CMS Video Loader
+async function loadCMSVideos() {
+  try {
+    const res = await fetch('/_data/content-index.json');
+    if (!res.ok) return;
+    const items = await res.json();
+    const videos = items.filter(i => i.type === 'Video');
+    if (!videos || videos.length === 0) return;
+
+    const list = document.getElementById('video-list');
+    if (!list) return;
+
+    // Clear hardcoded entries
+    list.innerHTML = '';
+
+    videos.forEach((item, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'video-item' + (idx === 0 ? ' active' : '');
+      btn.setAttribute('onclick', `loadVideo('${item.video || ''}', this)`);
+      btn.dataset.description = item.description || '';
+
+      const thumbHtml = item.thumbnail
+        ? `<img src="${item.thumbnail}" alt="${item.title}">`
+        : `<div class="video-thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`;
+
+      btn.innerHTML = `
+        <div class="video-thumb">
+          ${thumbHtml}
+        </div>
+        <div class="video-info">
+          <div class="video-item-type">${item.label || 'Video'}</div>
+          <div class="video-item-title">${item.title}</div>
+        </div>`;
+
+      list.appendChild(btn);
+    });
+
+    // Load first video
+    const first = list.querySelector('.video-item');
+    if (first) {
+      const src = first.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+      if (src) {
+        const video = document.getElementById('main-video');
+        video.src = src;
+        const title = first.querySelector('.video-item-title').textContent;
+        document.getElementById('now-playing').textContent = 'Now Playing: ' + title;
+      }
+    }
+
+    // Re-attach duration loader for new items
+    list.querySelectorAll('.video-item').forEach(btn => {
+      const src = btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+      if (!src) return;
+      const thumbEl = btn.querySelector('.video-thumb');
+      const tmp = document.createElement('video');
+      tmp.preload = 'metadata';
+      tmp.src = src;
+      tmp.addEventListener('loadedmetadata', () => {
+        const d = Math.round(tmp.duration);
+        const m = Math.floor(d / 60);
+        const s = String(d % 60).padStart(2, '0');
+        const dur = document.createElement('div');
+        dur.className = 'video-duration';
+        dur.textContent = `${m}:${s}`;
+        thumbEl.appendChild(dur);
+      });
+    });
+
+  } catch(e) {
+    // Silent fail — hardcoded entries stay
+  }
+}
+
+loadCMSVideos();
+</script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+collections:
+  - name: "announcements"
+    label: "Announcements"
+    folder: "_data/announcements"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Tag", name: "tag", widget: "string", default: "Update", hint: "e.g. Launch, Update, Chapter, Art" }
+      - { label: "Body", name: "body", widget: "markdown" }
+
+  - name: "chapters"
+    label: "Chapters"
+    folder: "_data/chapters"
+    create: true
+    slug: "chapter-{{fields.number}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Chapter Number", name: "number", widget: "number", value_type: "int" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Chapter Art", name: "art", widget: "image", required: false }
+      - { label: "Body", name: "body", widget: "markdown" }
+      - label: "Access Tier"
+        name: "tier"
+        widget: "select"
+        options:
+          - { label: "Free — visible to everyone", value: "free" }
+          - { label: "Devoted — $5 members", value: "devoted" }
+          - { label: "Bound — $12 members", value: "bound" }
+        default: "free"
+
+  - name: "gallery"
+    label: "Gallery"
+    folder: "_data/gallery"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Image", name: "image", widget: "image" }
+      - label: "Type"
+        name: "type"
+        widget: "select"
+        options:
+          - { label: "Chapter Art", value: "chapter" }
+          - { label: "Character Art", value: "character" }
+          - { label: "Illustration", value: "illustration" }
+          - { label: "Sketch / WIP", value: "sketch" }
+      - label: "Access Tier"
+        name: "tier"
+        widget: "select"
+        options:
+          - { label: "Free — visible to everyone", value: "free" }
+          - { label: "Devoted — $5 members", value: "devoted" }
+          - { label: "Bound — $12 members", value: "bound" }
+        default: "free"
+      - { label: "Part of a set? (give paired images the same name)", name: "set", widget: "string", required: false }
+      - { label: "Order in set", name: "set_order", widget: "number", required: false, default: 1 }
+
+  - name: "videos"
+    label: "Videos"
+    folder: "_data/videos"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Video File", name: "video", widget: "file" }
+      - { label: "Thumbnail (optional)", name: "thumbnail", widget: "image", required: false }
+      - { label: "Description / Credits", name: "description", widget: "markdown", required: false, hint: "Notes, credits, music attribution, collaborators, etc." }
+      - label: "Type"
+        name: "type"
+        widget: "select"
+        options:
+          - { label: "Animation", value: "animation" }
+          - { label: "Behind the Scenes", value: "behind" }
+          - { label: "Timelapse", value: "timelapse" }
+          - { label: "Blooper", value: "blooper" }
+      - label: "Access Tier"
+        name: "tier"
+        widget: "select"
+        options:
+          - { label: "Free — visible to everyone", value: "free" }
+          - { label: "Devoted — $5 members", value: "devoted" }
+          - { label: "Bound — $12 members", value: "bound" }
+        default: "devoted"
+
+  - name: "short_stories"
+    label: "Short Stories"
+    folder: "_data/short-stories"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Description", name: "description", widget: "string", hint: "One line teaser shown on content page" }
+      - { label: "Body", name: "body", widget: "markdown" }
+      - label: "Access Tier"
+        name: "tier"
+        widget: "select"
+        options:
+          - { label: "Free — visible to everyone", value: "free" }
+          - { label: "Devoted — $5 members", value: "devoted" }
+          - { label: "Bound — $12 members", value: "bound" }
+        default: "devoted"
+
+  - name: "wips"
+    label: "WIPs & Sketches"
+    folder: "_data/wips"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Image", name: "image", widget: "image" }
+      - { label: "Note (optional)", name: "note", widget: "string", required: false, hint: "Short caption or comment" }
+      - label: "Type"
+        name: "type"
+        widget: "select"
+        options:
+          - { label: "Sketch", value: "sketch" }
+          - { label: "WIP", value: "wip" }
+          - { label: "Timelapse Still", value: "timelapse" }
+      - label: "Access Tier"
+        name: "tier"
+        widget: "select"
+        options:
+          - { label: "Devoted — $5 members", value: "devoted" }
+          - { label: "Bound — $12 members", value: "bound" }
+        default: "bound"
+
+  - name: "socials"
+    label: "Social Links"
+    folder: "_data/socials"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Platform Name", name: "title", widget: "string", hint: "e.g. YouTube, Instagram, My App" }
+      - { label: "URL", name: "url", widget: "string" }
+      - label: "Icon"
+        name: "icon"
+        widget: "select"
+        options:
+          - { label: "YouTube", value: "youtube" }
+          - { label: "Discord", value: "discord" }
+          - { label: "X / Twitter", value: "x" }
+          - { label: "Instagram", value: "instagram" }
+          - { label: "TikTok", value: "tiktok" }
+          - { label: "Twitch", value: "twitch" }
+          - { label: "Patreon", value: "patreon" }
+          - { label: "AO3", value: "ao3" }
+          - { label: "Bluesky", value: "bluesky" }
+          - { label: "Threads", value: "threads" }
+          - { label: "Reddit", value: "reddit" }
+          - { label: "Facebook", value: "facebook" }
+          - { label: "Custom (upload below)", value: "custom" }
+        default: "youtube"
+      - { label: "Custom Icon (64x64 or 128x128 PNG)", name: "custom_icon", widget: "image", required: false, hint: "Only needed if you chose Custom above" }
+      - { label: "Hover Tooltip (optional)", name: "tooltip", widget: "string", required: false }
+      - { label: "Order (1 = top)", name: "order", widget: "number", default: 99 }
+      - { label: "Active", name: "active", widget: "boolean", default: true, hint: "Turn off to hide without deleting" }

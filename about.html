@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — Ludicrous Chronicles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+  <link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 5rem;
+    align-items: start;
+    margin-top: 4rem;
+  }
+
+  .about-portrait {
+    aspect-ratio: 3/4;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    max-width: 360px;
+  }
+
+  .about-portrait::before {
+    content: '';
+    position: absolute;
+    inset: 10px;
+    border: 1px solid var(--border);
+    pointer-events: none;
+  }
+
+  .about-portrait-placeholder {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 2rem;
+    text-transform: uppercase;
+    line-height: 2;
+  }
+
+  .about-text p {
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.9;
+  }
+
+  .about-text p strong {
+    color: var(--parchment);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  .craft-tags {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .craft-tag {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    border: 1px solid var(--border);
+    padding: 0.5em 1.2em;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .craft-tag:hover {
+    border-color: var(--gold-dim);
+    color: var(--gold);
+  }
+
+  .divider-line {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    margin: 5rem 0;
+  }
+
+  .influences-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 3rem;
+  }
+
+  .influence-card {
+    background: var(--surface);
+    padding: 2rem;
+    transition: background 0.2s;
+  }
+
+  .influence-card:hover { background: var(--mid); }
+
+  .influence-era {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 0.75rem;
+  }
+
+  .influence-card h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    color: var(--parchment);
+    margin-bottom: 0.5rem;
+  }
+
+  .influence-card p {
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 2rem;
+  }
+
+  .team-card {
+    background: var(--surface);
+    padding: 2rem;
+    transition: background 0.2s;
+  }
+
+  .team-card:hover { background: var(--mid); }
+
+  .team-role {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 0.5rem;
+  }
+
+  .team-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--parchment);
+    margin-bottom: 0.75rem;
+  }
+
+  .team-desc {
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .easter-egg {
+    color: #b8956a;
+    cursor: help;
+    position: relative;
+    display: inline;
+  }
+
+  .easter-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2a1f14;
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 10px;
+    padding: 8px;
+    width: 160px;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  .easter-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 7px solid transparent;
+    border-top-color: #2a1f14;
+  }
+
+  .easter-tooltip img {
+    width: 100%;
+    border-radius: 6px;
+    display: block;
+  }
+
+  .easter-egg:hover .easter-tooltip {
+    display: block;
+    animation: tooltipPop 0.15s ease;
+  }
+
+  @keyframes tooltipPop {
+    from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+</style>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">Ludicrous Chronicles</a>
+  <ul class="nav-links">
+    <li><a href="about.html" class="active">About</a></li>
+    <li><a href="content.html">Content</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="videos.html">Videos</a></li>
+    <li class="nav-news-item">
+      <a href="news.html">News<span class="nav-news-dot" id="news-dot"></span></a>
+      <div class="nav-cord-wrap" id="cord-wrap" title="Pull to dismiss">
+        <img src="images/cord.png" alt="pull cord" class="nav-cord-img" />
+        <div class="nav-cord-glow"></div>
+      </div>
+    </li>
+    <li><a href="membership.html">Membership</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li><a href="merch.html">Merch</a></li>
+  </ul>
+</nav>
+
+<div class="page-header">
+  <div class="section-label fade-up fade-up-1">The Chronicler</div>
+  <h1 class="section-title fade-up fade-up-2">Ludicrous Chronicles</h1>
+  <p class="section-body fade-up fade-up-3">Writer, voice actor, illustrator — all one woman. The other hand: her faithful companion, Pineapple Taco, who choreographs (nearly all) the animation.</p>
+</div>
+
+<section>
+  <div class="section-inner">
+    <div class="about-grid">
+      <div class="about-portrait fade-up fade-up-1">
+        <img src="images/portrait.png" alt="Mistress Spite" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="about-portrait-placeholder" style="display:none;">Your portrait<br>or character art<br>goes here</div>
+      </div>
+      <div class="about-text fade-up fade-up-2">
+        <p><span style="font-family:'Cinzel',serif;color:#8a6e2f;font-weight:800;font-style:normal;">Mistress Spite</span> — a writer, voice actor, and illustrator. I'm an enigma, if you will.
+<p><span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#c9a84c;display:block;margin-bottom:0.5rem;">"Be well aware... The trek I take is none for the weak, for I reside in the land of the free — follow my project at your own peril."</span> </p>
+        <p><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#8a6e2f;display:block;margin-bottom:0.5rem;">The Work</span>The project is a <strong>mixed-genre illustrated audiobook</strong>: a single ongoing story, written as often as I can manage, drawn chapter by chapter, and narrated by.. me, <span style="font-family:'Cinzel',serif;color:#c9a84c;font-style:normal;">Mistress Spite</span>! Every chapter contains a drawing — Lest I'm dead. But then you don't get more writing either, so let's hope for the best.</p>
+        <p><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#8a6e2f;display:block;margin-bottom:0.5rem;">The World</span>The story is set in the <strong>1920's</strong> with a shadow of <strong>Victorian architecture</strong>. Gas lamps flicker over cobblestones and jazz plays somewhere in a cozy establishment. Strange things are common here. Perfectly normal, frankly.</p>
+        <p><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#8a6e2f;display:block;margin-bottom:0.5rem;">The Reality</span>A YouTube channel, a membership, and an ongoing project <span class="easter-egg">I genuinely can't stop working on<span class="easter-tooltip"><img src="images/help-me.gif" alt="help me" /></span></span>.</p>
+        <div class="craft-tags">
+          <span class="craft-tag">Writing</span>
+          <span class="craft-tag">Voice Acting</span>
+          <span class="craft-tag">Illustration</span>
+          <span class="craft-tag">Audiobook</span>
+          <span class="craft-tag">YouTube</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider-line"></div>
+
+    <div class="section-label">Influences</div>
+    <h2 class="section-title">The World Behind the World</h2>
+    <p class="section-body">What shapes the Chronicles.</p>
+
+    <div class="influences-grid">
+      <div class="influence-card">
+        <div class="influence-era">1880s – 1900s</div>
+        <h3>Victorian Gothic</h3>
+        <p>The architecture is still soundly Victorian due to my incredibly wonderful tastes. If that's what you're looking for, you've come to the right place.</p>
+      </div>
+      <div class="influence-card">
+        <div class="influence-era">1920s</div>
+        <h3>Jazz Age Flair</h3>
+        <p>Somewhere in New England — Connecticut I'd say — a town in the roaring twenties is carrying a secret. One Zane Wolfgang has been looking for, and has thus far been denied.</p>
+      </div>
+      <div class="influence-card">
+        <div class="influence-era">Craft</div>
+        <h3>Voice & Character</h3>
+        <p>Every character voiced — the majority by yours truly, the remainder handled by AI due to the lack of compensation. Casting calls forthcoming, presumably.</p>
+      </div>
+      <div class="influence-card">
+        <div class="influence-era">Vision</div>
+        <h3>Image & Word Together</h3>
+        <p>Art produced entirely through spontaneous decisions, excruciating revision, and a frankly unreasonable amount of winging it between a week and months. Somehow comprehensible. Astounding, isn't it?</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Socials Sidebar -->
+<div class="socials-trigger" id="socials-trigger">
+  <div class="socials-panel" id="socials-panel">
+    <div class="socials-title">Find Me</div>
+    <a class="socials-link" href="https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+      YouTube
+    </a>
+    <a class="socials-link" href="https://discord.gg/gBeqSG8mD" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>
+      Discord
+    </a>
+    <a class="socials-link" href="https://x.com/spite_mstrs" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>
+      X / Twitter
+    </a>
+    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank" title="Note: This work is for authorized viewers only. However, it's available on this site to read for free">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>
+      AO3
+    </a>
+  </div>
+  <div class="socials-arrow" id="socials-arrow">
+    <svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg>
+  </div>
+</div>
+<script>
+  const trigger = document.getElementById('socials-trigger');
+  const panel = document.getElementById('socials-panel');
+  document.getElementById('socials-arrow').addEventListener('click', () => {
+    trigger.classList.toggle('open');
+    panel.classList.toggle('open');
+  });
+</script>
+
+<footer>
+  <span class="footer-brand">Ludicrous Chronicles</span>
+  <p class="footer-copy">© 2026 Ludicrous Chronicles. All rights reserved.</p>
+  <p class="footer-copy" style="margin-top:0.4rem;">Story, Art &amp; Voice by Mistress Spite &nbsp;·&nbsp; Animation by Pineapple Taco</p>
+</footer>
+
+<script>
+  if (window.netlifyIdentity) {
+    window.netlifyIdentity.on("init", user => {
+      if (!user) {
+        window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; });
+      }
+    });
+  }
+</script>
+<script>
+  (function() {
+    const cord = document.getElementById('cord-wrap');
+    const dot = document.getElementById('news-dot');
+    const dismissed = localStorage.getItem('news-dismissed');
+    if (dismissed) {
+      if (cord) cord.classList.add('pulled');
+      if (dot) dot.classList.add('off');
+    }
+    if (cord) {
+      cord.addEventListener('click', () => {
+        cord.classList.add('pulled');
+        if (dot) dot.classList.add('off');
+        localStorage.setItem('news-dismissed', '1');
+      });
+    }
+  })();
+</script>
+<script src="socials.js"></script>
+</body>
+</html>

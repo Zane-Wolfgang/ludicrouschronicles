@@ -1,0 +1,409 @@
+/* Force fonts to swap in instantly */
+* { -webkit-font-smoothing: antialiased; }
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --ink: #0a0806;
+  --parchment: #f5f0e8;
+  --gold: #c9a84c;
+  --gold-dim: #8a6e2f;
+  --gold-bright: #e8c96a;
+  --deep: #0a0806;
+  --mid: #1c1a14;
+  --surface: #17150f;
+  --text-body: #ccc5b0;
+  --text-muted: #7a7260;
+  --border: rgba(201,168,76,0.18);
+  --border-bright: rgba(201,168,76,0.45);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--deep);
+  color: var(--text-body);
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.75;
+  overflow-x: hidden;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 3rem;
+  height: 64px;
+  background: rgba(10,8,6,0.95);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(6px);
+}
+
+.nav-brand {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 15px;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+  list-style: none;
+}
+
+.nav-links a {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover,
+.nav-links a.active { color: var(--gold); }
+
+/* ── BUTTONS ── */
+.btn-primary {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--gold);
+  border: none;
+  padding: 0.9em 2.8em;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary:hover {
+  background: var(--gold-bright);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: transparent;
+  border: 1px solid var(--border-bright);
+  padding: 0.9em 2.8em;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, transform 0.15s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-ghost:hover {
+  border-color: var(--gold);
+  transform: translateY(-1px);
+}
+
+/* ── SHARED SECTION STYLES ── */
+section {
+  position: relative;
+  padding: 6rem 2rem;
+}
+
+.section-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  max-width: 80px;
+}
+
+.section-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 600;
+  color: var(--parchment);
+  margin-bottom: 1rem;
+}
+
+.section-body {
+  font-style: italic;
+  color: var(--text-muted);
+  max-width: 600px;
+  font-size: 1.05rem;
+}
+
+/* ── PAGE HEADER (non-hero pages) ── */
+.page-header {
+  padding: 10rem 2rem 5rem;
+  text-align: center;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(201,168,76,0.07) 0%, transparent 70%),
+    var(--deep);
+  border-bottom: 1px solid var(--border);
+}
+
+.page-header .section-label {
+  justify-content: center;
+}
+.page-header .section-label::after { display: none; }
+
+.page-header .section-title {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+}
+
+.page-header .section-body {
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* ── FOOTER ── */
+footer {
+  padding: 3rem 2rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.footer-brand {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 13px;
+  color: var(--gold-dim);
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.footer-copy {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up { animation: fadeUp 0.8s ease both; }
+.fade-up-1 { animation-delay: 0.1s; }
+.fade-up-2 { animation-delay: 0.25s; }
+.fade-up-3 { animation-delay: 0.4s; }
+.fade-up-4 { animation-delay: 0.55s; }
+
+/* ── SOCIALS SIDEBAR ── */
+.socials-trigger {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+}
+
+.socials-panel {
+  position: fixed;
+  left: -180px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 180px;
+  background: rgba(10,8,6,0.96);
+  border: 1px solid var(--border);
+  border-left: none;
+  z-index: 299;
+  transition: left 0.3s ease;
+  padding: 1.5rem 1rem;
+}
+
+.socials-panel.open { left: 0; }
+
+.socials-arrow {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 56px;
+  background: rgba(10,8,6,0.85);
+  border: 1px solid var(--border-bright);
+  border-left: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, left 0.3s ease;
+  border-radius: 0 4px 4px 0;
+  z-index: 400;
+}
+
+.socials-arrow:hover { background: var(--mid); border-color: var(--gold); }
+
+.socials-arrow svg {
+  width: 12px;
+  height: 12px;
+  fill: var(--gold);
+  transition: transform 0.3s;
+}
+
+.socials-trigger.open .socials-arrow {
+  left: 180px;
+}
+
+.socials-trigger.open .socials-arrow svg {
+  transform: rotate(180deg);
+}
+
+.socials-title {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.socials-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+  transition: color 0.2s;
+}
+
+.socials-link:hover { color: var(--gold); }
+.socials-link:last-child { border-bottom: none; }
+
+.socials-icon {
+  width: 16px;
+  height: 16px;
+  fill: var(--gold-dim);
+  flex-shrink: 0;
+  transition: fill 0.2s;
+}
+
+.socials-link:hover .socials-icon { fill: var(--gold); }
+
+/* ── NEWS NAV PULSE ── */
+.nav-news-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--gold);
+  border-radius: 50%;
+  margin-left: 5px;
+  vertical-align: middle;
+  animation: newsPulse 1.8s ease-in-out infinite;
+  position: relative;
+  top: -1px;
+}
+
+@keyframes newsPulse {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(201,168,76,0.6); }
+  50% { opacity: 0.8; transform: scale(1.2); box-shadow: 0 0 0 4px rgba(201,168,76,0); }
+}
+/* ── LAMP CORD DISMISS ── */
+.nav-news-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nav-cord-wrap {
+  position: absolute;
+  top: 100%;
+  left: 75%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  z-index: 500;
+  transform-origin: top center;
+  animation: cordSway 6s ease-in-out infinite;
+}
+
+.nav-cord-wrap:hover { animation-play-state: paused; }
+
+@keyframes cordSway {
+  0%   { transform: rotate(0deg); }
+  20%  { transform: rotate(0deg); }
+  30%  { transform: rotate(4deg); }
+  40%  { transform: rotate(-3deg); }
+  50%  { transform: rotate(2deg); }
+  60%  { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.nav-cord-img {
+  width: 18px;
+  height: 52px;
+  object-fit: contain;
+  display: block;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.15s ease;
+}
+
+.nav-cord-wrap:active .nav-cord-img {
+  transform: translateY(5px);
+}
+
+/* Gold shimmer layer over cord — pulses with the dot */
+.nav-cord-glow {
+  position: absolute;
+  inset: 0;
+  background: rgba(201,168,76,0.45);
+  mix-blend-mode: screen;
+  border-radius: 3px;
+  animation: cordGlow 1.8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes cordGlow {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 0.15; }
+}
+
+/* Pulled state */
+.nav-cord-wrap.pulled { animation: none; }
+.nav-cord-wrap.pulled .nav-cord-glow { display: none; }
+.nav-cord-wrap.pulled .nav-cord-img { filter: brightness(0.35); }
+.nav-news-dot.off { display: none; }

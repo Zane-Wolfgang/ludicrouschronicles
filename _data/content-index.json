@@ -1,0 +1,41 @@
+[
+  {
+    "title": "The Beginning",
+    "number": "1",
+    "date": "2026-03-01T00:00:00.000Z",
+    "art": "/images/art-04-train.png",
+    "tier": "free",
+    "filename": "chapter-1.md",
+    "type": "Story",
+    "label": "Chapter Art",
+    "filter_type": "story",
+    "href": "chapter-1.html",
+    "thumbnail": "/images/art-04-train.png"
+  },
+  {
+    "title": "Boo.",
+    "date": "2026-03-01T00:00:00.000Z",
+    "video": "/images/video-pants.mp4",
+    "type": "Video",
+    "tier": "free",
+    "description": "",
+    "filename": "boo.md",
+    "label": "Video",
+    "filter_type": "video",
+    "href": "videos.html",
+    "thumbnail": ""
+  },
+  {
+    "title": "I Am the Victor",
+    "date": "2026-03-01T00:00:00.000Z",
+    "video": "/images/video-victor.mp4",
+    "type": "Video",
+    "tier": "free",
+    "description": "",
+    "filename": "i-am-the-victor.md",
+    "label": "Video",
+    "filter_type": "video",
+    "href": "videos.html",
+    "thumbnail": ""
+  }
+]

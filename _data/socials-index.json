@@ -1,0 +1,35 @@
+[
+  {
+    "title": "YouTube",
+    "url": "https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw",
+    "icon": "youtube",
+    "order": "1",
+    "active": "true",
+    "filename": "youtube.md"
+  },
+  {
+    "title": "Discord",
+    "url": "https://discord.gg/gBeqSG8mD",
+    "icon": "discord",
+    "order": "2",
+    "active": "true",
+    "filename": "discord.md"
+  },
+  {
+    "title": "X / Twitter",
+    "url": "https://x.com/spite_mstrs",
+    "icon": "x",
+    "order": "3",
+    "active": "true",
+    "filename": "x.md"
+  },
+  {
+    "title": "AO3",
+    "url": "https://archiveofourown.org/works/71042381",
+    "icon": "ao3",
+    "tooltip": "Note: This work is for authorized viewers only. However, it's available on this site to read for free",
+    "order": "4",
+    "active": "true",
+    "filename": "ao3.md"
+  }
+]
