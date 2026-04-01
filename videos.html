@@ -592,17 +592,19 @@
   }
 </script>
 
+<script src="auth.js"></script>
 <script src="socials.js"></script>
 
 <script>
-// Dynamic CMS Video Loader with tier checking and descriptions
-const userTier = 'free'; // Will be replaced by real auth when Stripe+Identity wired
-const tierRank = { free: 0, devoted: 1, bound: 2 };
-
+// Dynamic CMS Video Loader with real tier checking
 async function loadCMSVideos() {
   const list = document.getElementById('video-list');
   if (!list) return;
   list.innerHTML = '';
+
+  // Get real user tier from Netlify Identity
+  const userTier = window.getUserTier ? await window.getUserTier() : 'free';
+  const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
 
   try {
     const res = await fetch('/_data/content-index.json');
@@ -612,7 +614,7 @@ async function loadCMSVideos() {
     if (!videos || videos.length === 0) throw new Error();
 
     videos.forEach((item, idx) => {
-      const isLocked = tierRank[item.tier || 'free'] > tierRank[userTier];
+      const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
       const btn = document.createElement('button');
       btn.className = 'video-item' + (idx === 0 && !isLocked ? ' active' : '');
 
