@@ -6,13 +6,38 @@ function parseFrontmatter(fileContent) {
   const match = fileContent.match(/^---\n([\s\S]*?)\n---([\s\S]*)$/);
   if (!match) return {};
   const fm = {};
-  match[1].split('\n').forEach(line => {
-    const [key, ...rest] = line.split(':');
-    if (key && rest.length) {
-      fm[key.trim()] = rest.join(':').trim().replace(/^["']|["']$/g, '');
+  const lines = match[1].split('\n');
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    const colonIdx = line.indexOf(':');
+    if (colonIdx === -1) { i++; continue; }
+    const key = line.slice(0, colonIdx).trim();
+    const val = line.slice(colonIdx + 1).trim();
+    if (val === '>-' || val === '>') {
+      // YAML block scalar — collect indented lines
+      let block = [];
+      i++;
+      while (i < lines.length && (lines[i].startsWith('  ') || lines[i] === '')) {
+        block.push(lines[i].trim());
+        i++;
+      }
+      fm[key] = block.join(' ').trim();
+    } else if (val === '|' || val === '|-') {
+      // Literal block scalar
+      let block = [];
+      i++;
+      while (i < lines.length && (lines[i].startsWith('  ') || lines[i] === '')) {
+        block.push(lines[i].slice(2));
+        i++;
+      }
+      fm[key] = block.join('\n').trim();
+    } else {
+      fm[key] = val.replace(/^["']|["']$/g, '');
+      i++;
     }
-  });
-  // Capture body content below the frontmatter
+  }
+  // Body content below frontmatter
   const body = match[2] ? match[2].trim() : '';
   if (body) fm.body = body;
   return fm;
@@ -205,3 +230,4 @@ async function compressImages() {
 }
 
 compressImages().catch(console.error);
+
