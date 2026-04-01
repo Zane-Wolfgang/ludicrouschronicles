@@ -42,7 +42,7 @@ const chapters = readDataDir('_data/chapters').map(c => ({
   type: 'Story',
   label: 'Chapter Art',
   filter_type: 'story',
-  href: c.number == 1 ? 'chapter-1.html' : `chapter-${c.number}.html`,
+  href: c.number == 1 ? 'chapter-1.html' : `chapter.html?chapter=${c.number}`,
   thumbnail: c.art || ''
 }));
 
@@ -154,3 +154,4 @@ if (contentHtml.includes('<!-- CMS-START -->') && contentHtml.includes('<!-- CMS
 
 fs2.writeFileSync('content.html', updatedHtml);
 console.log(`Content cards injected: ${allContent.filter(i => !hardcodedTitles.includes(i.title)).length}`);
+;
