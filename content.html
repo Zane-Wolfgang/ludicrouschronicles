@@ -496,8 +496,11 @@ async function loadCMSContent() {
     const grid = document.querySelector('.content-grid');
     if (!grid) return;
 
+    const userTier = window.getUserTier ? await window.getUserTier() : 'free';
+    const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
+
     items.forEach(item => {
-      const isLocked = item.tier !== 'free';
+      const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
 
       // Videos always go to videos.html, locked ones go to membership
       let href = 'membership.html';
@@ -544,7 +547,7 @@ async function loadCMSContent() {
 
 loadCMSContent();
 </script>
+<script src="auth.js"></script>
 <script src="socials.js"></script>
 </body>
 </html>
-
