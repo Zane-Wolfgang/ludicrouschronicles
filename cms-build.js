@@ -158,3 +158,4 @@ if (contentHtml.includes('<!-- CMS-START -->') && contentHtml.includes('<!-- CMS
 
 fs2.writeFileSync('content.html', updatedHtml);
 console.log(`Content cards injected: ${allContent.filter(i => !hardcodedTitles.includes(i.title)).length}`);
+
