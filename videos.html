@@ -595,59 +595,72 @@
 <script src="socials.js"></script>
 
 <script>
-// Dynamic CMS Video Loader
+// Dynamic CMS Video Loader with tier checking and descriptions
+const userTier = 'free'; // Will be replaced by real auth when Stripe+Identity wired
+const tierRank = { free: 0, devoted: 1, bound: 2 };
+
 async function loadCMSVideos() {
+  const list = document.getElementById('video-list');
+  if (!list) return;
+  list.innerHTML = '';
+
   try {
     const res = await fetch('/_data/content-index.json');
-    if (!res.ok) return;
+    if (!res.ok) throw new Error();
     const items = await res.json();
     const videos = items.filter(i => i.type === 'Video');
-    if (!videos || videos.length === 0) return;
-
-    const list = document.getElementById('video-list');
-    if (!list) return;
-
-    // Clear hardcoded entries
-    list.innerHTML = '';
+    if (!videos || videos.length === 0) throw new Error();
 
     videos.forEach((item, idx) => {
+      const isLocked = tierRank[item.tier || 'free'] > tierRank[userTier];
       const btn = document.createElement('button');
-      btn.className = 'video-item' + (idx === 0 ? ' active' : '');
-      btn.setAttribute('onclick', `loadVideo('${item.video || ''}', this)`);
-      btn.dataset.description = item.description || '';
+      btn.className = 'video-item' + (idx === 0 && !isLocked ? ' active' : '');
+
+      if (isLocked) {
+        btn.setAttribute('onclick', "window.location.href='membership.html'");
+        btn.dataset.description = '';
+      } else {
+        btn.setAttribute('onclick', `loadVideo('${item.video || ''}', this)`);
+        btn.dataset.description = item.description || '';
+      }
 
       const thumbHtml = item.thumbnail
         ? `<img src="${item.thumbnail}" alt="${item.title}">`
         : `<div class="video-thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`;
 
+      const lockBadge = isLocked
+        ? `<div style="position:absolute;top:3px;right:4px;font-family:'Cinzel',serif;font-size:8px;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:1px 5px;border:1px solid var(--border);">${item.tier === 'devoted' ? '$5' : '$12'}</div>`
+        : '';
+
       btn.innerHTML = `
-        <div class="video-thumb">
+        <div class="video-thumb" style="position:relative;">
           ${thumbHtml}
+          ${lockBadge}
         </div>
         <div class="video-info">
           <div class="video-item-type">${item.label || 'Video'}</div>
-          <div class="video-item-title">${item.title}</div>
+          <div class="video-item-title">${item.title}${isLocked ? ' 🔒' : ''}</div>
         </div>`;
 
       list.appendChild(btn);
     });
 
-    // Load first video
-    const first = list.querySelector('.video-item');
-    if (first) {
-      const src = first.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+    // Auto-load first unlocked video
+    const firstUnlocked = list.querySelector('.video-item.active');
+    if (firstUnlocked) {
+      const src = firstUnlocked.getAttribute('onclick').match(/'([^']+)'/)?.[1];
       if (src) {
-        const video = document.getElementById('main-video');
-        video.src = src;
-        const title = first.querySelector('.video-item-title').textContent;
+        document.getElementById('main-video').src = src;
+        const title = firstUnlocked.querySelector('.video-item-title').textContent.replace(' 🔒','');
         document.getElementById('now-playing').textContent = 'Now Playing: ' + title;
       }
     }
 
-    // Re-attach duration loader for new items
+    // Duration loader for unlocked videos
     list.querySelectorAll('.video-item').forEach(btn => {
-      const src = btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
-      if (!src) return;
+      const onclick = btn.getAttribute('onclick') || '';
+      const src = onclick.match(/'([^']+)'/)?.[1];
+      if (!src || src.includes('membership')) return;
       const thumbEl = btn.querySelector('.video-thumb');
       const tmp = document.createElement('video');
       tmp.preload = 'metadata';
@@ -664,7 +677,7 @@ async function loadCMSVideos() {
     });
 
   } catch(e) {
-    // Silent fail — hardcoded entries stay
+    list.innerHTML = '<p style="padding:1rem;font-family:\'Cinzel\',serif;font-size:10px;color:var(--gold-dim);letter-spacing:0.2em;">No videos found.</p>';
   }
 }
 
