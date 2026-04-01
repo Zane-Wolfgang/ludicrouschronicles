@@ -171,7 +171,6 @@ console.log(`Content cards injected: ${allContent.filter(i => !hardcodedTitles.i
 // Compresses images in images/uploads/ to max 1200px wide
 // Originals are preserved, compressed versions overwrite for web serving
 const sharp = require('sharp');
-const path = require('path');
 
 async function compressImages() {
   const uploadsDir = 'images/uploads';
