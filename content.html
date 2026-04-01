@@ -499,7 +499,11 @@ async function loadCMSContent() {
     const userTier = window.getUserTier ? await window.getUserTier() : 'free';
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
 
+    // Get titles already hardcoded so we don't duplicate
+    const existingTitles = Array.from(document.querySelectorAll('.content-card .content-title')).map(el => el.textContent.trim());
+
     items.forEach(item => {
+      if (existingTitles.includes(item.title)) return;
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
 
       // Videos always go to videos.html, locked ones go to membership
