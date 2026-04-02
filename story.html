@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story — Ludicrous Chronicles</title>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<style>
+  .chapter-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 8rem 2rem 6rem;
+  }
+
+  .chapter-header {
+    text-align: center;
+    margin-bottom: 4rem;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .chapter-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .chapter-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+    text-shadow:
+      -1px -1px 0 #0a0600,
+       1px -1px 0 #0a0600,
+      -1px  1px 0 #0a0600,
+       1px  1px 0 #0a0600,
+      0 0 30px rgba(201,168,76,0.3);
+  }
+
+  .chapter-art {
+    width: 100%;
+    max-width: 680px;
+    margin: 2.5rem auto;
+    display: block;
+    border: 1px solid var(--border);
+    box-shadow: 0 0 40px rgba(0,0,0,0.6);
+  }
+
+  .chapter-divider {
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    margin: 3rem auto;
+  }
+
+  /* ── Body text ── */
+  .chapter-body {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 1.22rem;
+    line-height: 2;
+    color: #c9a84c;
+    font-style: normal;
+  }
+
+  .chapter-body p {
+    margin-bottom: 1.6em;
+    text-indent: 2.5em;
+  }
+
+  .chapter-body p.dropcap {
+    text-indent: 0;
+  }
+
+  /* Italics — lighter gold */
+  .chapter-body em,
+  .chapter-body i {
+    font-style: italic;
+    color: #e0bc6a;
+    font-weight: 400;
+  }
+
+  /* Bold — slightly brighter gold */
+  .chapter-body strong,
+  .chapter-body b {
+    font-weight: 600;
+    color: #e0bc6a;
+    font-style: normal;
+  }
+
+  /* Bold italic */
+  .chapter-body strong em,
+  .chapter-body em strong,
+  .chapter-body b i,
+  .chapter-body i b {
+    font-style: italic;
+    font-weight: 600;
+    color: #e8c87a;
+  }
+
+  /* Drop cap */
+  .chapter-body p.dropcap::first-letter {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 4rem;
+    float: left;
+    line-height: 0.8;
+    margin-right: 0.1em;
+    margin-top: 0.1em;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(201,168,76,0.4);
+  }
+
+  /* Dramatic short paragraphs */
+  .chapter-body p.beat {
+    text-indent: 0;
+    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .chapter-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 3rem;
+    border-top: 1px solid var(--border);
+    margin-top: 4rem;
+  }
+
+  .chapter-nav a {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .chapter-nav a:hover { color: var(--gold); }
+
+  #chapter-loading {
+    text-align: center;
+    padding: 6rem 0;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">Ludicrous Chronicles</a>
+  <ul class="nav-links">
+    <li><a href="about.html">About</a></li>
+    <li><a href="content.html" class="active">Content</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="videos.html">Videos</a></li>
+    <li class="nav-news-item">
+      <a href="news.html">News<span class="nav-news-dot" id="news-dot"></span></a>
+      <div class="nav-cord-wrap" id="cord-wrap" title="Pull to dismiss">
+        <img src="images/cord.png" alt="pull cord" class="nav-cord-img" />
+        <div class="nav-cord-glow"></div>
+      </div>
+    </li>
+    <li><a href="membership.html">Membership</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li><a href="merch.html">Merch</a></li>
+  </ul>
+</nav>
+
+<div class="chapter-wrap">
+  <div id="chapter-loading">Loading chapter...</div>
+  <div id="chapter-content" style="display:none;">
+
+    <div class="chapter-header">
+      <span class="chapter-label" id="ch-label">Ghost in Me — by Mistress Spite</span>
+      <h1 class="chapter-title" id="ch-title"></h1>
+    </div>
+
+    <img class="chapter-art" id="ch-art" src="" alt="Chapter Art" style="display:none;" />
+
+    <div class="chapter-divider"></div>
+
+    <div class="chapter-body" id="ch-body"></div>
+
+    <div class="chapter-divider"></div>
+
+    <div class="chapter-nav">
+      <a href="content.html">← Back to Content</a>
+      <span id="ch-end" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);"></span>
+      <a href="content.html">Back to Content ←</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- Socials Sidebar -->
+<div class="socials-trigger" id="socials-trigger">
+  <div class="socials-panel" id="socials-panel">
+    <div class="socials-title">Find Me</div>
+    <a class="socials-link" href="https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+      YouTube
+    </a>
+    <a class="socials-link" href="https://discord.gg/gBeqSG8mD" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>
+      Discord
+    </a>
+    <a class="socials-link" href="https://x.com/spite_mstrs" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>
+      X / Twitter
+    </a>
+    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank" title="Note: This work is for authorized viewers only. However, it's available on this site to read for free">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>
+      AO3
+    </a>
+  </div>
+  <div class="socials-arrow" id="socials-arrow">
+    <svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg>
+  </div>
+</div>
+
+<footer>
+  <span class="footer-brand">Ludicrous Chronicles</span>
+  <p class="footer-copy">© 2026 Ludicrous Chronicles. All rights reserved.</p>
+  <p class="footer-copy" style="margin-top:0.4rem;">Story, Art &amp; Voice by Mistress Spite &nbsp;·&nbsp; Animation by Pineapple Taco</p>
+</footer>
+
+<script>
+// Load chapter from URL parameter ?chapter=2 or ?chapter=the-beginning
+async function loadChapter() {
+  const params = new URLSearchParams(window.location.search);
+  const num = params.get('chapter');
+  if (!num) { window.location.href = 'content.html'; return; }
+
+  try {
+    const res = await fetch('/_data/content-index.json');
+    const items = await res.json();
+    const chapter = items.find(i =>
+      i.number == num ||
+      (i.filename && i.filename.includes('chapter-' + num))
+    );
+
+    if (!chapter) { window.location.href = 'content.html'; return; }
+
+    // Set title
+    document.title = `Chapter ${chapter.number} — ${chapter.title} — Ludicrous Chronicles`;
+    document.getElementById('ch-title').textContent = `Chapter ${chapter.number}`;
+    document.getElementById('ch-label').textContent = `Ghost in Me — by Mistress Spite`;
+    document.getElementById('ch-end').textContent = `End of Chapter ${chapter.number}`;
+
+    // Set art
+    if (chapter.art || chapter.thumbnail) {
+      const art = document.getElementById('ch-art');
+      art.src = chapter.art || chapter.thumbnail;
+      art.style.display = 'block';
+      art.alt = chapter.title;
+    }
+
+    // Render body — markdown to HTML
+    const body = chapter.body || '';
+    const html = markdownToHtml(body);
+    const bodyEl = document.getElementById('ch-body');
+    bodyEl.innerHTML = html;
+
+    // Apply drop cap to first paragraph
+    const firstP = bodyEl.querySelector('p');
+    if (firstP) firstP.classList.add('dropcap');
+
+    // Apply beat class to short dramatic paragraphs
+    bodyEl.querySelectorAll('p').forEach(p => {
+      if (p.textContent.trim().length < 60 && !p.classList.contains('dropcap')) {
+        p.classList.add('beat');
+      }
+    });
+
+    // Next chapter link
+    const nextChapter = items.find(i => i.number == (parseInt(chapter.number) + 1));
+    if (nextChapter) {
+      const nextLink = document.getElementById('ch-next');
+      nextLink.textContent = `Chapter ${nextChapter.number} →`;
+      nextLink.href = `chapter.html?chapter=${nextChapter.number}`;
+    }
+
+    document.getElementById('chapter-loading').style.display = 'none';
+    document.getElementById('chapter-content').style.display = 'block';
+
+  } catch(e) {
+    document.getElementById('chapter-loading').textContent = 'Chapter not found.';
+  }
+}
+
+// Simple markdown + HTML renderer
+function markdownToHtml(md) {
+  if (!md) return '';
+
+  // If CMS already converted to HTML (contains tags), use it directly
+  // but wrap bare text blocks in paragraphs
+  if (md.includes('<p>') || md.includes('<em>') || md.includes('<strong>')) {
+    // Already HTML from CMS rich text editor — use as-is
+    return md;
+  }
+
+  // Raw markdown — convert ourselves
+  let html = md
+    // Bold italic first
+    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    // Bold
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Italic
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Italic underscore
+    .replace(/_(.*?)_/g, '<em>$1</em>');
+
+  // Wrap in paragraphs
+  const paragraphs = html.split(/\n\n+/);
+  return paragraphs
+    .map(p => p.trim())
+    .filter(p => p.length > 0)
+    .map(p => `<p>${p.replace(/\n/g, ' ')}</p>`)
+    .join('\n');
+}
+
+loadChapter();
+</script>
+
+<script src="auth.js"></script>
+<script src="socials.js"></script>
+<script>
+  const trigger = document.getElementById('socials-trigger');
+  const panel = document.getElementById('socials-panel');
+  document.getElementById('socials-arrow').addEventListener('click', () => {
+    trigger.classList.toggle('open');
+    panel.classList.toggle('open');
+  });
+</script>
+<script>
+  (function() {
+    const cord = document.getElementById('cord-wrap');
+    const dot = document.getElementById('news-dot');
+    const dismissed = localStorage.getItem('news-dismissed');
+    if (dismissed) {
+      if (cord) cord.classList.add('pulled');
+      if (dot) dot.classList.add('off');
+    }
+    if (cord) {
+      cord.addEventListener('click', () => {
+        cord.classList.add('pulled');
+        if (dot) dot.classList.add('off');
+        localStorage.setItem('news-dismissed', '1');
+      });
+    }
+  })();
+</script>
+<script>
+  if (window.netlifyIdentity) {
+    window.netlifyIdentity.on("init", user => {
+      if (!user) {
+        window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; });
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
