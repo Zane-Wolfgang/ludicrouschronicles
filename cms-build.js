@@ -119,6 +119,20 @@ console.log(`Content: ${contentIndex.length} items`);
 
 console.log('Build complete!');
 
+// Generate short stories index (reuse existing shortStories variable)
+const shortStoriesIndexed = shortStories.map(s => ({
+  ...s,
+  slug: s.filename ? s.filename.replace('.md','') : s.title.toLowerCase().replace(/\s+/g,'-'),
+  type: 'Story',
+  label: 'Short Story',
+  filter_type: 'story',
+  href: `story.html?story=${s.filename ? s.filename.replace('.md','') : s.title.toLowerCase().replace(/\s+/g,'-')}`,
+  thumbnail: s.art || s.thumbnail || '',
+  description: s.description || ''
+}));
+fs.writeFileSync('_data/short-stories-index.json', JSON.stringify(shortStoriesIndexed, null, 2));
+console.log(`Short Stories: ${shortStoriesIndexed.length} items`);
+
 // Generate socials index
 const socials = readDataDir('_data/socials')
   .filter(s => s.active !== false && s.active !== 'false')
@@ -230,4 +244,3 @@ async function compressImages() {
 }
 
 compressImages().catch(console.error);
-
