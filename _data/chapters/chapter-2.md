@@ -1,7 +1,7 @@
 ---
 title: The Meeting
 number: 2
-date: 2026-04-01T20:35:49.639Z
+date: 2025-08-01T17:35:00.000-06:00
 art: /images/uploads/secondchapter.png
 tier: free
 ---
