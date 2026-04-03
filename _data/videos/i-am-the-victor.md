@@ -1,6 +1,6 @@
 ---
 title: I Am the Victor
-date: 2026-03-01T00:00:00.000Z
+date: 2025-12-31T22:43:00.000-07:00
 video: /images/uploads/video-victor.mp4
 description: >-
   S﻿illy little idea I gave to my friend. Normally it *wouldn't* happen in
