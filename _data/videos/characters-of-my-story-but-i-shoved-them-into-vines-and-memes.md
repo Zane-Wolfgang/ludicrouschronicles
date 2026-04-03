@@ -2,7 +2,7 @@
 title: Characters of my story but I shoved them into vines (and memes)
 date: 2026-03-13T23:25:00.000-04:00
 video: https://f005.backblazeb2.com/file/Moi-Videos-Oui/Memes2.mov
-thumbnail: ""
+thumbnail: /images/uploads/i_smell_desperation_vasily.png
 description: >-
   N﻿Nyyees.
 
