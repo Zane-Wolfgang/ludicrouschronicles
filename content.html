@@ -229,9 +229,9 @@
           <div class="content-free-badge">Free</div>
         </div>
         <div class="content-info">
-          <div class="content-type">Ghost In Me Book</div>
+          <div class="content-type">Story</div>
           <div class="content-title">Chapter I — The Beginning</div>
-          <div class="content-desc">The first chapter, free to all readers!</div>
+          <div class="content-desc">The opening passage. Free to all readers.</div>
         </div>
       </a>
 
@@ -262,6 +262,21 @@
         <div class="content-info">
           <div class="content-type">Art · Patron</div>
           <div class="content-title">Don't You Miss Your Legs?</div>
+          <div class="content-desc">Members only.</div>
+        </div>
+      </a>
+
+      <a href="membership.html" class="content-card" data-type="story">
+        <div class="content-thumb blurred" style="--preview-img: url('images/art-blue-threads.png')">
+          <div class="blur-overlay"></div>
+          <span class="content-thumb-label">Story Preview</span>
+          <div class="content-lock">
+            <svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg>
+          </div>
+        </div>
+        <div class="content-info">
+          <div class="content-type">Story · Patron</div>
+          <div class="content-title">Blue Threads</div>
           <div class="content-desc">Members only.</div>
         </div>
       </a>
@@ -511,9 +526,10 @@ async function loadCMSContent() {
       const lockIcon = isLocked
         ? `<div class="content-lock"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>`
         : '';
+      const typeDisplay = item.type === 'Chapter' ? 'Ghost in Me' : item.type;
       const tierLabel = isLocked
-        ? `${item.type} · ${item.tier === 'devoted' ? 'Patron' : 'Bound'}`
-        : item.type;
+        ? `${typeDisplay} · ${item.tier === 'devoted' ? 'Patron' : 'Bound'}`
+        : typeDisplay;
 
       card.innerHTML = `
         <div class="content-thumb ${blurClass}" style="${thumbStyle}">
