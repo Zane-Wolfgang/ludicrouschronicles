@@ -455,7 +455,10 @@
     const desc = btn.dataset.description || '';
     const descEl = document.getElementById('video-description');
     if (desc && desc.trim()) {
-      descEl.innerHTML = desc;
+      // Convert markdown links [text](url) to clickable links
+      const descHtml = desc.replace(/\[([^\]]+)\]\(([^)]+)\)/g,
+        '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>');
+      descEl.innerHTML = descHtml;
       descEl.classList.add('visible');
     } else {
       descEl.innerHTML = '';
