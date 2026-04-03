@@ -398,6 +398,23 @@ async function loadAllContent() {
         }), item.title);
       });
 
+      // Always add Chapter I last (oldest) — hardcoded so it never disappears
+      const ch1Title = 'Chapter I — The Beginning';
+      if (!seen.has(ch1Title)) {
+        add(makeCard({
+          href: 'chapter-1.html',
+          img: 'images/art-04-train.png',
+          title: ch1Title,
+          typeLabel: 'Ghost in Me Book',
+          typeDisplay: 'Ghost in Me Book',
+          isLocked: false,
+          filterType: 'story'
+        }), ch1Title);
+        // Also block CMS version from duplicating
+        seen.add('The Beginning');
+        seen.add('Chapter I — The Beginning');
+      }
+
       // Videos newest first
       const videos = items.filter(i => i.type === 'Video')
         .sort((a,b) => new Date(b.date) - new Date(a.date));
