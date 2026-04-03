@@ -45,7 +45,10 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Image", name: "image", widget: "image" }
+      - { label: "Main Image", name: "image", widget: "image" }
+      - { label: "Page 2 (optional)", name: "image2", widget: "image", required: false, hint: "Second image in slideshow" }
+      - { label: "Page 3 (optional)", name: "image3", widget: "image", required: false, hint: "Third image in slideshow" }
+      - { label: "Page 4 (optional)", name: "image4", widget: "image", required: false, hint: "Fourth image in slideshow" }
       - label: "Type"
         name: "type"
         widget: "select"
@@ -62,8 +65,6 @@ collections:
           - { label: "Devoted — $5 members", value: "devoted" }
           - { label: "Bound — $12 members", value: "bound" }
         default: "free"
-      - { label: "Part of a set? (give paired images the same name)", name: "set", widget: "string", required: false }
-      - { label: "Order in set", name: "set_order", widget: "number", required: false, default: 1 }
 
   - name: "videos"
     label: "Videos"
