@@ -717,5 +717,22 @@ checkHardcodedLocks();
 </script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
+
+<script>
+// Open lightbox from URL hash (e.g. gallery.html#Nearly%20There)
+window.addEventListener('load', () => {
+  const hash = decodeURIComponent(window.location.hash.slice(1));
+  if (!hash) return;
+  // Find the gallery item with matching title
+  document.querySelectorAll('.gallery-item:not(.locked)').forEach(item => {
+    const title = item.querySelector('.gallery-overlay-title')?.textContent?.trim();
+    if (title === hash) {
+      const img = item.querySelector('img');
+      const type = item.querySelector('.gallery-overlay-type')?.textContent?.trim();
+      if (img) openLightbox(img.src, title, type || '');
+    }
+  });
+});
+</script>
 </body>
 </html>
