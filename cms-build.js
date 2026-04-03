@@ -75,8 +75,8 @@ console.log(`Announcements: ${announcements.length} items`);
 // Generate content index (chapters + videos + short stories + wips)
 const chapters = readDataDir('_data/chapters').map(c => ({
   ...c,
-  type: 'Story',
-  label: 'Chapter Art',
+  type: 'Chapter',
+  label: 'Ghost in Me',
   filter_type: 'story',
   href: c.number == 1 ? 'chapter-1.html' : `chapter.html?chapter=${c.number}`,
   thumbnail: c.art || '',
