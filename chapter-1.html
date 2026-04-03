@@ -727,6 +727,17 @@
   dismissBtn && dismissBtn.addEventListener('click', () => banner.classList.remove('visible'));
 
   bookmarkBtn && bookmarkBtn.addEventListener('click', () => {
+    // Toggle — if already saved, remove it
+    if (bookmarkBtn.classList.contains('saved')) {
+      localStorage.removeItem(chapterKey);
+      bookmarkBtn.classList.remove('saved');
+      bookmarkBtn.querySelector('path').setAttribute('fill', 'rgba(10,8,6,0.8)');
+      banner.classList.remove('visible');
+      bookmarkBtn.style.transform = 'translateY(2px)';
+      setTimeout(() => { bookmarkBtn.style.transform = ''; }, 300);
+      return;
+    }
+    // Save bookmark at current reading position
     const paras = document.querySelectorAll('.chapter-body p');
     let closest = null, closestDist = Infinity, closestIdx = 0;
     paras.forEach((p, i) => {
