@@ -334,7 +334,11 @@ function makeLock() {
 }
 
 function makeCard(href, img, title, typeLabel, typeDisplay, isLocked, filterType, isFree) {
-  const thumbStyle = img ? `background-image:url('${img}');background-size:cover;background-position:center;` : '';
+  // Blurred items use --preview-img CSS variable for the blur effect
+  // Unblurred items use direct background-image
+  const thumbStyle = isLocked
+    ? (img ? `--preview-img: url('${img}')` : '')
+    : (img ? `background-image:url('${img}');background-size:cover;background-position:center;` : '');
   const blurClass = isLocked ? ' blurred' : '';
   const blurOverlay = isLocked ? '<div class="blur-overlay"></div>' : '';
   const lock = isLocked ? makeLock() : '';
@@ -447,7 +451,13 @@ async function loadAllContent() {
     ['images/art-13-rain.png', 'In the Rain', 'Character Art'],
   ];
   freeGallery.forEach(([img, title, type]) => {
-    add(makeCard('gallery.html', img, title, type, 'Art', false, 'art', false), title);
+    const card = makeCard('#', img, title, type, 'Art', false, 'art', false);
+    card.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Open gallery lightbox by navigating with hash
+      window.location.href = `gallery.html#${encodeURIComponent(title)}`;
+    });
+    add(card, title);
   });
 
   // ── 6. Hardcoded paid art last ──
