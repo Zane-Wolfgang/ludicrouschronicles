@@ -1,6 +1,6 @@
 ---
 title: Boo.
-date: 2026-03-01T00:00:00.000Z
+date: 2025-09-30T19:02:00.000-06:00
 video: /images/uploads/video-pants.mp4
 description: >-
   "﻿You can't hide" by CKC9\
