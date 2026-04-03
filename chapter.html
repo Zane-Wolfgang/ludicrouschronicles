@@ -562,8 +562,17 @@ loadChapter();
 
   // ── Bookmark icon — saves chapter position ──
   bookmarkBtn && bookmarkBtn.addEventListener('click', () => {
+    // Toggle — if already saved, remove it
+    if (bookmarkBtn.classList.contains('saved')) {
+      localStorage.removeItem(chapterKey);
+      bookmarkBtn.classList.remove('saved');
+      bookmarkBtn.querySelector('path').setAttribute('fill', 'rgba(10,8,6,0.8)');
+      banner.classList.remove('visible');
+      bookmarkBtn.style.transform = 'translateY(2px)';
+      setTimeout(() => { bookmarkBtn.style.transform = ''; }, 300);
+      return;
+    }
     const paras = document.querySelectorAll('.chapter-body p');
-    // Find the paragraph closest to middle of viewport
     let closest = null, closestDist = Infinity, closestIdx = 0;
     paras.forEach((p, i) => {
       const rect = p.getBoundingClientRect();
@@ -574,12 +583,8 @@ loadChapter();
     localStorage.setItem(chapterKey, JSON.stringify({ index: closestIdx, paragraphText: text }));
     bookmarkBtn.classList.add('saved');
     bookmarkBtn.querySelector('path').setAttribute('fill', 'var(--gold)');
-
-    // Brief confirmation flash
-    const orig = bookmarkBtn.style.opacity;
-    bookmarkBtn.style.opacity = '1';
     bookmarkBtn.style.transform = 'translateY(-4px) scale(1.1)';
-    setTimeout(() => {
+    setTimeout(() => { bookmarkBtn.style.transform = ''; }, 300);
       bookmarkBtn.style.transform = '';
     }, 300);
   });
