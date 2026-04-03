@@ -34,34 +34,34 @@ function canAccess(contentTier, userTier) {
   return tierRank[userTier || 'free'] >= tierRank[contentTier || 'free'];
 }
 
-// Add login/logout button to nav
+// Add subtle member login to footer only
 function addAuthButton() {
-  const nav = document.querySelector('.nav-links');
-  if (!nav || !window.netlifyIdentity) return;
+  if (!window.netlifyIdentity) return;
+  const footer = document.querySelector('footer');
+  if (!footer) return;
 
   const user = window.netlifyIdentity.currentUser();
-  const li = document.createElement('li');
+  const div = document.createElement('p');
+  div.style.cssText = 'margin-top:0.75rem;font-family:Cinzel,serif;font-size:8px;letter-spacing:0.2em;color:var(--text-muted);';
 
   if (user) {
     const tier = (user.app_metadata?.roles || [])[0] || 'free';
-    li.innerHTML = `<a href="#" id="auth-btn" style="font-size:9px;letter-spacing:0.15em;">
-      ${tier === 'free' ? '' : '★ '}${user.email.split('@')[0]} · Log out
+    div.innerHTML = `<a href="#" id="auth-btn" style="color:var(--gold-dim);text-decoration:none;">
+      ${tier !== 'free' ? '★ Member' : 'Logged in'} · <span style="text-decoration:underline;">Log out</span>
     </a>`;
-    li.querySelector('#auth-btn').addEventListener('click', (e) => {
+    div.querySelector('#auth-btn').addEventListener('click', (e) => {
       e.preventDefault();
       window.netlifyIdentity.logout();
     });
   } else {
-    li.innerHTML = `<a href="#" id="auth-btn" style="font-size:9px;letter-spacing:0.15em;">Log in</a>`;
-    li.querySelector('#auth-btn').addEventListener('click', (e) => {
+    div.innerHTML = `<a href="#" id="auth-btn" style="color:var(--gold-dim);text-decoration:none;opacity:0.5;">Member login</a>`;
+    div.querySelector('#auth-btn').addEventListener('click', (e) => {
       e.preventDefault();
       window.netlifyIdentity.open();
     });
   }
 
-  nav.appendChild(li);
-
-  // Refresh on login/logout
+  footer.appendChild(div);
   window.netlifyIdentity.on('login', () => location.reload());
   window.netlifyIdentity.on('logout', () => location.reload());
 }
