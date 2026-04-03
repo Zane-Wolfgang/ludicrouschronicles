@@ -487,9 +487,7 @@ async function loadCMSContent() {
     // Get titles already hardcoded so we don't duplicate
     const existingTitles = Array.from(document.querySelectorAll('.content-card .content-title')).map(el => el.textContent.trim());
 
-    // Sort newest first
-    items.sort((a, b) => new Date(b.date) - new Date(a.date));
-
+    // Chapters first by number, then rest newest first — already sorted by build script
     items.forEach(item => {
       if (existingTitles.includes(item.title)) return;
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
@@ -553,9 +551,7 @@ async function loadGalleryIntoContent() {
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
     const existingTitles = Array.from(document.querySelectorAll('.content-card .content-title')).map(el => el.textContent.trim());
 
-    // Sort newest first
-    items.sort((a, b) => new Date(b.date) - new Date(a.date));
-
+    // Chapters first by number, then rest newest first — already sorted by build script
     items.forEach(item => {
       if (existingTitles.includes(item.title)) return;
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
