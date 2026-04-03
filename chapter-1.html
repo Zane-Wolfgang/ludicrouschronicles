@@ -232,6 +232,14 @@
     transition: background 0.15s, color 0.15s;
   }
   .bookmark-context-item:hover { background: var(--mid); color: var(--gold); }
+
+  /* Copy protection */
+  .chapter-body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
 </style>
 </head>
 <body>
@@ -688,6 +696,27 @@
 </script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
+
+
+<script>
+// Copy protection — preserves bookmark right-click
+document.addEventListener('keydown', (e) => {
+  // Block Ctrl+C, Ctrl+A, Ctrl+X
+  if (e.ctrlKey && ['c','a','x','u'].includes(e.key.toLowerCase())) {
+    const sel = window.getSelection();
+    // Only block if selection is inside chapter body
+    if (sel && sel.anchorNode && sel.anchorNode.closest && 
+        sel.anchorNode.closest && document.querySelector('.chapter-body') &&
+        document.querySelector('.chapter-body').contains(sel.anchorNode)) {
+      e.preventDefault();
+    }
+  }
+});
+
+// Block drag to copy
+document.querySelector('.chapter-body') && 
+document.querySelector('.chapter-body').addEventListener('dragstart', e => e.preventDefault());
+</script>
 
 <script>
 (function() {
