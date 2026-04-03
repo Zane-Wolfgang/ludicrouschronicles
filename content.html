@@ -1,537 +1,181 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Content — Ludicrous Chronicles</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
-  <link rel="icon" type="image/png" href="images/favicon.png">
-<link rel="stylesheet" href="style.css">
-<style>
-  .filter-bar {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-top: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border);
-  }
+const fs = require('fs');
+const path = require('path');
 
-  .filter-btn {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    background: transparent;
-    border: 1px solid var(--border);
-    padding: 0.5em 1.2em;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .filter-btn:hover,
-  .filter-btn.active {
-    color: var(--gold);
-    border-color: var(--gold-dim);
-  }
-
-  .content-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-    margin-top: 2.5rem;
-  }
-
-  .content-card {
-    background: var(--deep);
-    overflow: hidden;
-    position: relative;
-    cursor: pointer;
-    transition: background 0.2s;
-    text-decoration: none;
-    display: block;
-  }
-
-  .content-card:hover { background: var(--mid); }
-
-  .content-thumb {
-    width: 100%;
-    aspect-ratio: 4/3;
-    background: var(--surface);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-bottom: 1px solid var(--border);
-    position: relative;
-  }
-
-  .content-thumb-label {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-
-  .content-lock {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    width: 24px;
-    height: 24px;
-    border: 1px solid var(--border-bright);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(10,8,6,0.8);
-  }
-
-  .content-lock svg { width: 10px; height: 10px; fill: var(--gold-dim); }
-
-  .content-info {
-    padding: 1.25rem 1.5rem;
-  }
-
-  .content-type {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    margin-bottom: 0.4rem;
-  }
-
-  .content-title {
-    font-family: 'Cinzel', serif;
-    font-size: 0.95rem;
-    color: var(--parchment);
-    margin-bottom: 0.4rem;
-  }
-
-  .content-desc {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    font-style: italic;
-  }
-
-  .content-free-badge {
-    position: absolute;
-    top: 0.75rem;
-    left: 0.75rem;
-    font-family: 'Cinzel', serif;
-    font-size: 8px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--ink);
-    background: var(--gold);
-    padding: 0.2em 0.7em;
-  }
-
-  .members-cta {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 3rem;
-    text-align: center;
-    margin-top: 4rem;
-  }
-
-  .members-cta p {
-    font-style: italic;
-    color: var(--text-muted);
-    margin-bottom: 1.5rem;
-  }
-
-  .content-thumb.blurred {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .content-thumb.blurred::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: var(--preview-img);
-    background-size: cover;
-    background-position: center;
-    filter: blur(8px) brightness(0.6);
-    transform: scale(1.1);
-    z-index: 0;
-  }
-
-  .content-thumb.blurred .content-thumb-label {
-    position: relative;
-    z-index: 1;
-  }
-
-  .content-thumb.blurred .content-lock {
-    z-index: 2;
-  }
-
-  .blur-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(10,8,6,0.35);
-    z-index: 1;
-  }
-</style>
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-</head>
-<body>
-
-<nav>
-  <a href="index.html" class="nav-brand">Ludicrous Chronicles</a>
-  <ul class="nav-links">
-    <li><a href="about.html">About</a></li>
-    <li><a href="content.html" class="active">Content</a></li>
-    <li><a href="gallery.html">Gallery</a></li>
-    <li><a href="videos.html">Videos</a></li>
-    <li class="nav-news-item">
-      <a href="news.html">News<span class="nav-news-dot" id="news-dot"></span></a>
-      <div class="nav-cord-wrap" id="cord-wrap" title="Pull to dismiss">
-        <img src="images/cord.png" alt="pull cord" class="nav-cord-img" />
-        <div class="nav-cord-glow"></div>
-      </div>
-    </li>
-    <li><a href="membership.html">Membership</a></li>
-    <li><a href="contact.html">Contact</a></li>
-    <li><a href="merch.html">Merch</a></li>
-  </ul>
-</nav>
-
-<div class="page-header">
-  <div class="section-label fade-up fade-up-1">The Archive</div>
-  <h1 class="section-title fade-up fade-up-2">Content</h1>
-  <p class="section-body fade-up fade-up-3">Stories, illustrations, and voice recordings. Some free. Some for members.</p>
-</div>
-
-<section>
-  <div class="section-inner">
-    <div class="filter-bar">
-      <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="story">Story</button>
-      <button class="filter-btn" data-filter="voice">Voice</button>
-      <button class="filter-btn" data-filter="art">Art</button>
-      <button class="filter-btn" data-filter="behind">Behind the Scenes</button>
-        <button class="filter-btn" data-filter="video">Video</button>
-    </div>
-
-    <div class="content-grid">
-      <!-- Free -->
-      <a href="chapter-1.html" class="content-card" data-type="story">
-        <div class="content-thumb" style="background-image: url('images/art-04-train.png'); background-size: cover; background-position: center;">
-          <span class="content-thumb-label" style="position:relative;z-index:1;">Chapter Art</span>
-          <div class="content-free-badge">Free</div>
-        </div>
-        <div class="content-info">
-          <div class="content-type">Story</div>
-          <div class="content-title">Chapter I — The Beginning</div>
-          <div class="content-desc">The opening passage. Free to all readers.</div>
-        </div>
-      </a>
-
-      <!-- Locked -->
-      <a href="membership.html" class="content-card" data-type="art">
-        <div class="content-thumb blurred" style="--preview-img: url('images/art-birthday.png')">
-          <div class="blur-overlay"></div>
-          <span class="content-thumb-label">Illustration</span>
-          <div class="content-lock">
-            <svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg>
-          </div>
-        </div>
-        <div class="content-info">
-          <div class="content-type">Art · Patron</div>
-          <div class="content-title">Happy Birthday</div>
-          <div class="content-desc">Members only.</div>
-        </div>
-      </a>
-
-      <a href="membership.html" class="content-card" data-type="art">
-        <div class="content-thumb blurred" style="--preview-img: url('images/art-dont-miss-legs.png')">
-          <div class="blur-overlay"></div>
-          <span class="content-thumb-label">Illustration</span>
-          <div class="content-lock">
-            <svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg>
-          </div>
-        </div>
-        <div class="content-info">
-          <div class="content-type">Art · Patron</div>
-          <div class="content-title">Don't You Miss Your Legs?</div>
-          <div class="content-desc">Members only.</div>
-        </div>
-      </a>
-
-      <a href="membership.html" class="content-card" data-type="story">
-        <div class="content-thumb blurred" style="--preview-img: url('images/art-blue-threads.png')">
-          <div class="blur-overlay"></div>
-          <span class="content-thumb-label">Story Preview</span>
-          <div class="content-lock">
-            <svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg>
-          </div>
-        </div>
-        <div class="content-info">
-          <div class="content-type">Story · Patron</div>
-          <div class="content-title">Blue Threads</div>
-          <div class="content-desc">Members only.</div>
-        </div>
-      </a>
-
-      <a href="membership.html" class="content-card" data-type="art">
-        <div class="content-thumb blurred" style="--preview-img: url('images/art-helping-hand.png')">
-          <div class="blur-overlay"></div>
-          <span class="content-thumb-label">Illustration</span>
-          <div class="content-lock">
-            <svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg>
-          </div>
-        </div>
-        <div class="content-info">
-          <div class="content-type">Art · Patron</div>
-          <div class="content-title">A Helping Hand</div>
-          <div class="content-desc">Members only.</div>
-        </div>
-      </a>
-
-      <a href="membership.html" class="content-card" data-type="art">
-        <div class="content-thumb blurred" style="--preview-img: url('images/art-nobody-special.png')">
-          <div class="blur-overlay"></div>
-          <span class="content-thumb-label">Illustration</span>
-          <div class="content-lock">
-            <svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg>
-          </div>
-        </div>
-        <div class="content-info">
-          <div class="content-type">Art · Patron</div>
-          <div class="content-title">Nobody Special</div>
-          <div class="content-desc">Members only.</div>
-        </div>
-      </a>
-      <!-- CMS-START -->
-      <a href="videos.html?play=Boo." class="content-card" data-type="video">
-        <div class="content-thumb" style="">
-          
-          <span class="content-thumb-label" style="position:relative;z-index:1;">Video</span>
-          
-        </div>
-        <div class="content-info">
-          <div class="content-type">Video</div>
-          <div class="content-title">Boo.</div>
-          <div class="content-desc"></div>
-        </div>
-      </a>
-      <a href="membership.html" class="content-card" data-type="video">
-        <div class="content-thumb blurred" style="">
-          <div class="blur-overlay"></div>
-          <span class="content-thumb-label" style="position:relative;z-index:1;">Video</span>
-          <div class="content-lock"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        </div>
-        <div class="content-info">
-          <div class="content-type">Video · Patron</div>
-          <div class="content-title">I Am the Victor</div>
-          <div class="content-desc">Members only.</div>
-        </div>
-      </a>
-      <!-- CMS-END -->
-    </div>
-
-    <div class="members-cta">
-      <div class="section-label" style="justify-content:center;">Unlock the vault</div>
-      <h2 class="section-title">Want more?</h2>
-      <p>Most content is reserved for members. Join to access the full archive.</p>
-      <a href="membership.html" class="btn-primary">View Membership Tiers</a>
-    </div>
-  </div>
-</section>
-
-
-<!-- Socials Sidebar -->
-<div class="socials-trigger" id="socials-trigger">
-  <div class="socials-panel" id="socials-panel">
-    <div class="socials-title">Find Me</div>
-    <a class="socials-link" href="https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw" target="_blank">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
-      YouTube
-    </a>
-    <a class="socials-link" href="https://discord.gg/gBeqSG8mD" target="_blank">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>
-      Discord
-    </a>
-    <a class="socials-link" href="https://x.com/spite_mstrs" target="_blank">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>
-      X / Twitter
-    </a>
-    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank" title="Note: This work is for authorized viewers only. However, it's available on this site to read for free">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>
-      AO3
-    </a>
-  </div>
-  <div class="socials-arrow" id="socials-arrow">
-    <svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg>
-  </div>
-</div>
-<script>
-  const trigger = document.getElementById('socials-trigger');
-  const panel = document.getElementById('socials-panel');
-  document.getElementById('socials-arrow').addEventListener('click', () => {
-    trigger.classList.toggle('open');
-    panel.classList.toggle('open');
-  });
-</script>
-
-<footer>
-  <span class="footer-brand">Ludicrous Chronicles</span>
-  <p class="footer-copy">© 2026 Ludicrous Chronicles. All rights reserved.</p>
-  <p class="footer-copy" style="margin-top:0.4rem;">Story, Art &amp; Voice by Mistress Spite &nbsp;·&nbsp; Animation by Pineapple Taco</p>
-</footer>
-
-<script>
-  const filterBtns = document.querySelectorAll('.filter-btn');
-
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const filter = btn.dataset.filter;
-      // Re-query every click so dynamically added CMS cards are included
-      const cards = document.querySelectorAll('.content-card');
-
-      cards.forEach(card => {
-        if (filter === 'all' || card.dataset.type === filter) {
-          card.style.display = 'block';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-    });
-  });
-</script>
-<script>
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; });
+// Parse frontmatter from markdown files
+function parseFrontmatter(fileContent) {
+  const match = fileContent.match(/^---\n([\s\S]*?)\n---([\s\S]*)$/);
+  if (!match) return {};
+  const fm = {};
+  const lines = match[1].split('\n');
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    const colonIdx = line.indexOf(':');
+    if (colonIdx === -1) { i++; continue; }
+    const key = line.slice(0, colonIdx).trim();
+    const val = line.slice(colonIdx + 1).trim();
+    if (val === '>-' || val === '>') {
+      // YAML block scalar — collect indented lines
+      let block = [];
+      i++;
+      while (i < lines.length && (lines[i].startsWith('  ') || lines[i] === '')) {
+        block.push(lines[i].trim());
+        i++;
       }
-    });
-  }
-</script>
-<script>
-  (function() {
-    const cord = document.getElementById('cord-wrap');
-    const dot = document.getElementById('news-dot');
-    const dismissed = localStorage.getItem('news-dismissed');
-    if (dismissed) {
-      if (cord) cord.classList.add('pulled');
-      if (dot) dot.classList.add('off');
-    }
-    if (cord) {
-      cord.addEventListener('click', () => {
-        cord.classList.add('pulled');
-        if (dot) dot.classList.add('off');
-        localStorage.setItem('news-dismissed', '1');
-      });
-    }
-  })();
-</script>
-
-<script>
-// CMS Content Loader — reads from _data folders and renders cards
-// User tier would come from Netlify Identity in future
-// For now shows all content with correct lock state
-
-const userTier = 'free'; // Will be replaced by actual auth check
-
-const tierRank = { free: 0, devoted: 1, bound: 2 };
-
-function canAccess(tier) {
-  return tierRank[userTier] >= tierRank[tier];
-}
-
-function makeLockIcon() {
-  return `<div class="content-lock">
-    <svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg>
-  </div>`;
-}
-
-function makeCard({ href, thumb, blurred, label, type, title, desc, locked, tier }) {
-  const thumbStyle = thumb
-    ? `background-image:url('${thumb}');background-size:cover;background-position:center;`
-    : '';
-  const blurClass = blurred ? 'blurred' : '';
-  const blurOverlay = blurred ? '<div class="blur-overlay"></div>' : '';
-  const lock = locked ? makeLockIcon() : '';
-  const tierBadge = locked
-    ? `<span style="position:absolute;top:0.5rem;left:0.5rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">${tier === 'devoted' ? '$5' : '$12'}</span>`
-    : '<span class="content-free-badge">FREE</span>';
-
-  return `<a href="${href}" class="content-card" data-type="${type}">
-    <div class="content-thumb ${blurClass}" style="${thumbStyle}">
-      ${blurOverlay}
-      <span class="content-thumb-label" style="position:relative;z-index:1;">${label}</span>
-      ${lock}
-      ${!locked ? tierBadge : tierBadge}
-    </div>
-    <div class="content-info">
-      <div class="content-type">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
-      <div class="content-title">${title}</div>
-      <div class="content-desc">${desc}</div>
-    </div>
-  </a>`;
-}
-</script>
-
-<script>
-// Dynamic CMS Content Loader
-async function loadCMSContent() {
-  try {
-    const res = await fetch('/_data/content-index.json');
-    if (!res.ok) return;
-    const items = await res.json();
-    if (!items || items.length === 0) return;
-
-    const grid = document.querySelector('.content-grid');
-    if (!grid) return;
-
-    const userTier = window.getUserTier ? await window.getUserTier() : 'free';
-    const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-
-    // Get titles already hardcoded so we don't duplicate
-    const existingTitles = Array.from(document.querySelectorAll('.content-card .content-title')).map(el => el.textContent.trim());
-
-    items.forEach(item => {
-      if (existingTitles.includes(item.title)) return;
-      const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
-
-      // Videos always go to videos.html, locked ones go to membership
-      let href = 'membership.html';
-      if (!isLocked) {
-        if (item.type === 'Video') href = 'videos.html';
-        else href = item.href || '#';
+      fm[key] = block.join(' ').trim();
+    } else if (val === '|' || val === '|-') {
+      // Literal block scalar
+      let block = [];
+      i++;
+      while (i < lines.length && (lines[i].startsWith('  ') || lines[i] === '')) {
+        block.push(lines[i].slice(2));
+        i++;
       }
+      fm[key] = block.join('\n').trim();
+    } else {
+      fm[key] = val.replace(/^["']|["']$/g, '');
+      i++;
+    }
+  }
+  // Body content below frontmatter
+  const body = match[2] ? match[2].trim() : '';
+  if (body) fm.body = body;
+  return fm;
+}
 
-      const card = document.createElement('a');
-      card.href = href;
-      card.className = 'content-card';
-      card.dataset.type = item.type === 'Video' ? 'video' : (item.filter_type || 'story');
+function readDataDir(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter(f => f.endsWith('.md') && !f.startsWith('.'))
+    .map(f => {
+      const content = fs.readFileSync(path.join(dir, f), 'utf8');
+      return { ...parseFrontmatter(content), filename: f };
+    })
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+}
 
-      const thumbStyle = item.thumbnail
-        ? `background-image:url('${item.thumbnail}');background-size:cover;background-position:center;`
-        : '';
-      const blurClass = isLocked ? 'blurred' : '';
-      const blurOverlay = isLocked ? '<div class="blur-overlay"></div>' : '';
-      const lockIcon = isLocked
-        ? `<div class="content-lock"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>`
-        : '';
-      const tierLabel = isLocked
-        ? `${item.type} · ${item.tier === 'devoted' ? 'Patron' : 'Bound'}`
-        : item.type;
+// Generate gallery index
+const galleryRaw = readDataDir('_data/gallery');
+// Build slideshow arrays from image2/3/4 fields
+const gallery = galleryRaw.map(item => {
+  const images = [item.image].filter(Boolean);
+  if (item.image2) images.push(item.image2);
+  if (item.image3) images.push(item.image3);
+  if (item.image4) images.push(item.image4);
+  return { ...item, images };
+});
+fs.writeFileSync('_data/gallery-index.json', JSON.stringify(gallery, null, 2));
+console.log(`Gallery: ${gallery.length} items`);
 
-      card.innerHTML = `
-        <div class="content-thumb ${blurClass}" style="${thumbStyle}">
+// Generate announcements index
+const announcements = readDataDir('_data/announcements');
+fs.writeFileSync('_data/announcements-index.json', JSON.stringify(announcements, null, 2));
+console.log(`Announcements: ${announcements.length} items`);
+
+// Generate content index (chapters + videos + short stories + wips)
+const chapters = readDataDir('_data/chapters').map(c => ({
+  ...c,
+  type: 'Chapter',
+  label: 'Ghost in Me',
+  filter_type: 'story',
+  href: c.number == 1 ? 'chapter-1.html' : `chapter.html?chapter=${c.number}`,
+  thumbnail: c.art || '',
+  body: c.body || ''
+}));
+
+const videos = readDataDir('_data/videos').map(v => ({
+  ...v,
+  type: 'Video',
+  label: 'Video',
+  filter_type: 'video',
+  href: 'videos.html',
+  description: v.description || '',
+  thumbnail: v.thumbnail || ''
+}));
+
+const shortStories = readDataDir('_data/short-stories').map(s => ({
+  ...s,
+  type: 'Short Story',
+  label: 'Short Story',
+  filter_type: 'story',
+  href: 'membership.html',
+  thumbnail: ''
+}));
+
+const wips = readDataDir('_data/wips').map(w => ({
+  ...w,
+  type: 'WIP',
+  label: w.type || 'WIP',
+  filter_type: 'behind',
+  href: 'membership.html',
+  thumbnail: w.image || ''
+}));
+
+const contentIndex = [...chapters, ...videos, ...shortStories, ...wips]
+  .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+fs.writeFileSync('_data/content-index.json', JSON.stringify(contentIndex, null, 2));
+console.log(`Content: ${contentIndex.length} items`);
+
+console.log('Build complete!');
+
+// Generate short stories index (reuse existing shortStories variable)
+const shortStoriesIndexed = shortStories.map(s => ({
+  ...s,
+  slug: s.filename ? s.filename.replace('.md','') : s.title.toLowerCase().replace(/\s+/g,'-'),
+  type: 'Story',
+  label: 'Short Story',
+  filter_type: 'story',
+  href: `story.html?story=${s.filename ? s.filename.replace('.md','') : s.title.toLowerCase().replace(/\s+/g,'-')}`,
+  thumbnail: s.art || s.thumbnail || '',
+  description: s.description || ''
+}));
+fs.writeFileSync('_data/short-stories-index.json', JSON.stringify(shortStoriesIndexed, null, 2));
+console.log(`Short Stories: ${shortStoriesIndexed.length} items`);
+
+// Generate socials index
+const socials = readDataDir('_data/socials')
+  .filter(s => s.active !== false && s.active !== 'false')
+  .sort((a, b) => (parseInt(a.order) || 99) - (parseInt(b.order) || 99));
+fs.writeFileSync('_data/socials-index.json', JSON.stringify(socials, null, 2));
+console.log(`Socials: ${socials.length} items`);
+
+// ── Inject CMS content cards into content.html ──
+const fs2 = require('fs');
+const contentHtml = fs2.readFileSync('content.html', 'utf8');
+
+// Read hardcoded titles to skip
+const hardcodedTitles = [
+  'The Beginning',
+  'Chapter I \u2014 The Beginning',
+  'Happy Birthday',
+  "Don't You Miss Your Legs?",
+  'Blue Threads',
+  'A Helping Hand',
+  'Nobody Special'
+];
+
+// Build cards from content index
+const allContent = JSON.parse(fs2.readFileSync('_data/content-index.json', 'utf8'));
+let newCards = '';
+
+allContent.forEach(item => {
+  if (hardcodedTitles.includes(item.title)) return;
+
+  const isLocked = item.tier !== 'free';
+  const href = isLocked ? 'membership.html' : (item.type === 'Video' ? `videos.html?play=${encodeURIComponent(item.title)}` : (item.href || '#'));
+  const thumb = item.thumbnail || '';
+  const filterType = item.type === 'Video' ? 'video' : (item.filter_type || 'story');
+  const thumbStyle = thumb ? `background-image:url('${thumb}');background-size:cover;background-position:center;` : '';
+  const blurClass = isLocked ? ' blurred' : '';
+  const blurOverlay = isLocked ? '<div class="blur-overlay"></div>' : '';
+  const lockIcon = isLocked ? `<div class="content-lock"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>` : '';
+  const tierLabel = isLocked ? `${item.type} \u00b7 ${item.tier === 'devoted' ? 'Patron' : 'Bound'}` : item.type;
+  const desc = isLocked ? 'Members only.' : '';
+
+  newCards += `
+      <a href="${href}" class="content-card" data-type="${filterType}">
+        <div class="content-thumb${blurClass}" style="${thumbStyle}">
           ${blurOverlay}
           <span class="content-thumb-label" style="position:relative;z-index:1;">${item.label || item.type}</span>
           ${lockIcon}
@@ -539,19 +183,64 @@ async function loadCMSContent() {
         <div class="content-info">
           <div class="content-type">${tierLabel}</div>
           <div class="content-title">${item.title}</div>
-          <div class="content-desc">${item.description || (isLocked ? 'Members only.' : '')}</div>
-        </div>`;
+          <div class="content-desc">${desc}</div>
+        </div>
+      </a>`;
+});
 
-      grid.appendChild(card);
-    });
-  } catch(e) {
-    // Silent fail — hardcoded cards remain
-  }
+// Replace CMS-injected cards section (between markers)
+let updatedHtml;
+if (contentHtml.includes('<!-- CMS-START -->') && contentHtml.includes('<!-- CMS-END -->')) {
+  updatedHtml = contentHtml.replace(
+    /<!-- CMS-START -->[\s\S]*?<!-- CMS-END -->/,
+    `<!-- CMS-START -->${newCards}\n      <!-- CMS-END -->`
+  );
+} else {
+  // First run — insert markers
+  updatedHtml = contentHtml.replace(
+    '\n    </div>\n\n    <div class="members-cta">',
+    `\n      <!-- CMS-START -->${newCards}\n      <!-- CMS-END -->\n    </div>\n\n    <div class="members-cta">`
+  );
 }
 
-loadCMSContent();
-</script>
-<script src="auth.js"></script>
-<script src="socials.js"></script>
-</body>
-</html>
+fs2.writeFileSync('content.html', updatedHtml);
+console.log(`Content cards injected: ${allContent.filter(i => !hardcodedTitles.includes(i.title)).length}`);
+
+// ── Image compression ──
+// Compresses images in images/uploads/ to max 1200px wide
+// Originals are preserved, compressed versions overwrite for web serving
+const sharp = require('sharp');
+
+async function compressImages() {
+  const uploadsDir = 'images/uploads';
+  if (!fs.existsSync(uploadsDir)) return;
+
+  const files = fs.readdirSync(uploadsDir).filter(f =>
+    /\.(jpg|jpeg|png|webp)$/i.test(f) && !f.startsWith('.')
+  );
+
+  let compressed = 0;
+  for (const file of files) {
+    const filePath = path.join(uploadsDir, file);
+    const tmpPath = filePath + '.tmp';
+    try {
+      const meta = await sharp(filePath).metadata();
+      // Only compress if wider than 1200px or larger than 500KB
+      const stats = fs.statSync(filePath);
+      if (meta.width <= 1200 && stats.size <= 512000) continue;
+
+      await sharp(filePath)
+        .resize({ width: 1200, withoutEnlargement: true })
+        .jpeg({ quality: 82, progressive: true })
+        .toFile(tmpPath);
+
+      fs.renameSync(tmpPath, filePath);
+      compressed++;
+    } catch(e) {
+      if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
+    }
+  }
+  console.log(`Images compressed: ${compressed} of ${files.length}`);
+}
+
+compressImages().catch(console.error);
