@@ -526,10 +526,9 @@ async function loadCMSContent() {
       const lockIcon = isLocked
         ? `<div class="content-lock"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>`
         : '';
-      const typeDisplay = item.type === 'Chapter' ? 'Ghost in Me' : item.type;
       const tierLabel = isLocked
-        ? `${typeDisplay} · ${item.tier === 'devoted' ? 'Patron' : 'Bound'}`
-        : typeDisplay;
+        ? `${item.type} · ${item.tier === 'devoted' ? 'Patron' : 'Bound'}`
+        : item.type;
 
       card.innerHTML = `
         <div class="content-thumb ${blurClass}" style="${thumbStyle}">
