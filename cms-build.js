@@ -73,12 +73,14 @@ fs.writeFileSync('_data/announcements-index.json', JSON.stringify(announcements,
 console.log(`Announcements: ${announcements.length} items`);
 
 // Generate content index (chapters + videos + short stories + wips)
+const chapterNums = { 1:'I',2:'II',3:'III',4:'IV',5:'V',6:'VI',7:'VII',8:'VIII',9:'IX',10:'X' };
 const chapters = readDataDir('_data/chapters').map(c => ({
   ...c,
   type: 'Chapter',
-  label: 'Ghost in Me',
+  label: 'Ghost in Me Book',
   filter_type: 'story',
-  href: c.number == 1 ? 'chapter-1.html' : `chapter.html?chapter=${c.number}`,
+  title: c.number == 1 ? c.title : ('Chapter ' + (chapterNums[parseInt(c.number)] || c.number) + ' \u2014 ' + c.title),
+  href: c.number == 1 ? 'chapter-1.html' : ('chapter.html?chapter=' + c.number),
   thumbnail: c.art || '',
   body: c.body || ''
 }));
@@ -111,8 +113,10 @@ const wips = readDataDir('_data/wips').map(w => ({
   thumbnail: w.image || ''
 }));
 
-const contentIndex = [...chapters, ...videos, ...shortStories, ...wips]
-  .sort((a, b) => new Date(b.date) - new Date(a.date));
+// Chapters sorted by number, everything else newest first
+const sortedChapters = [...chapters].sort((a,b) => parseInt(a.number||0) - parseInt(b.number||0));
+const sortedOther = [...videos, ...shortStories, ...wips].sort((a,b) => new Date(b.date) - new Date(a.date));
+const contentIndex = [...sortedChapters, ...sortedOther];
 
 fs.writeFileSync('_data/content-index.json', JSON.stringify(contentIndex, null, 2));
 console.log(`Content: ${contentIndex.length} items`);
