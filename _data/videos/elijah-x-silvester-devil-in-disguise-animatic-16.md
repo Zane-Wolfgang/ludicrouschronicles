@@ -2,6 +2,7 @@
 title: Elijah X Silvester - Devil In Disguise Animatic (16+)
 date: 2026-01-27T01:02:00.000-07:00
 video: https://f005.backblazeb2.com/file/Moi-Videos-Oui/Devil+In+Disguise.mov
+thumbnail: /images/uploads/71.jpg
 description: >-
   N﻿ot much to say here. I've posted the same on my youtube account, so if
   you're looking for more insight, go find it there :)
