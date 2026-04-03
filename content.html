@@ -290,7 +290,6 @@ filterBtns.forEach(btn => {
 // KNOWN TITLES IN CMS — skip these when loading from index to prevent duplicates
 // Add new CMS titles here when you upload them through admin
 const CMS_TITLES = new Set([
-  'The Beginning',       // Chapter 1 in CMS (we hardcode it so skip)
   'Boo.',                // Video
   'I Am the Victor',     // Video
 ]);
@@ -370,16 +369,7 @@ async function loadAllContent() {
     grid.appendChild(card);
   }
 
-  // ── 1. Chapter I — always first, hardcoded ──
-  add(makeCard({
-    href: 'chapter-1.html',
-    img: 'images/art-04-train.png',
-    title: 'Chapter I \u2014 The Beginning',
-    typeLabel: 'Ghost in Me Book',
-    typeDisplay: 'Ghost in Me Book',
-    isLocked: false,
-    filterType: 'story'
-  }), 'Chapter I \u2014 The Beginning');
+  // Chapters loaded from CMS newest first below
 
   // ── 2. CMS chapters newest first (skip Ch1, use CMS thumbnail) ──
   try {
@@ -387,15 +377,20 @@ async function loadAllContent() {
     if (res.ok) {
       const items = await res.json();
       // Newest chapter first (highest number)
-      const chapters = items.filter(i => i.type === 'Chapter' && parseInt(i.number) > 1)
+      const chapters = items.filter(i => i.type === 'Chapter')
         .sort((a,b) => parseInt(b.number) - parseInt(a.number));
+      const romanNums = {1:'I',2:'II',3:'III',4:'IV',5:'V',6:'VI',7:'VII',8:'VIII',9:'IX',10:'X'};
       chapters.forEach(item => {
         if (seen.has(item.title)) return;
         const isLocked = tRank[item.tier||'free'] > tRank[userTier];
+        const chNum = parseInt(item.number||0);
+        const displayTitle = chNum === 1
+          ? 'Chapter I — ' + item.title
+          : item.title; // already has "Chapter II — " prefix from build script
         add(makeCard({
           href: isLocked ? 'membership.html' : item.href,
           img: item.thumbnail || '',
-          title: item.title,
+          title: displayTitle,
           typeLabel: 'Ghost in Me Book',
           typeDisplay: isLocked ? `Ghost in Me Book \u00b7 ${item.tier==='devoted'?'Patron':'Bound'}` : 'Ghost in Me Book',
           isLocked,
