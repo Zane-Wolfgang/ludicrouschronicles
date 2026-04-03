@@ -399,7 +399,7 @@ async function loadAllContent() {
           ? (isLocked ? `Ghost in Me Book · ${item.tier === 'devoted' ? 'Patron' : 'Bound'}` : 'Ghost in Me Book')
           : (isLocked ? `${item.type} · ${item.tier === 'devoted' ? 'Patron' : 'Bound'}` : item.type);
         allCards.push({
-          sortKey: item.type === 'Chapter' ? parseInt(item.number || 99) * -1000000 : -new Date(item.date).getTime(),
+          sortKey: item.type === 'Chapter' ? parseInt(item.number || 99) : (1000 + new Date(item.date).getTime() / 1e10),
           el: makeContentCard({
             href, img: item.thumbnail || '', title: item.title,
             typeLabel: item.label || item.type, typeDisplay,
@@ -459,11 +459,20 @@ async function loadAllContent() {
     });
   });
 
-  // Sort: chapters by number first (negative million), CMS newest first, hardcoded last
-  allCards.sort((a, b) => a.sortKey - b.sortKey);
+  // Deduplicate by title
+  const seen = new Set();
+  const unique = allCards.filter(c => {
+    const title = c.el.querySelector('.content-title')?.textContent?.trim();
+    if (!title || seen.has(title)) return false;
+    seen.add(title);
+    return true;
+  });
+
+  // Sort: chapters by number (1,2,3...), then others
+  unique.sort((a, b) => a.sortKey - b.sortKey);
 
   // Render
-  allCards.forEach(c => grid.appendChild(c.el));
+  unique.forEach(c => grid.appendChild(c.el));
 }
 
 loadAllContent();
