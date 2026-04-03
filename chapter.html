@@ -271,7 +271,8 @@ async function loadChapter() {
     }
 
     // Render body — markdown to HTML
-    const body = chapter.body || '';
+    // Strip stray backslashes inserted by CMS at line breaks
+    const body = (chapter.body || '').replace(/\\/g, '');
     const html = markdownToHtml(body);
     const bodyEl = document.getElementById('ch-body');
     bodyEl.innerHTML = html;
