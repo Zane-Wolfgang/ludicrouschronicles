@@ -291,7 +291,6 @@ filterBtns.forEach(btn => {
 // Add new CMS titles here when you upload them through admin
 const CMS_TITLES = new Set([
   'The Beginning',       // Chapter 1 in CMS (we hardcode it so skip)
-  'Chapter II \u2014 The Meeting', // Chapter 2
   'Boo.',                // Video
   'I Am the Victor',     // Video
 ]);
@@ -382,26 +381,14 @@ async function loadAllContent() {
     filterType: 'story'
   }), 'Chapter I \u2014 The Beginning');
 
-  // ── 2. Chapter II — hardcoded so it's always second ──
-  add(makeCard({
-    href: 'chapter.html?chapter=2',
-    img: '',
-    title: 'Chapter II \u2014 The Meeting',
-    typeLabel: 'Ghost in Me Book',
-    typeDisplay: 'Ghost in Me Book',
-    isLocked: false,
-    filterType: 'story'
-  }), 'Chapter II \u2014 The Meeting');
-
-  // ── 3. CMS chapters (Chapter 3+), videos, short stories ──
-  // Skip anything already shown above
+  // ── 2. CMS chapters newest first (skip Ch1, use CMS thumbnail) ──
   try {
     const res = await fetch('/_data/content-index.json');
     if (res.ok) {
       const items = await res.json();
-      // Chapters by number first
-      const chapters = items.filter(i => i.type === 'Chapter' && parseInt(i.number) > 2)
-        .sort((a,b) => parseInt(a.number) - parseInt(b.number));
+      // Newest chapter first (highest number)
+      const chapters = items.filter(i => i.type === 'Chapter' && parseInt(i.number) > 1)
+        .sort((a,b) => parseInt(b.number) - parseInt(a.number));
       chapters.forEach(item => {
         if (seen.has(item.title)) return;
         const isLocked = tRank[item.tier||'free'] > tRank[userTier];
