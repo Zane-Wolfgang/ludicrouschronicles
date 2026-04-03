@@ -289,21 +289,17 @@ async function loadChapter() {
 
     // Previous chapter link
     const prevNum = parseInt(chapter.number) - 1;
-    if (prevNum === 0) {
+    if (prevNum >= 1) {
       const prevLink = document.createElement('a');
-      prevLink.href = 'chapter-1.html';
-      prevLink.textContent = '← Chapter I';
       prevLink.style.cssText = 'font-family:Cinzel,serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-dim);text-decoration:none;';
-      document.querySelector('.chapter-nav').insertBefore(prevLink, document.querySelector('.chapter-nav').firstChild);
-    } else if (prevNum > 0) {
-      const prevChapter = items.find(i => i.number == prevNum);
-      if (prevChapter) {
-        const prevLink = document.createElement('a');
+      if (prevNum === 1) {
+        prevLink.href = 'chapter-1.html';
+        prevLink.textContent = '← Chapter I';
+      } else {
         prevLink.href = `chapter.html?chapter=${prevNum}`;
         prevLink.textContent = `← Chapter ${prevNum}`;
-        prevLink.style.cssText = 'font-family:Cinzel,serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-dim);text-decoration:none;';
-        document.querySelector('.chapter-nav').insertBefore(prevLink, document.querySelector('.chapter-nav').firstChild);
       }
+      document.querySelector('.chapter-nav').insertBefore(prevLink, document.querySelector('.chapter-nav').firstChild);
     }
 
     // Next chapter link
