@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Parse frontmatter from markdown files
+process.on('uncaughtException', err => { console.error('CRASH:', err); process.exit(1); });
 function parseFrontmatter(fileContent) {
   const match = fileContent.match(/^---\n([\s\S]*?)\n---([\s\S]*)$/);
   if (!match) return {};
