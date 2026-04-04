@@ -307,25 +307,27 @@ async function loadChapter() {
 function markdownToHtml(md) {
   if (!md) return '';
 
-  // If CMS already converted to HTML (contains tags), use it directly
-  // but wrap bare text blocks in paragraphs
-  if (md.includes('<p>') || md.includes('<em>') || md.includes('<strong>')) {
-    // Already HTML from CMS rich text editor — use as-is
-    return md;
+  // Strip stray backslashes from CMS
+  md = md.replace(/\\/g, '');
+
+  // If already fully HTML, process inline markdown within it then return
+  if (md.includes('<p>')) {
+    // Still convert any remaining asterisks inside HTML
+    return md
+      .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/_(.*?)_/g, '<em>$1</em>');
   }
 
-  // Raw markdown — convert ourselves
+  // Raw markdown — convert fully
   let html = md
-    // Bold italic first
-    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-    // Bold
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    // Italic
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    // Italic underscore
-    .replace(/_(.*?)_/g, '<em>$1</em>');
+    .replace(/\*\*\*(.*?)\*\*\*/gs, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/gs, '<em>$1</em>')
+    .replace(/_(.*?)_/gs, '<em>$1</em>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>');
 
-  // Wrap in paragraphs
   const paragraphs = html.split(/\n\n+/);
   return paragraphs
     .map(p => p.trim())
