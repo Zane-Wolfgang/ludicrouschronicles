@@ -134,6 +134,15 @@
     position: relative;
   }
 
+  /* Move overlay to top on locked items so it doesn't clash with Patron badge */
+  .gallery-item.locked .gallery-overlay {
+    top: 0;
+    bottom: auto;
+    padding: 1rem 1rem 2rem;
+    background: linear-gradient(180deg, rgba(10,8,6,0.85) 0%, transparent 100%);
+  }
+
+
   /* Block Edge/Bing image search buttons on locked items */
   .gallery-item.locked img {
     pointer-events: none !important;
