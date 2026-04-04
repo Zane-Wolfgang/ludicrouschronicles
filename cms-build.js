@@ -44,14 +44,23 @@ function parseFrontmatter(fileContent) {
 }
 
 function readDataDir(dir) {
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir)
-    .filter(f => f.endsWith('.md') && !f.startsWith('.'))
-    .map(f => {
-      const content = fs.readFileSync(path.join(dir, f), 'utf8');
-      return { ...parseFrontmatter(content), filename: f };
-    })
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  // Try both relative path and path relative to this script
+  const dirs = [
+    dir,
+    path.join(__dirname, dir),
+  ];
+  for (const d of dirs) {
+    if (fs.existsSync(d)) {
+      const files = fs.readdirSync(d).filter(f => f.endsWith('.md') && !f.startsWith('.'));
+      if (files.length > 0) {
+        return files.map(f => {
+          const content = fs.readFileSync(path.join(d, f), 'utf8');
+          return { ...parseFrontmatter(content), filename: f };
+        }).sort((a, b) => new Date(b.date) - new Date(a.date));
+      }
+    }
+  }
+  return [];
 }
 
 // Generate gallery index — read from both locations since CMS sometimes saves to wrong folder
@@ -69,6 +78,7 @@ const gallery = galleryRaw.map(item => {
 });
 fs.writeFileSync('_data/gallery-index.json', JSON.stringify(gallery, null, 2));
 console.log(`Gallery: ${gallery.length} items`);
+console.log('Gallery dirs checked:', ['_data/gallery','gallery'].map(d => d + ': ' + (require('fs').existsSync(d) ? require('fs').readdirSync(d).length + ' files' : 'missing')));
 
 // Generate announcements index
 const announcements = readDataDir('_data/announcements');
