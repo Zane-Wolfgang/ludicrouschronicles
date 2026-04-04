@@ -3,7 +3,7 @@ title: First Story
 date: 2026-04-04T20:44:06.455Z
 description: Testin' out the waters when this was made, folks. Just a measely
   month or so after I had the first idea of Ghost in me.
-tier: devoted
+tier: free
 ---
 <!--StartFragment-->
 
