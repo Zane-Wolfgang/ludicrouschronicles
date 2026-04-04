@@ -629,10 +629,11 @@ async function loadCMSGallery() {
     // Sort sets by set_order
     Object.values(sets).forEach(s => s.sort((a,b) => a.set_order - b.set_order));
 
-    // Render singles
+// Render singles newest first at TOP
+    const firstHardcoded = grid.firstChild;
     singles.forEach(item => {
       const el = makeCMSGalleryItem(item, userTier, tRank);
-      grid.appendChild(el);
+      grid.insertBefore(el, firstHardcoded);
     });
 
     // Render sets (first image shows, rest are slideshow pages)
@@ -738,3 +739,5 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
+
+
