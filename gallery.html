@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="ImageToolbar" content="no">
 <title>Gallery — Ludicrous Chronicles</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -131,6 +132,19 @@
 
   .gallery-item.locked {
     position: relative;
+  }
+
+  /* Block Edge/Bing image search buttons on locked items */
+  .gallery-item.locked img {
+    pointer-events: none !important;
+  }
+
+  .gallery-item.locked::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    cursor: pointer;
   }
 
   .gallery-item.locked img {
