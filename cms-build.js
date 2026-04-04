@@ -245,11 +245,11 @@ async function compressImages() {
       const meta = await sharp(filePath).metadata();
       // Only compress if wider than 1200px or larger than 500KB
       const stats = fs.statSync(filePath);
-      if (meta.width <= 1200 && stats.size <= 512000) continue;
+      if (meta.width <= 2400 && stats.size <= 2048000) continue;
 
       await sharp(filePath)
-        .resize({ width: 1200, withoutEnlargement: true })
-        .jpeg({ quality: 82, progressive: true })
+        .resize({ width: 2400, withoutEnlargement: true })
+        .jpeg({ quality: 93, progressive: true })
         .toFile(tmpPath);
 
       fs.renameSync(tmpPath, filePath);
