@@ -54,8 +54,11 @@ function readDataDir(dir) {
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 }
 
-// Generate gallery index
-const galleryRaw = readDataDir('_data/gallery');
+// Generate gallery index — read from both locations since CMS sometimes saves to wrong folder
+const galleryRaw = [
+  ...readDataDir('_data/gallery'),
+  ...readDataDir('gallery'),
+];
 // Build slideshow arrays from image2/3/4 fields
 const gallery = galleryRaw.map(item => {
   const images = [item.image].filter(Boolean);
