@@ -641,7 +641,7 @@ async function loadCMSGallery() {
       const images = items.map(i => i.image);
       const titles = items.map(i => i.title);
       const el = makeCMSGalleryItem(first, userTier, tRank);
-      grid.appendChild(el);
+      grid.insertBefore(el, firstHardcoded);
     });
 
   } catch(e) {
