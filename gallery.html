@@ -611,7 +611,7 @@ async function loadCMSGallery() {
     const userTier = window.getUserTier ? await window.getUserTier() : 'free';
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
 
-    const grid = document.querySelector('.masonry-grid');
+    const grid = document.querySelector('.gallery-grid');
     if (!grid) return;
 
     // Group items into sets (slideshows)
@@ -631,7 +631,7 @@ async function loadCMSGallery() {
 
     // Render singles
     singles.forEach(item => {
-      const el = makeCMSGalleryItem(item);
+      const el = makeCMSGalleryItem(item, userTier, tRank);
       grid.appendChild(el);
     });
 
@@ -640,7 +640,7 @@ async function loadCMSGallery() {
       const first = items[0];
       const images = items.map(i => i.image);
       const titles = items.map(i => i.title);
-      const el = makeCMSGalleryItem(first, images, titles);
+      const el = makeCMSGalleryItem(first, userTier, tRank);
       grid.appendChild(el);
     });
 
@@ -649,7 +649,9 @@ async function loadCMSGallery() {
   }
 }
 
-function makeCMSGalleryItem(item) {
+function makeCMSGalleryItem(item, userTier, tRank) {
+  userTier = userTier || 'free';
+  tRank = tRank || { free: 0, devoted: 1, bound: 2 };
   const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
   // Use images array if available (multiple images), fall back to single image
   const images = item.images && item.images.length > 0 ? item.images : [item.image];
