@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Membership — Ludicrous Chronicles</title>
+<title>Merch — Ludicrous Chronicles</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
@@ -11,137 +11,158 @@
   <link rel="icon" type="image/png" href="images/favicon.png">
 <link rel="stylesheet" href="style.css">
 <style>
-  .tiers-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+  .merch-hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 6rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .merch-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 60%, rgba(201,168,76,0.06) 0%, transparent 70%),
+      var(--deep);
+  }
+
+  .merch-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(201,168,76,0.03) 80px),
+      repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(201,168,76,0.025) 80px);
+  }
+
+  .merch-content { position: relative; }
+
+  .soon-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+  }
+
+  .soon-label::before,
+  .soon-label::after {
+    content: '';
+    display: block;
+    width: 50px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim));
+  }
+  .soon-label::after {
+    background: linear-gradient(270deg, transparent, var(--gold-dim));
+  }
+
+  .merch-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    color: var(--gold);
+    line-height: 1.15;
+    margin-bottom: 0.5em;
+  }
+
+  .merch-sub {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    max-width: 500px;
+    margin: 0 auto 3rem;
+  }
+
+  .merch-divider {
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 0 auto 3rem;
+  }
+
+  .notify-row {
+    display: flex;
     gap: 1px;
+    max-width: 460px;
+    margin: 0 auto;
     background: var(--border);
     border: 1px solid var(--border);
-    margin-top: 3rem;
   }
 
-  .tier-card {
+  .notify-input {
+    flex: 1;
     background: var(--surface);
-    padding: 2.5rem 2rem;
-    position: relative;
-    transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
-    z-index: 1;
+    border: none;
+    outline: none;
+    padding: 0.9rem 1.25rem;
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--parchment);
+    min-width: 0;
   }
 
-  .tier-card:hover {
-    background: var(--mid);
-    transform: scale(1.03);
-    box-shadow: 0 0 32px rgba(201,168,76,0.18), 0 0 8px rgba(201,168,76,0.1);
-    z-index: 2;
-  }
+  .notify-input::placeholder { color: var(--text-muted); }
+  .notify-input:focus { background: var(--mid); }
 
-  .tier-card.featured {
-    background: var(--mid);
-    border-top: 2px solid var(--gold);
-  }
-
-  .tier-card.featured:hover {
-    box-shadow: 0 0 40px rgba(201,168,76,0.28), 0 0 12px rgba(201,168,76,0.15);
-  }
-
-  .tier-badge {
+  .notify-btn {
     font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.3em;
+    font-size: 10px;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--ink);
     background: var(--gold);
-    padding: 0.3em 0.9em;
-    display: inline-block;
-    margin-bottom: 1.5rem;
+    border: none;
+    padding: 0.9rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
   }
 
-  .tier-badge.dim {
-    background: transparent;
-    color: var(--text-muted);
-    border: 1px solid var(--border);
-  }
+  .notify-btn:hover { background: var(--gold-bright); }
 
-  .tier-name {
-    font-family: 'Cinzel', serif;
-    font-size: 1.1rem;
-    color: var(--parchment);
-    margin-bottom: 0.5rem;
-  }
-
-  .tier-price {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: 2.2rem;
-    color: var(--gold);
-    margin-bottom: 1.5rem;
-    line-height: 1;
-  }
-
-  .tier-price span {
-    font-family: 'Cinzel', serif;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-  }
-
-  .tier-perks {
-    list-style: none;
-    margin-bottom: 2.5rem;
-    font-size: 0.95rem;
-  }
-
-  .tier-perks li {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-body);
+  .teaser-items {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .tier-perks li::before {
-    content: '';
-    display: inline-block;
-    width: 5px;
-    height: 5px;
-    background: var(--gold-dim);
-    transform: rotate(45deg);
-    flex-shrink: 0;
-  }
-
-  .faq-section {
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
     margin-top: 5rem;
     padding-top: 4rem;
     border-top: 1px solid var(--border);
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  .faq-list {
-    margin-top: 2.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-  }
-
-  .faq-item {
-    background: var(--surface);
-    padding: 1.75rem 2rem;
-    transition: background 0.2s;
-  }
-
-  .faq-item:hover { background: var(--mid); }
-
-  .faq-q {
+  .teaser-item {
     font-family: 'Cinzel', serif;
-    font-size: 0.95rem;
-    color: var(--parchment);
-    margin-bottom: 0.75rem;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
   }
 
-  .faq-a {
-    font-style: italic;
-    color: var(--text-muted);
-    font-size: 0.95rem;
+  .teaser-item::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    background: var(--gold-dim);
+    transform: rotate(45deg);
+    display: inline-block;
   }
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
@@ -162,86 +183,51 @@
         <div class="nav-cord-glow"></div>
       </div>
     </li>
-    <li><a href="membership.html" class="active">Membership</a></li>
+    <li><a href="membership.html">Membership</a></li>
     <li><a href="contact.html">Contact</a></li>
-    <li><a href="merch.html">Merch</a></li>
+    <li><a href="merch.html" class="active">Merch</a></li>
   </ul>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
-
-<div class="page-header">
-  <div class="section-label fade-up fade-up-1">Join the Chronicles</div>
-  <h1 class="section-title fade-up fade-up-2">Membership</h1>
-  <p class="section-body fade-up fade-up-3">Support the work. Unlock the vault. Every tier helps keep this going.</p>
-</div>
-
-<section>
-  <div class="section-inner">
-    <div class="tiers-grid">
-      <div class="tier-card fade-up fade-up-1">
-        <div class="tier-badge dim">Reader</div>
-        <div class="tier-name">The Curious</div>
-        <div class="tier-price">Free</div>
-        <ul class="tier-perks">
-          <li>Public chapters</li>
-          <li>Free story previews</li>
-          <li>YouTube updates</li>
-        </ul>
-        <a href="content.html" class="btn-ghost" style="display:block; text-align:center;">Start Reading</a>
-      </div>
-
-      <div class="tier-card featured fade-up fade-up-2">
-        <div class="tier-badge">Patron</div>
-        <div class="tier-name">The Devoted</div>
-        <div class="tier-price">$5<span>/mo</span></div>
-        <ul class="tier-perks">
-          <li>All public content</li>
-          <li>Early chapter access</li>
-          <li>Full voice recordings</li>
-          <li>Process art & sketches</li>
-          <li>Behind-the-scenes clips</li>
-        </ul>
-        <a href="https://buy.stripe.com/6oU9AS9cI2TP9xaeOKb7y02" class="btn-primary" style="display:block; text-align:center;">Join Now</a>
-      </div>
-
-      <div class="tier-card fade-up fade-up-3">
-        <div class="tier-badge dim">Benefactor</div>
-        <div class="tier-name">The Bound</div>
-        <div class="tier-price">$12<span>/mo</span></div>
-        <ul class="tier-perks">
-          <li>Everything above</li>
-          <li>Story notes & lore</li>
-          <li>Worldbuilding documents</li>
-          <li>Name in the credits</li>
-          <li>Direct Q&amp;A access</li>
-        </ul>
-        <a href="https://buy.stripe.com/9B628q74A51XgZCgWSb7y01" class="btn-ghost" style="display:block; text-align:center;">Join Now</a>
-      </div>
+<script>
+  (function() {
+    const btn = document.getElementById('nav-hamburger');
+    const links = document.querySelector('.nav-links');
+    if (btn && links) {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('open');
+        links.classList.toggle('open');
+      });
+      links.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          btn.classList.remove('open');
+          links.classList.remove('open');
+        });
+      });
+    }
+  })();
+</script>
+<div class="merch-hero">
+  <div class="merch-bg"></div>
+  <div class="merch-content">
+    <div class="soon-label fade-up fade-up-1">The Wardrobe</div>
+    <h1 class="merch-title fade-up fade-up-2">Coming Soon</h1>
+    <p class="merch-sub fade-up fade-up-3">Clothing and goods from the Chronicles. Worth the wait.</p>
+    <div class="merch-divider fade-up fade-up-3"></div>
+    <div class="notify-row fade-up fade-up-4">
+      <input class="notify-input" type="email" placeholder="Leave your email to be notified" />
+      <button class="notify-btn">Notify Me</button>
     </div>
-
-    <div class="faq-section">
-      <div class="section-label">Questions</div>
-      <h2 class="section-title">Common Questions</h2>
-      <div class="faq-list">
-        <div class="faq-item">
-          <div class="faq-q">What do I get at the free tier?</div>
-          <div class="faq-a">Public chapters, story previews, drawings, and access to whatever goes up on YouTube.</div>
-        </div>
-        <div class="faq-item">
-          <div class="faq-q">How often is new content posted?</div>
-          <div class="faq-a">The story is worked on daily in little bits and pieces, but it comes as no surprise when I say that art takes ages to create. And robs you of your sanity. But forget that part. Members get content — whenever it's released or teased — first.</div>
-        </div>
-        <div class="faq-item">
-          <div class="faq-q">Can I cancel anytime?</div>
-          <div class="faq-a">Yes, of course. What do I look like, your prison guard?</div>
-        </div>
-        <div class="faq-item">
-          <div class="faq-q">What's the difference between Devoted and The Bound (ignore the prison guard bit up above)?</div>
-          <div class="faq-a">Devoted gets you access to all the content. The Bound adds the lore, worldbuilding documents, direct Q&A, and your name in the credits of videos.</div>
-        </div>
-      </div>
+    <div class="teaser-items fade-up fade-up-4">
+      <span class="teaser-item">Apparel</span>
+      <span class="teaser-item">Clothing</span>
+      <span class="teaser-item">Limited Runs</span>
+      <span class="teaser-item">More TBA</span>
     </div>
   </div>
-</section>
+</div>
 
 
 <!-- Socials Sidebar -->
@@ -311,6 +297,7 @@
     }
   })();
 </script>
+<script src="auth.js"></script>
 <script src="socials.js"></script>
 </body>
 </html>
