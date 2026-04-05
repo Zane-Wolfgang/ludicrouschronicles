@@ -4,11 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ludicrous Chronicles</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
-  <link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="icon" type="image/png" href="images/favicon.png">
 <link rel="stylesheet" href="style.css">
 <style>
   /* ── HERO ── */
@@ -271,19 +267,32 @@
     <li><a href="about.html">About</a></li>
     <li><a href="content.html">Content</a></li>
     <li><a href="gallery.html">Gallery</a></li>
-    <li><a href="videos.html">Videos</a></li>
-    <li class="nav-news-item">
-      <a href="news.html">News<span class="nav-news-dot" id="news-dot"></span></a>
-      <div class="nav-cord-wrap" id="cord-wrap" title="Pull to dismiss">
-        <img src="images/cord.png" alt="pull cord" class="nav-cord-img" />
-        <div class="nav-cord-glow"></div>
-      </div>
-    </li>
     <li><a href="membership.html">Membership</a></li>
     <li><a href="contact.html">Contact</a></li>
     <li><a href="merch.html">Merch</a></li>
   </ul>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+<script>
+  (function() {
+    const btn = document.getElementById('nav-hamburger');
+    const links = document.querySelector('.nav-links');
+    if (btn && links) {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('open');
+        links.classList.toggle('open');
+      });
+      links.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          btn.classList.remove('open');
+          links.classList.remove('open');
+        });
+      });
+    }
+  })();
+</script>
 
 <section class="hero" id="hero">
   <div class="hero-parallax-bg" id="parallax-bg"></div>
@@ -291,7 +300,7 @@
   <div class="hero-content hero-text-section fade-up fade-up-2">
     <div class="hero-ornament">Stories by yours truly</div>
     <h1 class="hero-title">Ludicrous<br>Chronicles</h1>
-    <p class="hero-subtitle">An illustrated audiobook of an era long forgotten, yet still longed for — voiced, drawn, and penned by a singular hand.</p>
+    <p class="hero-subtitle">An illustrated audiobook of an era long forgotten, yet still longed for — penned, drawn, and voiced by one hand.</p>
     <div class="hero-divider"></div>
     <div class="hero-ctas">
       <a href="content.html" class="btn-primary">Enter the Archive</a>
@@ -319,13 +328,13 @@
       <a href="content.html" class="teaser-card">
         <div class="teaser-icon">Voice Acting</div>
         <h3>The Narration</h3>
-        <p>Most (main) characters voiced by me — by some girl who drew, wrote, and narrated the whole affair and has yet to show any signs of becoming a retard. How she manages, who's to say?</p>
+        <p>Every character voiced in full — by someone who drew, wrote, and narrated the whole affair and has yet to show any signs of becoming a retard. How she manages, we'll never know.</p>
         <span class="teaser-arrow">Listen →</span>
       </a>
       <a href="content.html" class="teaser-card">
         <div class="teaser-icon">Illustration</div>
         <h3>The Art</h3>
-        <p>Original illustrations for each chapter. Because apparently writing it wasn't enough, no. Then she had to rope her friend to animate for her sake. Poor fella.</p>
+        <p>Original illustrations for each chapter. Because apparently writing it wasn't enough.</p>
         <span class="teaser-arrow">View gallery →</span>
       </a>
     </div>
@@ -349,7 +358,7 @@
       <svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>
       X / Twitter
     </a>
-    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank" title="Note: This work is for authorized viewers only. However, it's available on this site to read for free">
+    <a class="socials-link" href="https://archiveofourown.org/users/Dj_Lucario/pseuds/Spite_Mistress/pseuds/Spite_Mistress" target="_blank">
       <svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>
       AO3
     </a>
@@ -370,7 +379,7 @@
 <footer>
   <span class="footer-brand">Ludicrous Chronicles</span>
   <p class="footer-copy">© 2026 Ludicrous Chronicles. All rights reserved.</p>
-  <p class="footer-copy" style="margin-top:0.4rem;">Story, Art &amp; Voice by Mistress Spite &nbsp;·&nbsp; Animation by Pineapple Taco</p>
+  <p class="footer-copy" style="margin-top:0.4rem;">Story, Art &amp; Voice by Mistress Spite &nbsp;·&nbsp; Animation by Taco Pineapple</p>
 </footer>
 
 <script>
@@ -402,24 +411,5 @@
     });
   }
 </script>
-<script>
-  (function() {
-    const cord = document.getElementById('cord-wrap');
-    const dot = document.getElementById('news-dot');
-    const dismissed = localStorage.getItem('news-dismissed');
-    if (dismissed) {
-      if (cord) cord.classList.add('pulled');
-      if (dot) dot.classList.add('off');
-    }
-    if (cord) {
-      cord.addEventListener('click', () => {
-        cord.classList.add('pulled');
-        if (dot) dot.classList.add('off');
-        localStorage.setItem('news-dismissed', '1');
-      });
-    }
-  })();
-</script>
-<script src="socials.js"></script>
 </body>
 </html>
