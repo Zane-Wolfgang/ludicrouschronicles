@@ -282,8 +282,28 @@
     <li><a href="contact.html">Contact</a></li>
     <li><a href="merch.html">Merch</a></li>
   </ul>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
-
+<script>
+  (function() {
+    const btn = document.getElementById('nav-hamburger');
+    const links = document.querySelector('.nav-links');
+    if (btn && links) {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('open');
+        links.classList.toggle('open');
+      });
+      links.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          btn.classList.remove('open');
+          links.classList.remove('open');
+        });
+      });
+    }
+  })();
+</script>
 <div class="chapter-wrap">
 
   <!-- Bookmark banner -->
@@ -465,6 +485,8 @@ function markdownToHtml(md) {
 
   // Raw markdown — convert asterisks manually
   let html = md
+    // Links [text](url) — must come before other replacements
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>')
     // Bold italic (must come before bold and italic)
     .replace(/\*\*\*(.*?)\*\*\*/gs, '<strong><em>$1</em></strong>')
     // Bold
