@@ -244,12 +244,32 @@
     <li><a href="contact.html">Contact</a></li>
     <li><a href="merch.html">Merch</a></li>
   </ul>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
-
+<script>
+  (function() {
+    const btn = document.getElementById('nav-hamburger');
+    const links = document.querySelector('.nav-links');
+    if (btn && links) {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('open');
+        links.classList.toggle('open');
+      });
+      links.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          btn.classList.remove('open');
+          links.classList.remove('open');
+        });
+      });
+    }
+  })();
+</script>
 <div class="page-header">
   <div class="section-label fade-up fade-up-1">The Chronicler</div>
   <h1 class="section-title fade-up fade-up-2">Ludicrous Chronicles</h1>
-  <p class="section-body fade-up fade-up-3">Writer, voice actor, illustrator — all one woman. The other hand: her faithful companion, Pineapple Taco, who choreographs (nearly all) the animation.</p>
+  <p class="section-body fade-up fade-up-3">Writer, voice actor, illustrator — all one woman. The other hand: her faithful companion, Pineapple Taco, who choreographs the animation.</p>
 </div>
 
 <section>
@@ -260,10 +280,9 @@
     <div class="about-portrait-placeholder" style="display:none;">Your portrait<br>or character art<br>goes here</div>
       </div>
       <div class="about-text fade-up fade-up-2">
-        <p><span style="font-family:'Cinzel',serif;color:#8a6e2f;font-weight:800;font-style:normal;">Mistress Spite</span> — a writer, voice actor, and illustrator. I'm an enigma, if you will.
-<p><span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#c9a84c;display:block;margin-bottom:0.5rem;">"Be well aware... The trek I take is none for the weak, for I reside in the land of the free — follow my project at your own peril."</span> </p>
-        <p><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#8a6e2f;display:block;margin-bottom:0.5rem;">The Work</span>The project is a <strong>mixed-genre illustrated audiobook</strong>: a single ongoing story, written as often as I can manage, drawn chapter by chapter, and narrated by.. me, <span style="font-family:'Cinzel',serif;color:#c9a84c;font-style:normal;">Mistress Spite</span>! Every chapter contains a drawing — Lest I'm dead. But then you don't get more writing either, so let's hope for the best.</p>
-        <p><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#8a6e2f;display:block;margin-bottom:0.5rem;">The World</span>The story is set in the <strong>1920's</strong> with a shadow of <strong>Victorian architecture</strong>. Gas lamps flicker over cobblestones and jazz plays somewhere in a cozy establishment. Strange things are common here. Perfectly normal, frankly.</p>
+        <p><span style="font-family:'Cinzel',serif;color:#c9a84c;font-weight:700;font-style:normal;">Mistress Spite</span> — a writer, voice actor, and illustrator. I'm an enigma, if you will.</p>
+        <p><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#8a6e2f;display:block;margin-bottom:0.5rem;">The Work</span>The project is a <strong>mixed-genre illustrated audiobook</strong>: a single ongoing story, written daily, drawn chapter by chapter, and narrated in full. Every chapter contains a drawing. Lest I'm dead. But then you don't get more writing either, so let's hope for the best.</p>
+        <p><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#8a6e2f;display:block;margin-bottom:0.5rem;">The World</span>The story is set in the shadow of <strong>Victorian architecture</strong> and the noise of the <strong>1920s</strong>. Gas lamps flicker over cobblestones and jazz plays somewhere in the dark. Strange things are common here. Perfectly normal, really.</p>
         <p><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#8a6e2f;display:block;margin-bottom:0.5rem;">The Reality</span>A YouTube channel, a membership, and an ongoing project <span class="easter-egg">I genuinely can't stop working on<span class="easter-tooltip"><img src="images/help-me.gif" alt="help me" /></span></span>.</p>
         <div class="craft-tags">
           <span class="craft-tag">Writing</span>
@@ -285,22 +304,22 @@
       <div class="influence-card">
         <div class="influence-era">1880s – 1900s</div>
         <h3>Victorian Gothic</h3>
-        <p>The architecture is still soundly Victorian due to my incredibly wonderful tastes. If that's what you're looking for, you've come to the right place.</p>
+        <p>The architecture is still soundly Victorian. If that's what you're looking for, you've come to the right place.</p>
       </div>
       <div class="influence-card">
         <div class="influence-era">1920s</div>
         <h3>Jazz Age Flair</h3>
-        <p>Somewhere in New England — Connecticut I'd say — a town in the roaring twenties is carrying a secret. One Zane Wolfgang has been looking for, and has thus far been denied.</p>
+        <p>Somewhere in New England — Connecticut, supposedly — a town in the roaring twenties is carrying a secret. One Zane Wolfgang has been looking for, and has thus far been denied.</p>
       </div>
       <div class="influence-card">
         <div class="influence-era">Craft</div>
         <h3>Voice & Character</h3>
-        <p>Every character voiced — the majority by yours truly, the remainder handled by AI due to the lack of compensation. Casting calls forthcoming, presumably.</p>
+        <p>Every character voiced — the majority by yours truly, the remainder handled by AI with all the dignity one can muster while between budgets. Casting calls forthcoming, presumably.</p>
       </div>
       <div class="influence-card">
         <div class="influence-era">Vision</div>
         <h3>Image & Word Together</h3>
-        <p>Art produced entirely through spontaneous decisions, excruciating revision, and a frankly unreasonable amount of winging it between a week and months. Somehow comprehensible. Astounding, isn't it?</p>
+        <p>Art produced entirely through spontaneous decisions, excruciating revision, and a frankly unreasonable amount of winging it. Somehow comprehensible. Astounding, isn't it.</p>
       </div>
     </div>
   </div>
@@ -374,6 +393,7 @@
     }
   })();
 </script>
+<script src="auth.js"></script>
 <script src="socials.js"></script>
 </body>
 </html>
