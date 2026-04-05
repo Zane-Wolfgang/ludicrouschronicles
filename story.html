@@ -179,8 +179,28 @@
     <li><a href="contact.html">Contact</a></li>
     <li><a href="merch.html">Merch</a></li>
   </ul>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
-
+<script>
+  (function() {
+    const btn = document.getElementById('nav-hamburger');
+    const links = document.querySelector('.nav-links');
+    if (btn && links) {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('open');
+        links.classList.toggle('open');
+      });
+      links.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          btn.classList.remove('open');
+          links.classList.remove('open');
+        });
+      });
+    }
+  })();
+</script>
 <div class="chapter-wrap">
   <div id="chapter-loading">Loading chapter...</div>
   <div id="chapter-content" style="display:none;">
@@ -303,38 +323,33 @@ async function loadChapter() {
   }
 }
 
-// Simple markdown + HTML renderer
+// Markdown renderer — always converts asterisks even if CMS added HTML tags
 function markdownToHtml(md) {
   if (!md) return '';
 
-  // Strip stray backslashes from CMS
+  // Strip backslashes from CMS
   md = md.replace(/\\/g, '');
 
-  // If already fully HTML, process inline markdown within it then return
-  if (md.includes('<p>')) {
-    // Still convert any remaining asterisks inside HTML
-    return md
-      .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/_(.*?)_/g, '<em>$1</em>');
-  }
-
-  // Raw markdown — convert fully
-  let html = md
+  // Always convert asterisks first regardless of HTML tags
+  md = md
     .replace(/\*\*\*(.*?)\*\*\*/gs, '<strong><em>$1</em></strong>')
     .replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/gs, '<em>$1</em>')
     .replace(/_(.*?)_/gs, '<em>$1</em>')
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>');
 
-  const paragraphs = html.split(/\n\n+/);
+  // If CMS already wrapped in <p> tags, return as-is
+  if (md.includes('<p>')) return md;
+
+  // Otherwise wrap in paragraphs
+  const paragraphs = md.split(/\n\n+/);
   return paragraphs
     .map(p => p.trim())
     .filter(p => p.length > 0)
     .map(p => `<p>${p.replace(/\n/g, ' ')}</p>`)
     .join('\n');
 }
+
 
 loadChapter();
 </script>
