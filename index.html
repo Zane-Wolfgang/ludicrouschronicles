@@ -4,7 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ludicrous Chronicles</title>
-<link rel="icon" type="image/png" href="images/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+  <link rel="icon" type="image/png" href="images/favicon.png">
 <link rel="stylesheet" href="style.css">
 <style>
   /* ── HERO ── */
@@ -267,6 +271,14 @@
     <li><a href="about.html">About</a></li>
     <li><a href="content.html">Content</a></li>
     <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="videos.html">Videos</a></li>
+    <li class="nav-news-item">
+      <a href="news.html">News<span class="nav-news-dot" id="news-dot"></span></a>
+      <div class="nav-cord-wrap" id="cord-wrap" title="Pull to dismiss">
+        <img src="images/cord.png" alt="pull cord" class="nav-cord-img" />
+        <div class="nav-cord-glow"></div>
+      </div>
+    </li>
     <li><a href="membership.html">Membership</a></li>
     <li><a href="contact.html">Contact</a></li>
     <li><a href="merch.html">Merch</a></li>
@@ -358,7 +370,7 @@
       <svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>
       X / Twitter
     </a>
-    <a class="socials-link" href="https://archiveofourown.org/users/Dj_Lucario/pseuds/Spite_Mistress/pseuds/Spite_Mistress" target="_blank">
+    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank" title="Note: This work is for authorized viewers only. However, it's available on this site to read for free">
       <svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>
       AO3
     </a>
@@ -379,7 +391,7 @@
 <footer>
   <span class="footer-brand">Ludicrous Chronicles</span>
   <p class="footer-copy">© 2026 Ludicrous Chronicles. All rights reserved.</p>
-  <p class="footer-copy" style="margin-top:0.4rem;">Story, Art &amp; Voice by Mistress Spite &nbsp;·&nbsp; Animation by Taco Pineapple</p>
+  <p class="footer-copy" style="margin-top:0.4rem;">Story, Art &amp; Voice by Mistress Spite &nbsp;·&nbsp; Animation by Pineapple Taco</p>
 </footer>
 
 <script>
@@ -411,5 +423,25 @@
     });
   }
 </script>
+<script>
+  (function() {
+    const cord = document.getElementById('cord-wrap');
+    const dot = document.getElementById('news-dot');
+    const dismissed = localStorage.getItem('news-dismissed');
+    if (dismissed) {
+      if (cord) cord.classList.add('pulled');
+      if (dot) dot.classList.add('off');
+    }
+    if (cord) {
+      cord.addEventListener('click', () => {
+        cord.classList.add('pulled');
+        if (dot) dot.classList.add('off');
+        localStorage.setItem('news-dismissed', '1');
+      });
+    }
+  })();
+</script>
+<script src="auth.js"></script>
+<script src="socials.js"></script>
 </body>
 </html>
