@@ -187,8 +187,28 @@
     <li><a href="contact.html">Contact</a></li>
     <li><a href="merch.html" class="active">Merch</a></li>
   </ul>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
-
+<script>
+  (function() {
+    const btn = document.getElementById('nav-hamburger');
+    const links = document.querySelector('.nav-links');
+    if (btn && links) {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('open');
+        links.classList.toggle('open');
+      });
+      links.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          btn.classList.remove('open');
+          links.classList.remove('open');
+        });
+      });
+    }
+  })();
+</script>
 <div class="merch-hero">
   <div class="merch-bg"></div>
   <div class="merch-content">
@@ -277,6 +297,7 @@
     }
   })();
 </script>
+<script src="auth.js"></script>
 <script src="socials.js"></script>
 </body>
 </html>
