@@ -410,10 +410,7 @@ async function loadAllContent() {
         let href = isLocked ? 'membership.html' : (item.href || '#');
         if (!isLocked && item.type === 'Video') href = `videos.html?play=${encodeURIComponent(item.title)}`;
         const filterType = item.type === 'Video' ? 'video' : (item.filter_type || 'story');
-        // Chapters: sort by number as a date offset so order is preserved within same day
-        const sortDate = item.type === 'Chapter'
-          ? new Date(2020,0,1).getTime() + (chNum * 86400000)
-          : new Date(item.date||0).getTime();
+        const sortDate = new Date(item.date||0).getTime();
         addEntry(sortDate, makeCard(href, item.thumbnail||'', displayTitle,
           item.label||item.type, typeDisplay, isLocked, filterType, !isLocked), displayTitle);
       });
