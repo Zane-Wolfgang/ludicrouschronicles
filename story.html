@@ -64,7 +64,6 @@
     margin: 3rem auto;
   }
 
-  /* ── Body text ── */
   .chapter-body {
     font-family: 'EB Garamond', Georgia, serif;
     font-size: 1.22rem;
@@ -78,37 +77,27 @@
     text-indent: 2.5em;
   }
 
-  .chapter-body p.dropcap {
-    text-indent: 0;
-  }
+  .chapter-body p.dropcap { text-indent: 0; }
 
-  /* Italics — lighter gold */
-  .chapter-body em,
-  .chapter-body i {
+  .chapter-body em, .chapter-body i {
     font-style: italic;
     color: #e0bc6a;
     font-weight: 400;
   }
 
-  /* Bold — slightly brighter gold */
-  .chapter-body strong,
-  .chapter-body b {
+  .chapter-body strong, .chapter-body b {
     font-weight: 600;
     color: #e0bc6a;
     font-style: normal;
   }
 
-  /* Bold italic */
-  .chapter-body strong em,
-  .chapter-body em strong,
-  .chapter-body b i,
-  .chapter-body i b {
+  .chapter-body strong em, .chapter-body em strong,
+  .chapter-body b i, .chapter-body i b {
     font-style: italic;
     font-weight: 600;
     color: #e8c87a;
   }
 
-  /* Drop cap */
   .chapter-body p.dropcap::first-letter {
     font-family: 'Cinzel Decorative', serif;
     font-size: 4rem;
@@ -120,7 +109,6 @@
     text-shadow: 0 0 20px rgba(201,168,76,0.4);
   }
 
-  /* Dramatic short paragraphs */
   .chapter-body p.beat {
     text-indent: 0;
     margin-top: 2.5rem;
@@ -201,16 +189,17 @@
     }
   })();
 </script>
+
 <div class="chapter-wrap">
-  <div id="chapter-loading">Loading chapter...</div>
+  <div id="chapter-loading">Loading...</div>
   <div id="chapter-content" style="display:none;">
 
     <div class="chapter-header">
-      <span class="chapter-label" id="ch-label">Ghost in Me — by Mistress Spite</span>
+      <span class="chapter-label" id="ch-label">Ghost in Me — Short Story</span>
       <h1 class="chapter-title" id="ch-title"></h1>
     </div>
 
-    <img class="chapter-art" id="ch-art" src="" alt="Chapter Art" style="display:none;" />
+    <img class="chapter-art" id="ch-art" src="" alt="" style="display:none;" />
 
     <div class="chapter-divider"></div>
 
@@ -221,7 +210,7 @@
     <div class="chapter-nav">
       <a href="content.html">← Back to Content</a>
       <span id="ch-end" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);"></span>
-      <a href="content.html">Back to Content ←</a>
+      <a href="content.html">Back to Content →</a>
     </div>
 
   </div>
@@ -260,98 +249,85 @@
 </footer>
 
 <script>
-// Load chapter from URL parameter ?chapter=2 or ?chapter=the-beginning
-async function loadChapter() {
+async function loadStory() {
   const params = new URLSearchParams(window.location.search);
-  const num = params.get('chapter');
-  if (!num) { window.location.href = 'content.html'; return; }
+  const slug = params.get('story');
+  if (!slug) { window.location.href = 'content.html'; return; }
 
   try {
     const res = await fetch('/_data/content-index.json');
     const items = await res.json();
-    const chapter = items.find(i =>
-      i.number == num ||
-      (i.filename && i.filename.includes('chapter-' + num))
+    const story = items.find(i =>
+      (i.type === 'Short Story' || i.type === 'Story') &&
+      (i.slug === slug || (i.filename && i.filename.replace('.md','') === slug))
     );
 
-    if (!chapter) { window.location.href = 'content.html'; return; }
+    if (!story) { window.location.href = 'content.html'; return; }
 
-    // Set title
-    document.title = `Chapter ${chapter.number} — ${chapter.title} — Ludicrous Chronicles`;
-    document.getElementById('ch-title').textContent = `Chapter ${chapter.number}`;
-    document.getElementById('ch-label').textContent = `Ghost in Me — by Mistress Spite`;
-    document.getElementById('ch-end').textContent = `End of Chapter ${chapter.number}`;
-
-    // Set art
-    if (chapter.art || chapter.thumbnail) {
-      const art = document.getElementById('ch-art');
-      art.src = chapter.art || chapter.thumbnail;
-      art.style.display = 'block';
-      art.alt = chapter.title;
+    // Tier check — redirect if locked
+    const userTier = window.getUserTier ? await window.getUserTier() : 'free';
+    const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
+    if (tRank[story.tier || 'free'] > tRank[userTier]) {
+      window.location.href = 'membership.html';
+      return;
     }
 
-    // Render body — markdown to HTML
-    const body = chapter.body || '';
-    const html = markdownToHtml(body);
-    const bodyEl = document.getElementById('ch-body');
-    bodyEl.innerHTML = html;
+    document.title = `${story.title} — Ludicrous Chronicles`;
+    document.getElementById('ch-title').textContent = story.title;
+    document.getElementById('ch-label').textContent = 'Ghost in Me — Short Story';
+    document.getElementById('ch-end').textContent = `End of "${story.title}"`;
 
-    // Apply drop cap to first paragraph
+    if (story.art || story.thumbnail) {
+      const art = document.getElementById('ch-art');
+      art.src = story.art || story.thumbnail;
+      art.style.display = 'block';
+    }
+
+    const body = (story.body || '').replace(/\\/g, '');
+    const bodyEl = document.getElementById('ch-body');
+    bodyEl.innerHTML = markdownToHtml(body);
+
     const firstP = bodyEl.querySelector('p');
     if (firstP) firstP.classList.add('dropcap');
 
-    // Apply beat class to short dramatic paragraphs
     bodyEl.querySelectorAll('p').forEach(p => {
       if (p.textContent.trim().length < 60 && !p.classList.contains('dropcap')) {
         p.classList.add('beat');
       }
     });
 
-    // Next chapter link
-    const nextChapter = items.find(i => i.number == (parseInt(chapter.number) + 1));
-    if (nextChapter) {
-      const nextLink = document.getElementById('ch-next');
-      nextLink.textContent = `Chapter ${nextChapter.number} →`;
-      nextLink.href = `chapter.html?chapter=${nextChapter.number}`;
-    }
-
     document.getElementById('chapter-loading').style.display = 'none';
     document.getElementById('chapter-content').style.display = 'block';
 
   } catch(e) {
-    document.getElementById('chapter-loading').textContent = 'Chapter not found.';
+    document.getElementById('chapter-loading').textContent = 'Story not found.';
   }
 }
 
-// Markdown renderer — always converts asterisks even if CMS added HTML tags
 function markdownToHtml(md) {
   if (!md) return '';
-
-  // Strip backslashes from CMS
   md = md.replace(/\\/g, '');
 
-  // Always convert asterisks first regardless of HTML tags
-  md = md
-    .replace(/\*\*\*(.*?)\*\*\*/gs, '<strong><em>$1</em></strong>')
-    .replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/gs, '<em>$1</em>')
-    .replace(/_(.*?)_/gs, '<em>$1</em>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>');
+  function inlineConvert(str) {
+    return str
+      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;display:block;margin:1.5rem auto;border:1px solid var(--border);">')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>')
+      .replace(/\*\*\*(.*?)\*\*\*/gs, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/gs, '<em>$1</em>')
+      .replace(/_(.*?)_/gs, '<em>$1</em>');
+  }
 
-  // If CMS already wrapped in <p> tags, return as-is
-  if (md.includes('<p>')) return md;
+  if (md.includes('<p>')) return inlineConvert(md);
 
-  // Otherwise wrap in paragraphs
-  const paragraphs = md.split(/\n\n+/);
-  return paragraphs
+  return md.split(/\n\n+/)
     .map(p => p.trim())
     .filter(p => p.length > 0)
-    .map(p => `<p>${p.replace(/\n/g, ' ')}</p>`)
+    .map(p => p.startsWith('<') ? inlineConvert(p) : `<p>${inlineConvert(p).replace(/\n/g, '<br>')}</p>`)
     .join('\n');
 }
 
-
-loadChapter();
+loadStory();
 </script>
 
 <script src="auth.js"></script>
@@ -391,6 +367,5 @@ loadChapter();
     });
   }
 </script>
-
 </body>
 </html>
