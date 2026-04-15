@@ -184,7 +184,8 @@ Zane nodded curtly.\
 
 *Looks as though business is flourishing—wouldn’t be able to afford this otherwise, could they? Or perhaps they funneled funds from the town..* He pinned the bends of his shirt collar between his fingers, fully concealing his threads from view.\
 \
-                          ***…Wusuh shh blssh…hhuuss sss uesss hyys…smmss rsshshmmm…*** \
+                          ***…Wusuh shh blssh…hhuuss sss uesss hyys…smmss rsshshmmm…*** \
+\
 “Ah–” Zane found his fingers tightly capturing the painted metal handle beside the staircase with vigor.
 
 With a hiss, he managed a: “*Quiet, you*,” as he palmed his temple, ruffling what bangs rested over the bridge of his nose with his fingers.\
@@ -223,13 +224,7 @@ Those voices, along with this foolish accent, led him to be stalled just enough 
 Zane followed the woman’s animated conversation with his eyes, then crossed his arms.\
 *Lovely. I suppose I’ll wait.*  ﻿                             
 
-
-
-
-
- **                                                           . —«——⁜——»— .**
-
-
+  **                                                          . —«——⁜——»— .**
 
 “Next in line!”
 
@@ -343,11 +338,7 @@ Zane felt the grind of his teeth as he tried to open his mouth to talk—\
 He hardly could even comprehend the mere fact she’d risen her face against him; that alone would have warranted his hand to fly on his own (had there been no glass barrier), but her logic had rattled him furthermore.\
 “Swallow that pride of yours, son.” She landed back in her seat, out of fumes. “Tuck the tail between your legs n’ go. Keep that head of yours. Any one object can be replaced, but not a life.”
 
-
-
- **                                                           . —«——⁜——»— .**
-
-
+  **                                                          . —«——⁜——»— .**
 
 Zane held the copy of a document of this *Rachel* girl’s information a few minutes later, finding himself seated on one of the first few stone steps toward Ashoft’s Public Records Archive, or what other name it went by.\
 He felt as defused as the woman had, and defeated as his threads felt among the rustles of his clothes. As though the clouds felt this, they accentuated the gloomy atmosphere by swallowing up the sun as a great mythical beast would.
