@@ -316,18 +316,24 @@ Others that recently arrived in the lobby glance at him shortly, then resume to 
 \
 ***RACHEL TALISMAN REDLOCK***
 
+***\-***﻿
+
 ***SEX: F***\
 \
-\
+-﻿\
 ***RACE: WHITE / RUSSIAN / AMERICAN***\
 \
+-﻿\
+***BIRTHDAY: 1908 10/18***\
 \
-***BIRTHDAY: 1908 10/18***
+***\-***﻿
 
 ***OCCUPATION: UNCLASSIFIED***
 
-\
+\-﻿\
 ***DESCRIPTION: FLOWING BLACK & WHITE HAIR, GENERALLY TIED IN A PONYTAIL OF THREE WAYS, MANDARINE COLOR EYES, EUROPEAN FACE STRUCTURE, SMALL STATURE, MECHANICAL LEGS, USUALLY WEARING BROWN TRENCHCOAT AND YELLOW JABOT***
+
+*\-*﻿
 
 *Curious that she’s.. Half… ? Half-Russian, specifically.* Whispered a corner of his mind he ended up smothering with an imaginary heel of his shoe.\
 “You don’t mean to tell me this has happened on numerous occasions?” He asked with half a mind to the question he just released, reading the form twice, thrice, however many times over he had.\
