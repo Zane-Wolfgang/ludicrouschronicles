@@ -218,14 +218,9 @@ Uneasily he smoothed his ruffled vest after the continuously lengthy pause. Shou
 Zane’s visage contorted. A *woman*. British, a voice compellingly deeper a few octaves, but unmistakable female, and certainly sultry. But—by the suns. He’s only heard the worst of rumors with the females in the workforce.\
 Okay, he eased himself, some twisted glee settling in his stomach to the thought of dispatching her.
 
+\-                        ***SHhUS Hssmmm shhsh hashush hsuah…***  
 
-
-\
-- ﻿                                              ***SHhUS Hssmmm shhsh hashush hsuah…***  
-
-\    
-
-
+ 
 
 *By the suns, are you incapable of being quiet?* He smacked his forehead with his palm harsher than he’d meant, and jostled his concentration for a moment.\
 Those voices, along with this foolish accent, led him to be stalled just enough to allow another awaiting recipient to come to the window.\
@@ -330,8 +325,9 @@ Others that recently arrived in the lobby glance at him shortly, then resume to 
 
 ***OCCUPATION: UNCLASSIFIED***
 
-\-﻿\
-***DESCRIPTION: FLOWING BLACK & WHITE HAIR, GENERALLY TIED IN A PONYTAIL OF THREE WAYS, MANDARINE COLOR EYES, EUROPEAN FACE STRUCTURE, SMALL STATURE, MECHANICAL LEGS, USUALLY WEARING BROWN TRENCHCOAT AND YELLOW JABOT***
+\-﻿
+
+**DESCRIPTION: FLOWING BLACK & WHITE HAIR, GENERALLY TIED IN A PONYTAIL OF THREE WAYS, MANDARIN COLOR EYES, FAIR COMPLEXTION, SMALL BUILD, MECHANICAL LEGS, USUALLY WEARING BROWN TRENCHCOAT AND YELLOW JABOT**
 
 *\-*﻿
 
@@ -354,7 +350,7 @@ Zane felt the grind of his teeth as he tried to open his mouth to talk—\
 He hardly could even comprehend the mere fact she’d risen her face against him; that alone would have warranted his hand to fly on his own (had there been no glass barrier), but her logic had rattled him furthermore.\
 “Swallow that pride of yours, son.” She landed back in her seat, out of fumes. “Tuck the tail between your legs n’ go. Keep that head of yours. Any one object can be replaced, but not a life.”
 
-\-  **                                                          . —«——⁜——»— .**
+\-   **                                                         . —«——⁜——»— .**
 
 Zane held the copy of a document of this *Rachel* girl’s information a few minutes later, finding himself seated on one of the first few stone steps toward Ashoft’s Public Records Archive, or what other name it went by.\
 He felt as defused as the woman had, and defeated as his threads felt among the rustles of his clothes. As though the clouds felt this, they accentuated the gloomy atmosphere by swallowing up the sun as a great mythical beast would.
