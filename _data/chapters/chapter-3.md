@@ -87,8 +87,6 @@ Dwindling about rather than heading over to plunge his wrath upon the perpetrato
 
 The coachman side-eyed Zane's return, peering back at how quickly he bustled onto the carriage, acutely raising his brows as Elijah awkwardly giggled to cover what little disappointment she felt in pursuit. Hurriedly, she closed the door to avoid any confrontation (was there any to be had) and settled unpleasantly back into her seat, which retained little warmth.
 
-
-
 It was only a moment before the carriage jerked into motion and steadily picked up momentum, swaying the two back and fourth as the coachman took an elaborate berth that took quite some doing, and back they tunneled through their earlier path. Well, *supposedly*, of course, since Zane had been unconscious for the duration of the ride over.
 
 A strong bustle set Zane’s fingers to find their way into the cushion underneath him, digging at the seat to steady himself.
@@ -113,8 +111,6 @@ Zane flinched at the sheer volume of which the declaration was bellowed. A creas
 
 “I’m not quite deaf ye–”
 
-
-
 “Ashoft’s the name,” called the coachman, before Zane could finish—to the dirty-blonde’s credit, he’d managed to restrain his threads from going out and silencing the man with methods that would cripple the poor soul for the rest of his days.
 
 *Behave,* he scolded his threads with a disdainful scrunch of his nose, hiking up his shirt collar and ignoring their current incessant swarming in his mind, which.. was no task to sneeze at. 
@@ -136,8 +132,6 @@ So maybe it irked him a touch. He wouldn’t admit *that* (*food however.. Sound
 “That’s fine.”
 
 “Consider it done.” She piped up with a small smile, gleeful to be of some use.
-
-
 
 \
 \
@@ -161,8 +155,6 @@ In a strikingly close perimeter to the first voice, followed:
 “Oh, that's plenty fine. It's *tear-able* regardless.”
 
 “***GERALD***!”
-
-
 
 Zane, despite seeing the passerby with a subtle grin they withheld over their expressions, some beckoning his friend to not-quite-whisper into another's ear: “\*It’s the Morst Twins again.. Always those two bickering, aren’t they\*”... withdrew his head from the carriage window after catching wind of the hubub.\
 “I think that’s… er—enough *fresh air* for now.” He conceded, gingerly screwing the handle to snuff out the outside world.
@@ -227,9 +219,15 @@ Okay, he eased himself, some twisted glee settling in his stomach to the thought
 *By the suns, are you incapable of being quiet?* He smacked his forehead with his palm harsher than he’d meant, and jostled his concentration for a moment.\
 Those voices, along with this foolish accent, led him to be stalled just enough to allow another awaiting recipient to come to the window.\
 Zane followed the woman’s animated conversation with his eyes, then crossed his arms.\
-*Lovely. I suppose I’ll wait.*  ﻿                                             ![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAO0AAAAoCAYAAAASaH2IAAAQAElEQVR4Aeydf5BlR1XHz5nZnRDWkEgwEJOAWAqEKuVnQUohZs3uLEIUY8oFiSUof4BlRE0qgroJLwmxIiIQKSijpSVIKhqoaBRiMrO4RCQoCv5EpKwS5YcokCUsSwg7mzl8vn3vudPzdnZ+7ezUAj253z0/+nT3ndP97e5335uXCWs/xzUDEeZLdRC32uRS/nGf6gvpj5FNCGlLys724i47I2bsCvmFuq5sQfGSNRRXoy5r+omVgUba4zwe7hbZRVSE8932oPzySSYKccYInW0o1kc2LwRtZR3Zag+yXssS8f/4X4ceSFPd6NuLvo7iY59tUXmEuaC4GqWsr1d04iQTqpN6k5ubgUba45zvenKLLEL05AmII1u3IJ9QiNMTWn7ZSTrFKqb4RzYvmWXSwVU+DU8BusVMtzB4357qyy/4djtc+mdRcSCfEP29Sc96RScmIHGEedqSDZufgUba45zzmhDqSpPeRx3hXMTpSSKfoBhhEUEgnerJX8cUmzLJmLE/NLMDoLsm7WyUZce37p/Yco23H/39qVAkdsgrXQgWHcmGzc3AsoO6ubdywve2rhuM6HYmVQ4meU76YNeSL0kSxAnyCeMEGerNWMQC3qfYHo9C/gcol19ony5K/0+8y761qhdxp52pouxfelQELXaYq1z3JcgnpO4sOrIbNjcDjbSbkO/VTHJnBxMUK+i2oifRIGfsavldx9+tdgr6s0REpJnbnJk9BhxxxaxdYlO2n5g/KHXNfsom7H/HA0XQ2pf3IynovoSMyftKu8nNyUAj7XHOsya7EP3Omt15f6xNO6ViBdlJopT4vg2Uy7fbQRd5sWIGfaf9MOojQbkg6gVF0T9h77RJO9t32ktlUu+PJGvUZKz97hZpS0/IV92XzIZNykAj7XFOdCRZ/31h8meX5cg6a7tixq4FL4u9toO3bB6b5eMSsv38Ej7Hty3uML2GRe2vsPeg/SztBj1fVR+Xi8/sMOXDJTIOBgoxF3IvL0S+HLwS/Zm4hyv2WXn6PDiasmkZaKQ9zqn2fkf1kZWnveoOErwLhE3Zfgh1J76fAb9j8zbLEfa/VFbh9yirLxE8agf6m6HQx5GfpN4vIHVN0PacFN9lr5EUKP+8pE/bVkmBXfkS/O8Fw+tl/Hu5l1uQ14Ib0P92KGchcl7PRuClMPpjPKpFR2YLYmQ3bHwGGmk3PqeLWozoJnY6g4dI6M+DNF7h7Eovfl5zPoK4XwQvVp0ev07cq/E9v7dFeMN3Gb4tkPQNyDdCwqcgD9DzjUjpxoOnZ6gO9unEO7v6E2UL1Hsnsacgp1U2hjNqm5hr7DTeLpq117vzUAzCakEKpOCQ2fhxFqtoxCUTG3810m58The16EzsdERH2Jd7/1p08FeTO3rdd9i9xN0IpoBDqucQ/yvRtXF18ZmdKlug7BPEnIU8CLE+jK6j9Dbs15TyCfs7/OeC7yn2vH0E/Xq1U7DTnsaOPEv8EbtkcE8ipMqIGSmeur/EkfkVPrL5gLCSgmIUL+kQV7JhYzPQSLux+TxqazEDaSj1absJMVzaib2f3HGrTQ06RBiCUHiIdJdDdgHCnBUdee/v7WlCzgBX2FbrXhOHdcdxt4eWmK12prl9FPwrcY+TDwLuQRdJpyQTzv0ERK3tJOTgm6YlN+3kVpcVAlM/45rc+Aw00m58The1KFL2jmc4E52j600B4dilflT+eif23XZIPtVJIkgvvppEu+xMpy38P6i2OEp/Cftk4L7dPl/ktL29yJ3WxczZZ8zticU3bf9JXRPBJH23lX6lR/+aFN+DEVY+4ih/Qv0Jg32nPXvQWWjyvuULbMmGZTOw5sJG2jWnbG0VvD4ez9oF7Jgvs4fbFAT6U+t/RA6pATGlZx3ZqQ8kIkaxgou4aivsA8FCIJ+gNoqcsR8p/rC3KZa+Pyq/IEIlwYZ4SOb9a1LFeHXvsmnrb7jvj6kt2QWTVh5sSc/2pNfty27YuAw00m5cLpdsKQnBZL+EY+0+Jv4Vtt/21sFJDudYmbrKZWvyC8WGRPJJF9S2P93mXOR1+xhth/xqA/029NtVxjH4xdGTXXWEmmCKJ3bxMbePV1lAZpVz/7eDx+dDLPlyIRhi5AR1+5jt2sAMNNJuYDKXakqTXn4m920Q96novwEeLTIhy5UTXmSSI23pmvyC9ESWZ9vBkZb2nwChLg92XPBZYi/OPko5CwI+Ux1BeoS5pBA9SYuO3/t4xfjIyutjyP+b9HEN1keIu9W1WKCobsYoXsA9HL+lN2xcBlZN2uhX2xwQ3YIGS7JhdRmAWP/IRN8CuodFVFNeNeGVS5EpbYpsUa77/MuveMmE90daSKW3fPRJqFPow8fL05ZU287Orf5ke5IU8sovn5D6ELfLytNjn7YXWP/jfV2ZiheKPoLeUr7JEdXYKe9KR0rpa8WqSeujbgByQNRRPViyv75wYtyt8loI20982bqz4hOp/oHnwTjSj1qumLFv56HWZeA69FvA1SrwabsbnCwd38U88NoDbkZ/I/KZ8gs5jmo32KnlCxG2v4+oJprKSlyYS1dcLaU3HD0DPrLytpgihrw7ZxYcEV1OURct0kvZ8gkrkjaqwQsmUHTHL31y5hNqoOHYM+AQJfMcPYHkU8t6zSopQLo9mX/sTzPsb0L+OHghGGUZ8t9A4NOR/KVMi93oL0IufKppxu6OvfY4/Oa5U3MfsoMxz4kmXb4aureoCF6XNX1xBjJ/JZ932ZWxwJ+nK9J78tb6MAeqMpUnViStOstg22+HnNcxAr5zWOU1GVDbtd4MBJNfdZVnDZb3BJJPiGqhhHTXQdSXKP8DdtoTen1CUnXAdxP7PtngsWArGD7ZZPOmHfc7keXhVczYr1JnuHQvMiSFCFrD4Uyi4L1kVHMInn7ZDUtnQPlTSbzHziKLr/UF/vy9/AI5naxz6f0ckF/l41iRtFkh9trp0lntL4oZux79Agb915DtOoYMOJNf1TVoOVjFvsvOJ89hLJTYf+39YPO69a3Y5Qp2RKEY/FPi5+18Yk+C3M+uF9VgcRAIM3+OfZCYc4DbYTsH3/XR7QC3oQ9XUEeGLybrodqv8oZVZOBBex1jUt41gEP3UONDMWMvMX6cOaAco+qDLpOSgvyS41g1aX2H3VsqT9gUUivze5HfB9p1jBkIjsQ5aGqKwQxW5bvRX+QdWX8AfbgUL8NHVr4vSjoEvUQSQnZ/GA95mSR/Ip/gmhhAuhBJyOfap7zrw/FfHB1534RedlPJCHOvPoCBXj54obKG1WXAp+0nzG2H8msTpu/xOpea+0F5LRtBKYYzRtIFzCWvVZM2a/ME9Daav8jm7XRW/S+nv8n1Z8C322HVZkC/AAKy/Zx3RLol2E1LWZB1lMDOeMyFK+y7MD4DumvOPtQpC/8Gi0Na3k+OtCWdPu0+O8nMLtN9xJ32VHTzbqedrOvL37ByBiJMi2EJLPkNuwoOXYxDHy/9c6Qpv4J0QbpQ15U/sSrSMnjbOR5/L5VmNZh0+m5W9LJK4GvXMWaAXVJPgEXWBzSwLIZv0YAJPmJ5rNoft4einfZaMzsTdNdJdhPk/z8ZakfSc3GA+LITUdnOjuoiL8S1CdMRLhTnkDzrFxsiSzYsnwEfyxNjqz/g+AC1HmTcz+OofBH6ktd43QxakrQ0tBNyfhLoKXEweH/F1LmdSk8GRnn5oLn0hmPLgHIMufbYVjuZAS2kC0ikAROy9VpPXy2znLHJ3fYns70sq+Olp99HNi9iC/ILPm1vBi5d90i7w/uy8jWsLwPk8kJqngcmGfe3mttf4Cs8K3LWln1OFJyWBtIyKFoB/kcVaYhXNvb7GrQKegp5Bh1pHb6O+LfQsQi8Le6xkxuWyME+ewhJPo0V9VTkQ4oMc3K3jTzfAIIc3lNyvN0eQC+XjyARxC3GCv+ojbijHGn1d7XO2D1KPmT5gwRVlw0uLzrtOu2nLikkgaUnQrEa7bBH0t4f00bEX9p3BK+H+X0eUX6fNvZjc39sHujp/z77FuWUcd+D1MOo95cxn7bH97L7G+qwa+DXqwL29XglY/sw6gyXc1oqpFWAeWH4o5GPKQ3tspFVPxpAmazes8gDxHVfZeJ2kP/ub7AjczBnX7E5+4KF3Yf8SpGznFmUM7Mr7bCdSq6/HwJsMX4iyKqkyDIiDn0V127bYg8whgdB9PEHLOzPsPeD4qOf1/dlgxB5s0853XkmEt09FHvU3QNj/lnqOyUftkn7uJ3Gnc/Z50y/18Elfu/mu98yB/vtkM3Zl8o4uF1n/JDLZyGOuMizPm1Wf5rtBttiX6wDg7lRSEsjHdPNdjMQZbdVJ6wMv62VVZV81A0g/v/GfljWadJK7taRh0l/rh0glwsfbhBpGJQh1+gqXw70+w7gxLza3F4gHZxq+usfs9/F/3xslVvQno+6ccR/xFUT+IhCHDzLeJraarD1jrmTRoNDIZngmdHDObW8Xf4EPLw886y44HQj6SObn6gHiqAyAZBOwFPM7ceMlTUWtuvAX3ZiZLtWmYHgdYhCA9KkTF12Qj4fHZ1UGbeUZMx+C1LdmmXe/fXPq/CXJ5RB39l2MAFkK1a7q6QgXZAuRHCU75G2ZMP6M8B4uGpHzakJuxeSXmoT9kMqL9hlb7D+Jxgv323d/0aGuTSxaJAoVJwGy6ftn8Ci7y6CxDdb2Nus/aw6AyWXvA5RBR91hJQUAiLJHwyEZPHlGFAmW/7lkHUVk/rQLm0Uf1j50nHpgjMBVtO2YgXNkaCtIvv7k18+yYY1ZqD7RFr51hHnmcGAHVa+8wuSTtUtOuOVuXbmUjkeyyGoUMGuY1qYSw+kIB3CXsq5O79oTI+ti/uE+OcEvYmSSya8bk95DB5MFB2fj3oSMxClLMyHMRjxMCrMFbscnLpZXuvy+Yg21E89ntgqWw2cegKTaFJtqY7uT7buN33yNyydgajyHTN2IwjeLv0g0Q8Fw6V8pkGOD9X15K9zXY7HcgjRr6KLGsiB22enGT+8zr0Z8SlwXszYLyPbtUIGSm7D3JVLjq0xsgn5VC1zXcool08Idl/5pK8EtSdkXN126tlW2oqNMJcch/yC/JJMou5oxn3LJ1vtqUx2w9Ez4KNuYYYrerv0FUSWrxtC6jMP5WOMQV4zn8qpoHqSArHleUTKRcdjDYYK1IAgPeHb7T7jh532Um7jSajPAz8N2rWKDHhFSA1IVqn96ZP0ageVvRzUnjAe41Wf42Wyj1YuvzAeM95HxiiuYekMJOko1fdR6yVnfhvnTnzlu7oyr8pngjJbpI9gHU7FluMx+lGvYBWoC9lp/5ntXZ+GejcP/s+vy5reMtAysDgDIp48Pm3a4J7MU+IL4NCVve/9kmvFiqQVs5O4dOzmNsVWHzZhT+Iti8+ttcMWfwJkoN3CpmUguaMOC3/C9sEhvR/r8q0HE6up5KNua1YsHZ8L3HfYv8TYLqzyhpaBloGFDNTc1SHleQAAAKBJREFUkbdwZ9q2SV8vVkVaNa6zeU3SuMNOGr8hxTW0DLQMLGRAvFmwzIIHjLW9Hn1F0g5EfYctPPHkKTNH46+up8NWp2XgmykDek0rDgn6vb16wBjwSL61YkXS5m7q/Ru86ly6OpIu2dAy8A2bgQ36xcSjmi/Sk0dr7WJF0maDEVY+VaPO5dMqkbrshpaBloEjMxA89xFPaqko+STXg68BAAD//yOxvnsAAAAGSURBVAMAk+nBBoQmjTEAAAAASUVORK5CYII=)
+*Lovely. I suppose I’ll wait.*  ﻿                             
 
-                 
+
+
+
+
+ **                                                           . —«——⁜——»— .**
+
+
 
 “Next in line!”
 
@@ -241,11 +239,7 @@ Now, Zane on impulse desired to usher a polite ‘sorry’ for his behavior, but
 \
 “How may I help you today?” Asked the woman as he approached, her red-wine lips creased into that of a thin line. Her hair cut neck-length, brown and nearly wavy, yet, not quite. Her mascara pegged her as imposing, though her exhausted expression suggested less of that impression. Tucked between her index and middle fingers was a smoldering fag—she held it away from a likely expensive gown of marigold yellow, a splattering of flowers matched with frills; along the frills brush lay a bold embossing tag displaying the name: 
 
-
-
 \| ***Laurice Trickmitch*** |
-
-
 
 *Uncouth for a woman, much?* He eyed the cigar with particular distaste, wrinkling his nose to the putrid scent wafting around her. Were you to inspect her any closer and you could practically make the outline of the smog.\
 And oh, it clung like *muck*, and were Zane a betting man, he’d certainly say he’d gamble a few of his gold coins to the possibility he’d be smelling like her for a few hours at most.                               
@@ -328,8 +322,6 @@ Others that recently arrived in the lobby glance at him shortly, then resume to 
 \
 ***DESCRIPTION: FLOWING BLACK & WHITE HAIR, GENERALLY TIED IN A PONYTAIL OF THREE WAYS, MANDARINE COLOR EYES, EUROPEAN FACE STRUCTURE, SMALL STATURE, MECHANICAL LEGS, USUALLY WEARING BROWN TRENCHCOAT AND YELLOW JABOT***
 
-
-
 *Curious that she’s.. Half… ? Half-Russian, specifically.* Whispered a corner of his mind he ended up smothering with an imaginary heel of his shoe.\
 “You don’t mean to tell me this has happened on numerous occasions?” He asked with half a mind to the question he just released, reading the form twice, thrice, however many times over he had.\
 “Multiple—just this week—” Clementine began.\
@@ -351,9 +343,7 @@ He hardly could even comprehend the mere fact she’d risen her face against him
 
 
 
-
-
-\    ![](data:image/png;base64,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)
+ **                                                           . —«——⁜——»— .**
 
 
 
