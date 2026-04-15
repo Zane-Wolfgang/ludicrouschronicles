@@ -6,8 +6,8 @@
     "art": "/images/art-04-train.png",
     "tier": "free",
     "filename": "chapter-1.md",
-    "type": "Story",
-    "label": "Chapter Art",
+    "type": "Chapter",
+    "label": "Ghost in Me Book",
     "filter_type": "story",
     "href": "chapter-1.html",
     "thumbnail": "/images/art-04-train.png"
@@ -30,12 +30,24 @@
     "date": "2026-03-01T00:00:00.000Z",
     "video": "/images/video-victor.mp4",
     "type": "Video",
-    "tier": "free",
+    "tier": "devoted",
     "description": "",
     "filename": "i-am-the-victor.md",
     "label": "Video",
     "filter_type": "video",
     "href": "videos.html",
+    "thumbnail": ""
+  },
+  {
+    "title": "First Story",
+    "date": "2026-04-04T20:44:06.455Z",
+    "description": "Testin' out the waters when this was made, folks. Just a measely month or so after I had the first idea of Ghost in me.",
+    "tier": "devoted",
+    "filename": "first-story.md",
+    "type": "Short Story",
+    "label": "Short Story",
+    "filter_type": "story",
+    "href": "story.html?story=first-story",
     "thumbnail": ""
   }
 ]
