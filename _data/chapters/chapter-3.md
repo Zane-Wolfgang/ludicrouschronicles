@@ -218,10 +218,14 @@ Uneasily he smoothed his ruffled vest after the continuously lengthy pause. Shou
 Zane’s visage contorted. A *woman*. British, a voice compellingly deeper a few octaves, but unmistakable female, and certainly sultry. But—by the suns. He’s only heard the worst of rumors with the females in the workforce.\
 Okay, he eased himself, some twisted glee settling in his stomach to the thought of dispatching her.
 
+
+
 \
  ﻿                                              ***SHhUS Hssmmm shhsh hashush hsuah…***  
 
 \    
+
+
 
 *By the suns, are you incapable of being quiet?* He smacked his forehead with his palm harsher than he’d meant, and jostled his concentration for a moment.\
 Those voices, along with this foolish accent, led him to be stalled just enough to allow another awaiting recipient to come to the window.\
@@ -314,7 +318,9 @@ Others that recently arrived in the lobby glance at him shortly, then resume to 
 
 ***SEX: F***\
 \
+\
 ***RACE: WHITE / RUSSIAN / AMERICAN***\
+\
 \
 ***BIRTHDAY: 1908 10/18***
 
