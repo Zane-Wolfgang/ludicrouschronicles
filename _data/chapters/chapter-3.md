@@ -5,7 +5,9 @@ date: 2026-04-14T23:54:32.123Z
 art: /images/uploads/chapter3.png
 tier: free
 ---
- Z***ane…***\
+ Z***ane…***
+
+\
 He twisted in his sleep. It was that voice. That voice that had haunted him over and over again.\
 **Zane…**                                                                                                                                         
 
