@@ -182,7 +182,9 @@ In all honesty, it more resembled a town hall rather than an archive containing 
 Zane nodded curtly.\
 “Thank you.” He managed, while he didn’t so much as offer the stranger a glance, coming to a stone platform where potted, whilst browning, lengthy shrubbery framed the two doors of the establishment.
 
-*Looks as though business is flourishing—wouldn’t be able to afford this otherwise, could they? Or perhaps they funneled funds from the town..* He pinned the bends of his shirt collar between his fingers, fully concealing his threads from view.\
+*Looks as though business is flourishing—wouldn’t be able to afford this otherwise, could they? Or perhaps they funneled funds from the town..* He pinned the bends of his shirt collar between his fingers, fully concealing his threads from view.
+
+\
 \
                           ***…Wusuh shh blssh…hhuuss sss uesss hyys…smmss rsshshmmm…*** \
 \
@@ -217,7 +219,9 @@ Zane’s visage contorted. A *woman*. British, a voice compellingly deeper a few
 Okay, he eased himself, some twisted glee settling in his stomach to the thought of dispatching her.
 
 \
- ﻿                                              ***SHhUS Hssmmm shhsh hashush hsuah…***                    
+ ﻿                                              ***SHhUS Hssmmm shhsh hashush hsuah…***  
+
+\    
 
 *By the suns, are you incapable of being quiet?* He smacked his forehead with his palm harsher than he’d meant, and jostled his concentration for a moment.\
 Those voices, along with this foolish accent, led him to be stalled just enough to allow another awaiting recipient to come to the window.\
