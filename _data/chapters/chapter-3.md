@@ -5,11 +5,11 @@ date: 2026-04-14T23:54:32.123Z
 art: /images/uploads/chapter3.png
 tier: free
 ---
-***Zane…***\
+ Z***ane…***\
 He twisted in his sleep. It was that voice. That voice that had haunted him over and over again.\
 **Zane…**                                                                                                                                         
 
- His body refused to heed to the cold coil in his stomach that was rapidly spreading.                                                           
+His body refused to heed to the cold coil in his stomach that was rapidly spreading.                                                           
 
 ***Zane… wake u—*** 
 
