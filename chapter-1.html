@@ -518,11 +518,11 @@
     <button id="comments-more-btn"></button>
     <div class="comment-form">
       <span class="comment-form-label">Leave Your Mark</span>
-      <form id="comment-form">
+      <div id="comment-form">
         <input type="text" class="comment-input" id="comment-name" placeholder="Your name (optional)" maxlength="60">
         <textarea class="comment-input" id="comment-message" placeholder="What did you think?" maxlength="1000" required></textarea>
-        <button type="submit" id="comment-submit">Leave Your Mark</button>
-      </form>
+        <button type="button" id="comment-submit">Leave Your Mark</button>
+      </div>
     </div>
   </div>
 </div>
@@ -681,3 +681,4 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
 <script>document.addEventListener("DOMContentLoaded", () => initEngagement("chapter-1"));</script>
 </body>
 </html>
+
