@@ -3,264 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chapter — Ludicrous Chronicles</title>
-<link rel="icon" type="image/png" href="images/favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+<title>Chapter 1 — Ludicrous Chronicles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+  <link rel="icon" type="image/png" href="images/favicon.png">
 <link rel="stylesheet" href="style.css">
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <style>
-  .chapter-wrap {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 8rem 2rem 6rem;
-  }
-
-  .chapter-header {
-    text-align: center;
-    margin-bottom: 4rem;
-    padding-bottom: 3rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .chapter-label {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.4em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    margin-bottom: 1rem;
-    display: block;
-  }
-
-  .chapter-title {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(2rem, 5vw, 3rem);
-    color: var(--gold);
-    margin-bottom: 0.5rem;
-    text-shadow:
-      -1px -1px 0 #0a0600,
-       1px -1px 0 #0a0600,
-      -1px  1px 0 #0a0600,
-       1px  1px 0 #0a0600,
-      0 0 30px rgba(201,168,76,0.3);
-  }
-
-  .chapter-art {
-    width: 100%;
-    max-width: 680px;
-    margin: 2.5rem auto;
-    display: block;
-    border: 1px solid var(--border);
-    box-shadow: 0 0 40px rgba(0,0,0,0.6);
-  }
-
-  .chapter-divider {
-    width: 80px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
-    margin: 3rem auto;
-  }
-
-  .chapter-body {
-    font-family: 'EB Garamond', Georgia, serif;
-    font-size: 1.22rem;
-    line-height: 2;
-    color: #c9a84c;
-    font-style: normal;
-  }
-
-  .chapter-body p {
-    margin-bottom: 1.6em;
-    text-indent: 2.5em;
-  }
-
-  .chapter-body p.dropcap {
-    text-indent: 0;
-  }
-
-  .chapter-body em,
-  .chapter-body i {
-    font-style: italic;
-    color: #e0bc6a;
-    font-weight: 400;
-  }
-
-  .chapter-body strong,
-  .chapter-body b {
-    font-weight: 600;
-    color: #e0bc6a;
-    font-style: normal;
-  }
-
-  .chapter-body strong em,
-  .chapter-body em strong,
-  .chapter-body b i,
-  .chapter-body i b {
-    font-style: italic;
-    font-weight: 600;
-    color: #e8c87a;
-  }
-
-  .chapter-body p.dropcap::first-letter {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: 4rem;
-    float: left;
-    line-height: 0.8;
-    margin-right: 0.1em;
-    margin-top: 0.1em;
-    color: var(--gold);
-    text-shadow: 0 0 20px rgba(201,168,76,0.4);
-  }
-
-  .chapter-body p.beat {
-    text-indent: 0;
-    margin-top: 2.5rem;
-    margin-bottom: 2.5rem;
-  }
-
-  .chapter-body img {
-    max-width: 100%;
-    display: block;
-    margin: 2rem auto;
-    border: 1px solid var(--border);
-    box-shadow: 0 0 20px rgba(0,0,0,0.4);
-    user-select: none;
-    -webkit-user-drag: none;
-  }
-
-  .chapter-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 3rem;
-    border-top: 1px solid var(--border);
-    margin-top: 4rem;
-  }
-
-  .chapter-nav a {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-
+  .chapter-wrap { max-width: 720px; margin: 0 auto; padding: 8rem 2rem 6rem; }
+  .chapter-header { text-align: center; margin-bottom: 4rem; padding-bottom: 3rem; border-bottom: 1px solid var(--border); }
+  .chapter-label { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 1rem; display: block; }
+  .chapter-title { font-family: 'Cinzel Decorative', serif; font-size: clamp(2rem, 5vw, 3rem); color: var(--gold); margin-bottom: 0.5rem; text-shadow: -1px -1px 0 #0a0600, 1px -1px 0 #0a0600, -1px 1px 0 #0a0600, 1px 1px 0 #0a0600, 0 0 30px rgba(201,168,76,0.3); }
+  .chapter-art { width: 100%; max-width: 680px; margin: 2.5rem auto; display: block; border: 1px solid var(--border); box-shadow: 0 0 40px rgba(0,0,0,0.6); }
+  .chapter-body { font-family: 'EB Garamond', Georgia, serif; font-size: 1.22rem; line-height: 1.95; color: #c9a84c; font-style: normal; }
+  .chapter-body p { margin-bottom: 0; padding-bottom: 1.3em; text-indent: 2.5em; }
+  .chapter-body p.dropcap, .chapter-body p.no-indent { text-indent: 0; }
+  .chapter-body em { font-style: italic; color: #e0bc6a; font-weight: 400; }
+  .chapter-body strong { font-style: normal; color: var(--parchment); font-weight: 500; }
+  .chapter-divider { width: 80px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), transparent); margin: 3rem auto; }
+  .chapter-nav { display: flex; justify-content: space-between; align-items: center; padding-top: 3rem; border-top: 1px solid var(--border); margin-top: 4rem; }
+  .chapter-nav a { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); text-decoration: none; transition: color 0.2s; }
   .chapter-nav a:hover { color: var(--gold); }
-
-  #chapter-loading {
-    text-align: center;
-    padding: 6rem 0;
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    color: var(--gold-dim);
-    text-transform: uppercase;
-  }
-
-  .bookmark-btn {
-    position: fixed;
-    top: 5rem;
-    right: 2rem;
-    width: 36px;
-    height: 48px;
-    cursor: pointer;
-    z-index: 100;
-    opacity: 0.5;
-    transition: opacity 0.2s, transform 0.2s;
-    background: none;
-    border: none;
-    padding: 0;
-  }
+  .chapter-body .dropcap::first-letter { font-family: 'Cinzel Decorative', serif; font-size: 4rem; float: left; line-height: 0.8; margin-right: 0.1em; margin-top: 0.1em; color: var(--gold); text-shadow: 0 0 20px rgba(201,168,76,0.4); }
+  .chapter-body .dialogue { font-style: normal; color: var(--parchment); }
+  .chapter-body .thought { font-style: italic; }
+  .bookmark-btn { position: fixed; top: 5rem; right: 2rem; width: 36px; height: 48px; cursor: pointer; z-index: 100; opacity: 0.5; transition: opacity 0.2s, transform 0.2s; background: none; border: none; padding: 0; }
   .bookmark-btn:hover { opacity: 1; transform: translateY(-2px); }
   .bookmark-btn.saved { opacity: 1; }
   .bookmark-btn svg { width: 100%; height: 100%; }
-
-  .bookmark-banner {
-    background: rgba(10,8,6,0.96);
-    border: 1px solid var(--gold-dim);
-    border-left: 3px solid var(--gold);
-    padding: 1rem 1.5rem;
-    margin-bottom: 2rem;
-    display: none;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
+  .bookmark-banner { background: rgba(10,8,6,0.96); border: 1px solid var(--gold-dim); border-left: 3px solid var(--gold); padding: 1rem 1.5rem; margin-bottom: 2rem; display: none; align-items: center; justify-content: space-between; gap: 1rem; }
   .bookmark-banner.visible { display: flex; }
-  .bookmark-banner-text {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-  }
-  .bookmark-banner-btn {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--ink);
-    background: var(--gold);
-    border: none;
-    padding: 0.4em 1em;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .bookmark-banner-dismiss {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    color: var(--text-muted);
-    background: none;
-    border: none;
-    cursor: pointer;
-    letter-spacing: 0.1em;
-  }
-
-  .paragraph-highlight {
-    background: rgba(201,168,76,0.08);
-    border-left: 2px solid var(--gold-dim);
-    padding-left: 0.5rem;
-    margin-left: -0.5rem;
-    transition: background 0.5s;
-  }
-
-  .bookmark-context {
-    position: fixed;
-    background: rgba(10,8,6,0.97);
-    border: 1px solid var(--border-bright);
-    padding: 0.5rem 0;
-    z-index: 1000;
-    display: none;
-    min-width: 180px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  }
+  .bookmark-banner-text { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
+  .bookmark-banner-btn { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.4em 1em; cursor: pointer; white-space: nowrap; }
+  .bookmark-banner-dismiss { font-family: 'Cinzel', serif; font-size: 9px; color: var(--text-muted); background: none; border: none; cursor: pointer; }
+  .paragraph-highlight { background: rgba(201,168,76,0.08); border-left: 2px solid var(--gold-dim); padding-left: 0.5rem; margin-left: -0.5rem; transition: background 0.5s; }
+  .bookmark-context { position: fixed; background: rgba(10,8,6,0.97); border: 1px solid var(--border-bright); padding: 0.5rem 0; z-index: 1000; display: none; min-width: 180px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
   .bookmark-context.visible { display: block; }
-  .bookmark-context-item {
-    padding: 0.6rem 1.2rem;
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: background 0.15s, color 0.15s;
-  }
+  .bookmark-context-item { padding: 0.6rem 1.2rem; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-dim); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background 0.15s, color 0.15s; }
   .bookmark-context-item:hover { background: var(--mid); color: var(--gold); }
-
-  .chapter-body {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
+  .chapter-body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 
   /* ── Engagement Section ── */
   .chapter-engagement { max-width: 720px; margin: 0 auto; padding: 0 2rem 6rem; }
@@ -340,13 +123,347 @@
 </script>
 
 <div class="chapter-wrap">
+  <div class="chapter-header">
+    <span class="chapter-label">Ghost in Me — by Mistress Spite</span>
+    <h1 class="chapter-title">Chapter I</h1>
+  </div>
 
-  <div class="bookmark-banner" id="bookmark-banner">
-    <span class="bookmark-banner-text" id="bookmark-banner-text">You have a saved bookmark</span>
-    <div style="display:flex;gap:0.75rem;align-items:center;">
-      <button class="bookmark-banner-btn" id="bookmark-jump">Jump to bookmark</button>
-      <button class="bookmark-banner-dismiss" id="bookmark-dismiss">Dismiss</button>
-    </div>
+  <img class="chapter-art" src="images/art-04-train.png" alt="The Beginning — Chapter Art" />
+
+  <div class="chapter-divider"></div>
+
+  <div class="chapter-body">
+
+    <p class="dropcap">It was a chilly, crisp forenoon the day Zane had left home and boarded the Kingston train, nestled in one of the first carts of the fine upper-classmen.</p>
+
+    <p>Autumn had laced the air with drafts, ensuring those who wandered outside dressed warmly, so nobody would develop any assortment of sickness.. Or more commonly, a cold.</p>
+
+    <p>The reminder made Zane brush his fingers across his arm, feeling his own heat wafting off him.</p>
+
+    <p>The train tumbled over her tracks noisily, soon drowned out by the gusts of wind, which, speaking of, swept through the train compartment window, gently swaying dirty-blonde hair with a set of white shades resting overtop Zane's head.</p>
+
+    <p>The morning was settling into something slow-moving—the sun scraping cold, yellow claws over the horizon. It was lovely weather for autumn in Brooksville, the season shaking leaves loose from branches.</p>
+
+    <p>But… ah, alas, clouds were gathering to side with the chill, the promise of rain curdling overhead. Droplets already began materializing, thrumming a steady drum-like beat against the window.</p>
+
+    <p>Now gloomy gray fully blotted out the gold that was the sun, and soon that wonderful morning was vanquished, replaced with what normal people would consider terrible weather, especially in these parts.</p>
+
+    <p>Now Zane, however, would never admit anything against such trivial things, as he didn't share most people's average opinion.</p>
+
+    <p>He rather enjoyed the way the cool gust battled the warmth from within the train. The way the flame from the oil lanterns flickered a steady amber, the ambiance a perfect contrast that truly mixed with the most complicated, rich feelings most yearned for. Akin to warm caramel enveloped in chocolate, perhaps.</p>
+
+    <p>Zane peered outside to let the rain further drown out his thoughts, watching blurs of colors speed on by.</p>
+
+    <p>As he watched trees give way to glimpses and glances of a town the track had led out of, he noticed streaks of smoke curling from distant chimneys and adding a smudge of additional gray into the sky. From all the gathered fog shrouding the town, he also spotted lights from within structures and lamp posts littered all over, sparkling earnestly among all the obstacles attempting to obscure it fully from sight.</p>
+
+    <p>Though the view was soon smothered by the water droplets curling in rivulets all over the window, creating a watery canvas that was impossible to decipher which was what from, Zane continued to watch. Along with the added warmth from inside, it fogged up the glass, tipping the view into further of an afterthought. Oh well.</p>
+
+    <p>If he couldn't use his sense of sight, then he'd let it transfer to something else.</p>
+
+    <p style="text-indent:0;margin-top:2rem;margin-bottom:2rem;">And there it was, something he didn't notice prior.</p>
+
+    <p style="text-indent:0;margin-top:2.5rem;margin-bottom:2.5rem;font-style:normal;color:#c9a84c;">Music.</p>
+
+    <p>Smooth jazz played distantly from a churning radio, steadily overpowering the beats of the rain the longer he focused; yet perhaps the rain would have better luck the heavier it got, though it wasn't that heavy yet. But it most certainly would soon come to be.</p>
+
+    <p>Zane gave a sparing glance to attempt to catch even a sliver of the town through the raindrops. The book he'd brought along for the ride lay in his hand, long forgotten—his eyes had hurt at some point from reading, so he attempted to look at the furthest point away, which in being was his hometown.</p>
+
+    <p>Now, speaking of Brooksville… it was considered a rather… charming, town, give or take, shrouded within a valley, mountains scaling high and encasing the area with forest, secluding it from the rest of the world.</p>
+
+    <p>From within sheltered the folk that knew the town's edge to middle by heart, every neighbor a brother in arms. It wasn't uncommon to find that most could name everybody off the block from simply a moment's given thought.</p>
+
+    <p>Cozy, was probably the best way to describe it, if he had to label the… well, it was more of a village, wasn't it, actually? With a description.</p>
+
+    <p>Blue eyes flicked down, gazing at the table he pressed his calf to.</p>
+
+    <p>His leg was propped up over his thigh carefully, balancing on top of that a hand with his book. His arm remained tense, even while grazing his leg for support.</p>
+
+    <p>All of this luxury was premium grade, for the highest class—Zane could afford that and ten times more with his fortune, thanks to his father, who worked as one of the highest-class of lawyers.</p>
+
+    <p>So much so that he ordered a council, of sorts. That was to the extent of the public's knowledge, however. Zane had been raised with this grandeur—and, not to mention, had become accustomed to it.</p>
+
+    <p>Yet, it was something to the reality of ivy twining around a tree, or so Zane would eloquently put it. Reliant, even if it was something he could live without—though he never admitted himself that little stab of truth.</p>
+
+    <p>Being rich wasn't always a blessing. You had much to maintain, especially for Zane, since he'll likely inherit his father's position, so preparing himself for that responsibility was daunting, at best. It was rare for him to ever find a day's breath that he could relax his shoulders from these duties.</p>
+
+    <p>And the people. Women trying to court him, men trying to show off to him in order to receive his attention—generally in the most elegant and well-mannered fashion, since anything less would be diabolical at best. Some tried to wring money out of his pockets. Manipulation. Using him for their own gain in other matters; the list goes on.</p>
+
+    <p>Yet—he could never tire of the high life, or so he convinced himself.</p>
+
+    <p>He realized his thumb was crumpling the book at the seams whilst spiraling, and he eased his grasp, his mouth drawing into a thin line.</p>
+
+    <p>Zane shook his head. All this barreling into negativity isn't going to get him anywhere, so he inhaled deeply as he directed his mind elsewhere, focusing on positives instead.</p>
+
+    <p>Nobody could forget the plethora of upsides to such things; the train, for one. He'd been settled in the most expensive seating area, offered complimentary drinks and a variety of uncommon delicacies to choose from, ported from areas near and far that were generally… difficult to come by. The compartment itself held murals carved into the walls with the most exquisite taste in colors, each stroke dissolving into another seamlessly. Wood sculpted by the most magnificent artists, spiraling into delicate patterns along the walls and the rims of his comfortable seating. <em><em>Talent such as that,</em> Zane had thought, <em>is nothing short of remarkable.</em></em></p>
+
+    <p>Everything remained a steady warm color; copper, bronze, gold, all in between, never dipping into anything colder. Vintage. Antique, even.</p>
+
+    <p>It was a stark contrast to what he wore, that was for sure. A cerulean and navy argyle vest over a black dress collar. Chains bumped and jostled with faint clinks against his chest, too. Quiet, but… reminding, through the slight bustle the train offered now and then.</p>
+
+    <p>His family's emblem lay captured in the small medallion attached to a dangling portion of the chain just out of a pocket over his breast. From there, they looped around the top button.</p>
+
+    <p>He devoted all his energy to not zone in on it.</p>
+
+    <p>"Sir Zane?"</p>
+
+    <p>He sighed in retaliation to whom he'd been addressed by—it was so pleasantly quiet for so long, he'd nearly forgotten of his secretary's presence. He wished he didn't have to sit through whatever was planned to stem from her mouth, as polite as she was, but what could he do?</p>
+
+    <p>The woman was a helping hand, and always eager to help. Branded with his family's crest herself, she was tasked with accompanying Zane on further travels than his usual butler, Walter, could be charged with. She was useful in her own right, descended from the nation's most brilliant inventors.. He had to at least treat her as a proper human being periodically. Even if decency was a tad hindering at best.</p>
+
+    <p>"What?" He inquired to his associate, eyes never lifting from the book. Zane would do his best to imitate his father's poker face, squashing the urge to unleash his thick, posh British accent and attempt to replicate how Americans spoke so they could understand him.</p>
+
+    <p>A measured gaze mulled over his form from her judging eyes that he chose to ignore.</p>
+
+    <p>Just before she, Elijah, could get a word in and open her mouth… It then hit him—quite literally, ironically, and by surprise. He felt a stray rain droplet hit his shoulder, sharp and fast, enough so the water wouldn't linger.</p>
+
+    <p>"Gah-!" He recoiled as if someone set him on fire, shooting to the very end of the velvet cushion with an animalistic hiss. He might as well have been attacked by droplets of acid.</p>
+
+    <p>"Bastard rain," he spat. "Bloody… of course I forgot the window's open…" He was so caught up in whatever train of thought he had, he completely disregarded the fact that he'd left the window open whilst witnessing the change of weather.</p>
+
+    <p>He cursed under his breath, ruffling his hair (which was a means to an end) and straightening out his vest as he got to his feet.</p>
+
+    <p>Or, as well as he could, considering the table nearly overhung the seats, so he was protruding at an awkward angle to get the window.</p>
+
+    <p>With great effort, he forced the window to shift, rumbling upward—it was a challenge most certainly, which Zane had come to pass, latching it closed as it snuffed out the rest of the cold air with a lasting <em><em>Fwloosh.</em></em></p>
+
+    <p>"Tch."</p>
+
+    <p>He glared at the window pane, as if it had wronged him personally, reaching up to brush his arm, even if so much as not a spec of moisture remained. Not to say the same for the seats and sections of wood carving, as it had been lashed with varying degrees of rain, though it would soon come to dry, so nothing of importance was lost.</p>
+
+    <p>The bubble had burst; whatever time he'd dedicated to reading and mulling over the calming train ride had been confiscated—a flash of rage scurried up his spine as he forced himself down against the seat, intent on deepening his scowl with added fervor for the remaining time of the journey lest he be provided better reason to not.</p>
+
+    <p>"S-sir Zane.." Interrupted Elijah once more, lifting an unsure hand to gesture to Zane's face before her own, pointing sheepishly. Her voice was mellow, an accent of French hidden underneath. She was rather shy.</p>
+
+    <p>"You shan't remain with such a sour look, my lord. Such will make you age."</p>
+
+    <p>She bowed her head just slightly to akin something of respect, her burgundy curls sliding down, inch by precious inch, until they swung off her shoulders partly to remain suspended in the air. Her brown beret threatened to slide off.</p>
+
+    <p>Zane could only curl his lips in distaste once more, just when they were nearing towards something neutral. It shifted into something of a snarl, as he sunk deeper into his seat, arms crossed, his fingers digging hard enough in his undershirts' sleeves to bleed.</p>
+
+    <p>"I wish to hear nothing more spill from you, Elijah." He grumbled, clearly in a mood. All from a little raindrop.</p>
+
+    <p>He hadn't even noticed he'd returned to clenching the small journal tight between his fingers, pried open to the ripping point, which was sustaining well against the threat of possible damage. He let his frown deepen but ease up on the glare, setting his book upon the surface of the wood table, parchment-face down. He didn't want to accidentally ruin his precious literature from not paying attention again.</p>
+
+    <p>From there, he let his fingers meander through his scrawled mess of hair, curled, wild, and unkept. That was something Zane detested about himself—many depicted him as unruly simply from the portion of appearance he could not control, which infuriated him beyond human belief.</p>
+
+    <p>Days like that were often uncommon, but still frequent enough for Zane to always have it wriggling like a nasty urchin in the backs of his mind whenever he threaded his fingers through his hair to lessen the stress and ease himself. Often, as a child, to reunite with his sanity, he was forced to find multiple spots to seek shelter from prying eyes in outcomes that called for it.</p>
+
+    <p style="text-indent:0;margin-top:2rem;margin-bottom:2rem;">Ah, he was doing it again.</p>
+
+    <p><em><em>Why do such dour memories insist on cropping up?</em></em> He scolded himself, giving his head a firm shake, slotting himself out of his thoughts and letting the nothingness of his surroundings consume him.</p>
+
+    <p>Immediately flooding back in came Swing conjoined with jazz, now, forcing the beat of his heart to dance along, its rhythm just right to the tune that satisfied his mind. The rain was dulled, but remained, still something you could make out had you actively gone to listen for it, adding to the overall atmosphere that filled the compartment.</p>
+
+    <p>He lingered in that settlement, enjoying the quiet of his thoughts he'd simply tuned out, long professional at the skill and cultivated it since he was young.</p>
+
+    <p>"Oh, my! The trolley is coming… Do you hear that, Sir Zane?"</p>
+
+    <p>Zane flinched, a bit harder than he meant to. He was in a sensitive state of being, vulnerable for a hair's breadth of a moment—which was in hindsight a mistake in any circumstance that involved his clumsy associate.</p>
+
+    <p>"Specky git." He murmured under his breath, venom in his tone. She had no right to deserve such arrogant judgement.</p>
+
+    <p>Though it was difficult to stay upset at the innocent look her spectacles gave her, its shape rotund and in pristine condition, just as neat and clean as her outfit. A simple one, comprising of a dull, beige turtleneck that appeared to be crafted of material that looked <em>terribly</em> itchy, a smooth, thick jacket slipping off her shoulders, a black skirt partially ridged up by belts horizontally grasping its edges and flipping its underside into view (just barely, though)—paired with gray pants and brown, ankle-high short boots. A small, leather handbag slung across her chest, resting snugly against her thigh.</p>
+
+    <p>Zane supposed he was bothered most with the strawberry ice cream <em>pin</em> on Elijah's beret, since it was unfitting, and in his opinion, unprofessional. Though, as much as he disliked such a disgraceful display, he had to admit that humans all had their <em>quirks</em>.</p>
+
+    <p>As his gaze wandered, just beginning to register the weight of exactly what she'd said moments prior—</p>
+
+    <p>A suppressed rolling… grinding, perhaps, sound emanated from the other side of the sliding doors, a figure outlined in gray just barely showing up past the obscure opaque layering of the glass.</p>
+
+    <p>Zane simply let his eyes adjust to the silhouette, doing nothing to approach the doors, stuck like a rabbit in a fox's eye. Perhaps he'd forgotten he was physically fit and able to function a sliding door.</p>
+
+    <p>"I-I'll get it." Elijah decided, seeing Zane in that state, scrambling forward.</p>
+
+    <p>She unlatched the doors, a sweet old lady with curls poking her head through. A thick, hard-to-understand (not for Zane, however) British accent met both their ears.</p>
+
+    <p>"Anything off the trolley dears?" She asked shakily, but warmly. She seemed to have adapted to this job years before Zane was even conceived.</p>
+
+    <p>Zane's eyes roamed the ladies for no less than a moment before gauging his options.</p>
+
+    <p>The delectable choices of sugar simply popped out from the cart, wild and blazing with color, the perfect choice for those who wish to dye their tongues something entirely unnatural. Or, well, a small selection from the many you could choose from.</p>
+
+    <p>The dirty-blonde tended to stray from those. Such as that kind were strange, and if he had to determine, rather plasticky; most noticeably gross as well, less natural than any of the other options. He rather rooted for something that melted in his mouth and let him sink further into the atmosphere his body so dearly craved to maintain the feel of. In this case, it was something with chocolate in it, so he found himself snatching up a box full of caramel truffles.</p>
+
+    <p>Zane neither asked for anything politely or offered that hearty of a thank you as Elijah happily paid on his behalf of his crudeness, the darling old woman asking if either of them required more, or if that'll be all—with a polite decline from the rather <em>kinder</em> half of the party, the little old lady was about to be off—until…</p>
+
+    <p>"Dear…? I may be mistaken, as for someone of my age with sight that wanes by the day… does your neck happen to be glowing?"</p>
+
+    <p>Zane flinched so hard he conceded his body to a swift halt, teeth abruptly half-sunken into one of the truffles. He'd closed his eyes, and hadn't dared open them in a bout of trepidation.</p>
+
+    <p>The woman analyzed him, and instantly he felt as if ants crawled under his skin, slithering through his veins; everything was getting cold, and the next breath of air he in-took felt like he was inhaling icicles. A rush of adrenaline breathed into him simultaneously as he tried to suppress… suppress it.</p>
+
+    <p>A beat passed as Zane's hand, trained in cases like these, snatched up his black shirt collar to further ride up against his throat, Adam's apple bobbing in the strain the "cold" caused. He gingerly opened only his right eye to meet her milky brown ones.</p>
+
+    <p>"No, ma'am." He forced, however rushed, "please think nothing of it, it must be a trick of the light." Stumbling over his speech to sound somewhat sophisticated in a moment of sheer vulnerability was no easy task, nor was he covering up the obvious fumble he'd made when he instantly went to conceal his neck.</p>
+
+    <p><em><em>Mustn't get attention this time.</em></em></p>
+
+    <p>"If you insist, young man…" The little old lady left with that unsureness writhing like a gust of cold air on a summer day, appearing but just as quick to go. During her departure, she mentioned something about swearing she saw the boy having a "glowing eye"… but then quick to dismiss it (which earned a breath of <em>relief</em> from Zane).</p>
+
+    <p>The sliding doors closed, and Zane sighed, the internal battle clawing at his throat as he shoved another truffle into his mouth.</p>
+
+    <p style="text-indent:0;margin-top:2.5rem;margin-bottom:2.5rem;font-style:normal;color:#c9a84c;">Quiet. Quiet. Quiet.</p>
+
+    <p>He wasn't allowed to drown in that feeling again.</p>
+
+    <p style="text-indent:0;margin-top:2.5rem;margin-bottom:2.5rem;font-style:normal;color:#c9a84c;">The adrenaline.</p>
+
+    <p style="text-indent:0;margin-top:2.5rem;margin-bottom:2.5rem;font-style:normal;color:#c9a84c;">The pleasure.</p>
+
+    <p style="text-indent:0;margin-top:2.5rem;margin-bottom:2.5rem;font-style:normal;color:#c9a84c;">The feeling… of being alive.</p>
+
+    <p>"Are they alright, Sir Zane?" A voice slicing through his haze. It made him mistakenly bite his tongue instead of the sweet he had punched between his fingers, earning a string of curses in turn.</p>
+
+    <p>Antsy, she was, practically giddy from any scrap of praise the man could offer her.</p>
+
+    <p><em>And… Hopelessly in love.</em></p>
+
+    <p>He wondered if he should ever have to feel bad that he never reciprocated those feelings in turn.</p>
+
+    <p>"Yes," he decided, presuming she would leave him alone after a short, honest reply.</p>
+
+    <p>"T… they're fine." His voice briefly faltered with the hiccup of pleasure thrumming through his veins.</p>
+
+    <p><em>Ignore it..</em> He pressured himself to listen, adjusting his shirt collar higher.</p>
+
+    <p>And, the longer he did, the easier it got. Naturally, it lingered, always prepared to whisk him away the moment he revealed a sign of weakness… which he would never give it the satisfaction.</p>
+
+    <p>"Zane? Sir Zane."</p>
+
+    <p>"You once more mistaken my title without respect again… and I shall have you beheaded." His response carried a sort of finality along with it, dealing with something cruel, but he meant every word behind it. A sinister, twisted joy coiled in his stomach, like a pleased feline after an excellent scratch at the right spot. It made him feel <em>sick</em>.</p>
+
+    <p>"Of course-!" Elijah straightened with a frantic urge to right her face so not a crease was off center, or, according to what she thought Zane would approve of. She was right, regrettably, the joy in his stomach dwindling a little.</p>
+
+    <p>To something of which… he'd never truly understand.</p>
+
+    <p><em>Go away..</em> He thought, chowing down on another truffle. His throat was growing rather parched. He should order a beverage soon.</p>
+
+    <p><em>Perhaps she'll be willing to do it in my stead.</em></p>
+
+    <p>"Sir Zane… it's just … are you sure your threads alright?"</p>
+
+    <p>Zane crushed his box of truffles no more a second after the sentence was finished, his eyes narrowing to pin-pricks. He felt the cold brush from his heart, infecting his veins once again..</p>
+
+    <p>"I'm fine!" He barked, a tad ruder than he meant to come off, but the last thing he wanted was to be approached with matters such as these.</p>
+
+    <p>"I'd rather you focus your energy elsewhere." He attempted to direct what little control he had over the conversation into another avenue, gripping tightly the shirt collar he'd yet to let go of.</p>
+
+    <p>Perhaps he was a little self-conscious, <em>sure</em>… but for good reason…</p>
+
+    <p>He kept his line of sight straight to the window, containing the senses that froze over like the feeling spreading in his veins, amplifying his sense of smell; the cologne he sprayed on himself potent to the point it was sharp on his tongue, the details outside no longer a haze, as though the fog and rain droplets no longer obscured the view beyond. His vision was akin to that of an eagle's gift of sight.</p>
+
+    <p>He picked up on the light breathing of his secretary, heart loud in his ears coupling with the blood rushing to it.</p>
+
+    <p>Desperately, to maintain order over it, he tried to wane his focus and distract himself by breathing in deep, sliding his eyes shut. Additionally, he forced his muscles to relax, an elbow balanced precariously at the edge of the wooden table, cradling his chin.</p>
+
+    <p><em>Deep breaths.</em> He reminded himself. <em>Deeper. My lungs should burn.</em></p>
+
+    <p>He then chose to crack open his eyes and focus his… power on Elijah, which was a mistake in its own right.</p>
+
+    <p>Instantly, dark clouds shrouded around her figure, only an outline of her most distinct features remained. Other than that…</p>
+
+    <p><em>Threads snaked down from the ceiling.</em></p>
+
+    <p>Red. Blinding, stabbing the color into your retinas to the point you'd rather claw out your own eyes rather than have to endure the agony of the color any longer.</p>
+
+    <p>Of course, Zane long figured out what this power meant—it depicted a hierarchy of sorts.</p>
+
+    <p>He supposed the middle grades of color had little importance, until it was either entirely in the reds or sneaking into more of cooler colors, such as purple, for instance, to which the more important the individual became. Or they had something special about them.</p>
+
+    <p>Essentially, his father, with his rule over the table of lawyers—his leadership, if you will—had magenta threads. They rarely wavered, as per the composure matched the man. Though, it was rather foolish, if you concerned Zane's opinion. Pairing a serious man such as his father, Arthur Vulkbur Wolfgang, and branding him with such a frivolous color such as <em>pink?</em> One would have been out of his mind, simply <em>preposterous.</em></p>
+
+    <p>Other councilors, lawyers, what have you… had red threads. Those who were simply stationed and hired to aid were orange. Anybody with the least importance that lingered around had green threads—all of these varied in hues, of course.</p>
+
+    <p>And then there was Zane himself… and he had purple threads.</p>
+
+    <p>When he first sprouted his threads long ago (not the ones he could see, rather, different ones), before his power scrawled and poisoned his left eye, he was convinced he'd find blue—nay, perhaps <em>cerulean</em>—threads, would stare him back in his reflection. He was sorely mistaken, and left wondering ever since. In fact, he'd yet to see even a semblance of blue amongst the threads that generally surrounded him.</p>
+
+    <p>Not to mention, compiling what he was on top of all his current problems wasn't aiding him in any situation.</p>
+
+    <p>"Sir, if I may…" Elijah slipped into his reminiscing thoughts like a worm unearthing itself from the very ground he tread, "you look as pale as a sheet. Dare I say you look as if you've seen the headless horseman himself." She jests, and for once, he recognizes that, but a crease underlines her eyes under the guise of worry.</p>
+
+    <p>"Why don't you rest? We've still hours yet to travel, we've merely just begun our journey…"</p>
+
+    <p>Zane offered her a sour look, lips drawing back in a downturned snarl.</p>
+
+    <p>"Have you calculated precisely how long our travels will transpire for?" He decided to preoccupy with her instead, his condescending tone really added to his flair of ragged and raw emotion when he's caught red-handed with—</p>
+
+    <p style="text-indent:0;margin-top:2.5rem;margin-bottom:2.5rem;font-style:normal;color:#c9a84c;">With his threads out.</p>
+
+    <p>The old woman hadn't looked at 'nothing' earlier, and she was rather sharp with her observation. Coiled tightly around Zane's neck were cerulean threads (rather ironically matching the argyle), emitting a gentle glow against his throat and shirt collar. The ends were tied in a deathly tight knot at the back of his neck, exactly six threads (or at least, to his knowledge), prepared to zip out and protect him in a moment's notice, sprawled under his skin.</p>
+
+    <p>Yet, here they hovered, stunned, as if he were an infant with something in his clutches that he shouldn't have.</p>
+
+    <p>A pathetic display of sorts, really, being read this easily.</p>
+
+    <p>It truly was difficult to handle such a child. Or more accurately, a toddler trapped in an adolescent body.</p>
+
+    <p>"Well of course, Sir Zane… Approximately two hours at most." She spoke thoughtfully, her eyes roaming all around their shared space. Her eyes lingered among the oil-fueled lanterns that provided the warm light, the flame constantly guttering and flickering faintly.</p>
+
+    <p>He was thankful when he spotted the red threads receding, grandly spooling up from the delicate spiral that formed around her, disappearing into nothing but a figment. The dirty-blonde then let his shoulders slump and truly relax—it was difficult to lash his powers down, even through the years of teaching himself how to control whatever this was. Clearly the ample time he dedicated to such endeavors were still not even remotely enough…</p>
+
+    <p>"Excellent." He spoke without mind, his thoughts trailing off, diving down the rabbit hole that was the mysteries that stemmed from his powers.</p>
+
+    <p>For example, questions such as: Why was he this way? Why nobody in his family, even when so much as tracing back from trees of ancestry developed his supernatural abilities? Why had there been no mention of power meddling with the blood of humans from ancient text? How he could see what others couldn't, or how these threads were equipped with likely the strongest material known to man—Well, he could always suppose that was an exaggerated title—But if they could so much as shred steel without even a moment's hesitation…</p>
+
+    <p>He shrugged access energy out of his body by slouching against the wooden table ungracefully (sliding his book aside all the while), letting the rain and music slip in with his whirlwind of thoughts. The packet that remained on his lap with the caramel truffles lay long abandoned as he delved deeper.</p>
+
+    <p>The thought of his threads… honestly the most annoying development of his life. Zane was very young when it occurred.</p>
+
+    <p>He was all but a boy in slumber, amassed all the strange workings of his dreamland, filled to the brim with his wildest desires: Flying mares, polished sticks conjuring magic he couldn't comprehend, shapes and colors he didn't understand, buildings, twisted, strange patches of things he knew, all warped with new dimensions inside them—when, suddenly… everything turned cold.</p>
+
+    <p>His happiness drained, soaking into the darkness that overtook him.</p>
+
+    <p>All that night he could recall was a man with a now blurry face beckoning him into a mirror and stabbing the back of his neck with a monstrous hand when he had Zane in his clutches.</p>
+
+    <p>When he'd awoken in a cold sweat, fear threatened to overwhelm him—he'd wandered out of his room, when one of his nanny's came to his aid, his body temperature plummeted, and the poor woman had been struck amidst the flurry of his terror.</p>
+
+    <p>Or, as so he was told. Various eye-witnesses exclaimed the events as such: He'd roared, grinning like a man gone mad. He'd then sprouted threads, blue, thin, barely thicker than hair slithering into the air from the back of his neck, and stabbed her.</p>
+
+    <p>He huffed. He was sure those specific events might have not occurred as such—dramaticization stirred up from the bored residents of the mansion. He couldn't even recall it himself. Yet a sinking feeling always foretold it wasn't really a lie.</p>
+
+    <p><em>Connected in my veins…</em> He thought bitterly, remembering the moment the doctor's eyes lay on him in shock, <em>what a pathetic excuse. Pah! Threads as my nerves… what a load of bollocks that is.</em></p>
+
+    <p>He readjusted his position, cushioning his cheek on his folded arms, a glare full of ire piercing the rain that thrummed against the sill. If he had the will, he'd direct it at Elijah, throughly distracting himself again, since his stomach long since soured.</p>
+
+    <p>She was always such a pushover, Zane naturally reaped the benefits. If she had no qualms about it, why would he care?</p>
+
+    <p>"Sir… You've been awfully quiet…. And if I may, it seems you've no desire to slumber. Do you want to talk?"</p>
+
+    <p>Eyes trained on her.</p>
+
+    <p>"I thoroughly recall wishing I wouldn't hear you pipe up again." He relayed firmly.</p>
+
+    <p>"I apologize." She pulled back a little, rubbing her arm in earnest.</p>
+
+    <p>"You er… have that look. When you're in your head again." She summarized expertly, which made Zane want to throw her out of the window for such a careful observation from someone he cared so little about.</p>
+
+    <p>"And precisely why should that matter concern you?" He asked honestly, letting his eyes grow lidded as he shifted. Ever since she offered the sweet promise of sleep, he couldn't take the subconscious depths of his mind off rest, regardless what she observed in his expression.</p>
+
+    <p><em>Yet sleep is a long time coming.</em></p>
+
+    <p>He knew drowsiness would take its sweet time to approach… Whatever power stemmed inside him prevented him from sleep.</p>
+
+    <p><em>Except the occasional blackouts that still occur…</em></p>
+
+    <p>"How about I get you a refreshment?" A rushed proposal, but a carefully manufactured one. Elijah's expression as well as her tone remained remotely deliberate, as she didn't wish to receive any heat for anything she might have done.</p>
+
+    <p>Zane let his eyes linger on her beret (and that terrible fashion choice consisting of that pin), before he sighed, giving into the bait like a fish to a hooked worm.</p>
+
+    <p>"Perhaps I'll take you up on that offer." And that was all the politeness he could muster up, already drastically low on his kindness stores from reeling back just a few of his usual harsh remarks. This was pushing it.</p>
+
+    <p>He commended himself for a job well done in secret, naturally.</p>
+
+    <p>Elijah looked over the moon at the prospect of Zane asking a favor from her.</p>
+
+    <p>Zane listened to the shriek of the train skirting over a rather harsh bump, letting out a steamy hiss from where the conductor resided, tugging a pulley to allow the train to bleat a whistle heard for miles.</p>
+
+    <p>He sighs a hefty sigh, wishing Elijah could draw that heavy, expecting gaze off him already.</p>
+
+    <p>"Well then, would you be so kind as to fetch me that drink? If you'd make it snappy, I don't plan on becoming a shriveled corpse from dehydration before I get answers."</p>
+
+    <div class="chapter-divider"></div>
+
   </div>
 
   <button class="bookmark-btn" id="bookmark-btn" title="Bookmark this chapter">
@@ -354,7 +471,6 @@
       <path d="M2 2h20v28l-10-7L2 30V2z" stroke="#c9a84c" stroke-width="1.5" fill="rgba(10,8,6,0.8)"/>
     </svg>
   </button>
-
   <div class="bookmark-context" id="bookmark-context">
     <div class="bookmark-context-item" id="context-bookmark">
       <svg viewBox="0 0 16 20" width="10" height="13" fill="none">
@@ -363,29 +479,17 @@
       Bookmark this paragraph
     </div>
   </div>
-
-  <div id="chapter-loading">Loading chapter...</div>
-  <div id="chapter-content" style="display:none;">
-
-    <div class="chapter-header">
-      <span class="chapter-label" id="ch-label">Ghost in Me — by Mistress Spite</span>
-      <h1 class="chapter-title" id="ch-title"></h1>
+  <div class="bookmark-banner" id="bookmark-banner">
+    <span class="bookmark-banner-text" id="bookmark-banner-text">You have a saved bookmark</span>
+    <div style="display:flex;gap:0.75rem;align-items:center;">
+      <button class="bookmark-banner-btn" id="bookmark-jump">Jump to bookmark</button>
+      <button class="bookmark-banner-dismiss" id="bookmark-dismiss">Dismiss</button>
     </div>
-
-    <img class="chapter-art" id="ch-art" src="" alt="Chapter Art" style="display:none;" />
-
-    <div class="chapter-divider"></div>
-
-    <div class="chapter-body" id="ch-body"></div>
-
-    <div class="chapter-divider"></div>
-
-    <div class="chapter-nav">
-      <a href="content.html">← Back to Content</a>
-      <span id="ch-end" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);"></span>
-      <a href="content.html" id="ch-next">More Coming Soon →</a>
-    </div>
-
+  </div>
+  <div class="chapter-nav">
+    <a href="content.html">← Back to Content</a>
+    <span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);">End of Chapter I</span>
+    <a href="chapter.html?chapter=2">Chapter II — The Meeting →</a>
   </div>
 </div>
 
@@ -456,115 +560,6 @@
 </footer>
 
 <script>
-async function loadChapter() {
-  const params = new URLSearchParams(window.location.search);
-  const num = params.get('chapter');
-  if (!num) { window.location.href = 'content.html'; return; }
-
-  try {
-    const res = await fetch('/_data/content-index.json');
-    const items = await res.json();
-    const chapter = items.find(i =>
-      i.number == num ||
-      (i.filename && i.filename.includes('chapter-' + num))
-    );
-
-    if (!chapter) { window.location.href = 'content.html'; return; }
-
-    document.title = `Chapter ${chapter.number} — ${chapter.title} — Ludicrous Chronicles`;
-    document.getElementById('ch-title').textContent = `Chapter ${chapter.number}`;
-    document.getElementById('ch-label').textContent = 'Ghost in Me — by Mistress Spite';
-    document.getElementById('ch-end').textContent = `End of Chapter ${chapter.number}`;
-
-    if (chapter.art || chapter.thumbnail) {
-      const art = document.getElementById('ch-art');
-      art.src = chapter.art || chapter.thumbnail;
-      art.style.display = 'block';
-      art.alt = chapter.title;
-    }
-
-    const body = (chapter.body || '').replace(/\\/g, '');
-    const html = markdownToHtml(body);
-    const bodyEl = document.getElementById('ch-body');
-    bodyEl.innerHTML = html;
-
-    const firstP = bodyEl.querySelector('p');
-    if (firstP) firstP.classList.add('dropcap');
-
-    bodyEl.querySelectorAll('p').forEach(p => {
-      if (p.textContent.trim().length < 60 && !p.classList.contains('dropcap')) {
-        p.classList.add('beat');
-      }
-    });
-
-    const prevNum = parseInt(chapter.number) - 1;
-    if (prevNum >= 1) {
-      const prevLink = document.createElement('a');
-      prevLink.style.cssText = 'font-family:Cinzel,serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-dim);text-decoration:none;';
-      if (prevNum === 1) {
-        prevLink.href = 'chapter-1.html';
-        prevLink.textContent = '← Chapter I';
-      } else {
-        prevLink.href = `chapter.html?chapter=${prevNum}`;
-        prevLink.textContent = `← Chapter ${prevNum}`;
-      }
-      document.querySelector('.chapter-nav').insertBefore(prevLink, document.querySelector('.chapter-nav').firstChild);
-    }
-
-    const nextChapter = items.find(i => i.number == (parseInt(chapter.number) + 1));
-    if (nextChapter) {
-      const nextLink = document.getElementById('ch-next');
-      nextLink.textContent = `Chapter ${nextChapter.number} →`;
-      nextLink.href = `chapter.html?chapter=${nextChapter.number}`;
-    } else {
-      document.getElementById('ch-next').textContent = 'More Coming Soon';
-      document.getElementById('ch-next').removeAttribute('href');
-      document.getElementById('ch-next').style.opacity = '0.4';
-      document.getElementById('ch-next').style.cursor = 'default';
-    }
-
-    document.getElementById('chapter-loading').style.display = 'none';
-    document.getElementById('chapter-content').style.display = 'block';
-    initEngagement('chapter-' + chapter.number);
-
-  } catch(e) {
-    document.getElementById('chapter-loading').textContent = 'Chapter not found.';
-  }
-}
-
-function markdownToHtml(md) {
-  if (!md) return '';
-  md = md.replace(/\\/g, '');
-
-  function inlineConvert(str) {
-    return str
-      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;display:block;margin:2rem auto;border:1px solid var(--border);box-shadow:0 0 20px rgba(0,0,0,0.4);">')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>')
-      .replace(/\*\*\*(.*?)\*\*\*/gs, '<strong><em>$1</em></strong>')
-      .replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/gs, '<em>$1</em>')
-      .replace(/_(.*?)_/gs, '<em>$1</em>');
-  }
-
-  if (md.includes('<p>')) return inlineConvert(md);
-
-  const paragraphs = md.split(/\n\n+/);
-  return paragraphs
-    .map(p => p.trim())
-    .filter(p => p.length > 0)
-    .map(p => {
-      if (p.startsWith('<')) return inlineConvert(p);
-      return `<p>${inlineConvert(p).replace(/\n/g, '<br>')}</p>`;
-    })
-    .join('\n');
-}
-
-loadChapter();
-</script>
-
-<script src="auth.js"></script>
-<script src="socials.js"></script>
-<script>
   const trigger = document.getElementById('socials-trigger');
   const panel = document.getElementById('socials-panel');
   document.getElementById('socials-arrow').addEventListener('click', () => {
@@ -572,15 +567,8 @@ loadChapter();
     panel.classList.toggle('open');
   });
 </script>
-<script>
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; });
-      }
-    });
-  }
-</script>
+<script src="auth.js"></script>
+<script src="socials.js"></script>
 
 <script>
 document.addEventListener('keydown', (e) => {
@@ -599,7 +587,7 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
 
 <script>
 (function() {
-  const chapterKey = 'bookmark_' + window.location.pathname + window.location.search;
+  const chapterKey = 'bookmark_' + window.location.pathname;
   let targetParagraph = null;
   const saved = localStorage.getItem(chapterKey);
   const banner = document.getElementById('bookmark-banner');
@@ -612,7 +600,7 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
     const data = JSON.parse(saved);
     banner.classList.add('visible');
     bannerText.textContent = data.paragraphText
-      ? `Last read: "${data.paragraphText.slice(0,40)}…"`
+      ? 'Last read: "' + data.paragraphText.slice(0,40) + '…"'
       : 'You have a saved bookmark';
     bookmarkBtn.classList.add('saved');
     bookmarkBtn.querySelector('path').setAttribute('fill', 'var(--gold)');
@@ -632,7 +620,7 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
     banner.classList.remove('visible');
   });
 
-  dismissBtn && dismissBtn.addEventListener('click', () => { banner.classList.remove('visible'); });
+  dismissBtn && dismissBtn.addEventListener('click', () => banner.classList.remove('visible'));
 
   bookmarkBtn && bookmarkBtn.addEventListener('click', () => {
     if (bookmarkBtn.classList.contains('saved')) {
@@ -690,5 +678,6 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
 })();
 </script>
 <script src="engagement.js"></script>
+<script>document.addEventListener("DOMContentLoaded", () => initEngagement("chapter-1"));</script>
 </body>
 </html>
