@@ -45,9 +45,18 @@
   .announcement {
     padding: 2.5rem 0;
     border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
   }
 
   .announcement:last-child { border-bottom: none; }
+
+  /* Highlight unread announcements */
+  .announcement-new {
+    background: rgba(201,168,76,0.04);
+    border-left: 2px solid var(--gold-dim);
+    padding-left: 1.5rem;
+    margin-left: -1.5rem;
+  }
 
   .announcement-meta {
     display: flex;
@@ -139,6 +148,7 @@
     }
   })();
 </script>
+
 <div class="news-page">
   <div class="news-header">
     <span class="news-label">Ludicrous Chronicles</span>
@@ -148,7 +158,6 @@
   <div id="announcements-container">
     <p class="no-news">Nothing here yet. Check back soon.</p>
   </div>
-
 </div>
 
 <!-- Socials Sidebar -->
@@ -202,25 +211,6 @@
 </script>
 
 <script>
-  (function() {
-    const cord = document.getElementById('cord-wrap');
-    const dot = document.getElementById('news-dot');
-    const dismissed = localStorage.getItem('news-dismissed');
-    if (dismissed) {
-      if (cord) cord.classList.add('pulled');
-      if (dot) dot.classList.add('off');
-    }
-    if (cord) {
-      cord.addEventListener('click', () => {
-        cord.classList.add('pulled');
-        if (dot) dot.classList.add('off');
-        localStorage.setItem('news-dismissed', '1');
-      });
-    }
-  })();
-</script>
-
-<script>
 async function loadAnnouncements() {
   const container = document.getElementById('announcements-container');
   try {
@@ -233,11 +223,17 @@ async function loadAnnouncements() {
       return;
     }
 
+    // Check when visitor last dismissed the cord
+    const dismissedAt = parseInt(localStorage.getItem('news-dismissed-at') || '0');
+
     container.innerHTML = items.map(item => {
-      const date = item.date ? new Date(item.date).toLocaleDateString('en-US', {month:'long', year:'numeric'}) : '';
-      return `<div class="announcement">
+      const itemDate = new Date(item.date).getTime();
+      const isNew = itemDate > dismissedAt;
+      const date = item.date ? new Date(item.date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
+      return `<div class="announcement${isNew ? ' announcement-new' : ''}">
         <div class="announcement-meta">
           <span class="announcement-date">${date}</span>
+          ${isNew ? '<span class="announcement-tag" style="color:var(--gold);border-color:var(--gold-dim);">New</span>' : ''}
           ${item.tag ? `<span class="announcement-tag">${item.tag}</span>` : ''}
         </div>
         <div class="announcement-title">${item.title || ''}</div>
