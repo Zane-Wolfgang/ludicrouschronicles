@@ -133,7 +133,7 @@ async function initEngagement(chapterId) {
   }
 
   async function submitComment(e) {
-    e.preventDefault();
+    if (e) e.preventDefault();
     const nameInput = document.getElementById('comment-name');
     const msgInput = document.getElementById('comment-message');
     const submitBtn = document.getElementById('comment-submit');
@@ -169,6 +169,6 @@ async function initEngagement(chapterId) {
   const likeBtn = document.getElementById('like-btn');
   if (likeBtn) likeBtn.addEventListener('click', toggleLike);
 
-  const form = document.getElementById('comment-form');
-  if (form) form.addEventListener('submit', submitComment);
+  const submitBtn2 = document.getElementById('comment-submit');
+  if (submitBtn2) submitBtn2.addEventListener('click', submitComment);
 }
