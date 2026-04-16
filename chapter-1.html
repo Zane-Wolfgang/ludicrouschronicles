@@ -12,234 +12,71 @@
 <link rel="stylesheet" href="style.css">
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <style>
-  .chapter-wrap {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 8rem 2rem 6rem;
-  }
-
-  .chapter-header {
-    text-align: center;
-    margin-bottom: 4rem;
-    padding-bottom: 3rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .chapter-label {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.4em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    margin-bottom: 1rem;
-    display: block;
-  }
-
-  .chapter-title {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(2rem, 5vw, 3rem);
-    color: var(--gold);
-    margin-bottom: 0.5rem;
-    text-shadow:
-      -1px -1px 0 #0a0600,
-       1px -1px 0 #0a0600,
-      -1px  1px 0 #0a0600,
-       1px  1px 0 #0a0600,
-      0 0 30px rgba(201,168,76,0.3);
-  }
-
-  .chapter-art {
-    width: 100%;
-    max-width: 680px;
-    margin: 2.5rem auto;
-    display: block;
-    border: 1px solid var(--border);
-    box-shadow: 0 0 40px rgba(0,0,0,0.6);
-  }
-
-  .chapter-body {
-    font-family: 'EB Garamond', Georgia, serif;
-    font-size: 1.22rem;
-    line-height: 1.95;
-    color: #c9a84c;
-    font-style: normal;
-  }
-
-  .chapter-body p {
-    margin-bottom: 0;
-    padding-bottom: 1.3em;
-    text-indent: 2.5em;
-  }
-
-  .chapter-body p.dropcap,
-  .chapter-body p.no-indent {
-    text-indent: 0;
-  }
-
-  .chapter-body em {
-    font-style: italic;
-    color: #e0bc6a;
-    font-weight: 400;
-  }
-
-  .chapter-body strong {
-    font-style: normal;
-    color: var(--parchment);
-    font-weight: 500;
-  }
-
-  .chapter-divider {
-    width: 80px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
-    margin: 3rem auto;
-  }
-
-  .chapter-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 3rem;
-    border-top: 1px solid var(--border);
-    margin-top: 4rem;
-  }
-
-  .chapter-nav a {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-
+  .chapter-wrap { max-width: 720px; margin: 0 auto; padding: 8rem 2rem 6rem; }
+  .chapter-header { text-align: center; margin-bottom: 4rem; padding-bottom: 3rem; border-bottom: 1px solid var(--border); }
+  .chapter-label { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 1rem; display: block; }
+  .chapter-title { font-family: 'Cinzel Decorative', serif; font-size: clamp(2rem, 5vw, 3rem); color: var(--gold); margin-bottom: 0.5rem; text-shadow: -1px -1px 0 #0a0600, 1px -1px 0 #0a0600, -1px 1px 0 #0a0600, 1px 1px 0 #0a0600, 0 0 30px rgba(201,168,76,0.3); }
+  .chapter-art { width: 100%; max-width: 680px; margin: 2.5rem auto; display: block; border: 1px solid var(--border); box-shadow: 0 0 40px rgba(0,0,0,0.6); }
+  .chapter-body { font-family: 'EB Garamond', Georgia, serif; font-size: 1.22rem; line-height: 1.95; color: #c9a84c; font-style: normal; }
+  .chapter-body p { margin-bottom: 0; padding-bottom: 1.3em; text-indent: 2.5em; }
+  .chapter-body p.dropcap, .chapter-body p.no-indent { text-indent: 0; }
+  .chapter-body em { font-style: italic; color: #e0bc6a; font-weight: 400; }
+  .chapter-body strong { font-style: normal; color: var(--parchment); font-weight: 500; }
+  .chapter-divider { width: 80px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), transparent); margin: 3rem auto; }
+  .chapter-nav { display: flex; justify-content: space-between; align-items: center; padding-top: 3rem; border-top: 1px solid var(--border); margin-top: 4rem; }
+  .chapter-nav a { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); text-decoration: none; transition: color 0.2s; }
   .chapter-nav a:hover { color: var(--gold); }
-
-  /* Drop cap on first letter */
-  .chapter-body .dropcap::first-letter {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: 4rem;
-    float: left;
-    line-height: 0.8;
-    margin-right: 0.1em;
-    margin-top: 0.1em;
-    color: var(--gold);
-    text-shadow: 0 0 20px rgba(201,168,76,0.4);
-  }
-
-  .chapter-body .dialogue {
-    font-style: normal;
-    color: var(--parchment);
-  }
-
-  .chapter-body .thought {
-    font-style: italic;
-  }
-
-  /* Emphasis from original PDF */
-  .chapter-body em {
-    font-style: italic;
-    color: #e0bc6a;
-    font-weight: 400;
-  }
-
-  .bookmark-btn {
-    position: fixed;
-    top: 5rem;
-    right: 2rem;
-    width: 36px;
-    height: 48px;
-    cursor: pointer;
-    z-index: 100;
-    opacity: 0.5;
-    transition: opacity 0.2s, transform 0.2s;
-    background: none;
-    border: none;
-    padding: 0;
-  }
+  .chapter-body .dropcap::first-letter { font-family: 'Cinzel Decorative', serif; font-size: 4rem; float: left; line-height: 0.8; margin-right: 0.1em; margin-top: 0.1em; color: var(--gold); text-shadow: 0 0 20px rgba(201,168,76,0.4); }
+  .chapter-body .dialogue { font-style: normal; color: var(--parchment); }
+  .chapter-body .thought { font-style: italic; }
+  .bookmark-btn { position: fixed; top: 5rem; right: 2rem; width: 36px; height: 48px; cursor: pointer; z-index: 100; opacity: 0.5; transition: opacity 0.2s, transform 0.2s; background: none; border: none; padding: 0; }
   .bookmark-btn:hover { opacity: 1; transform: translateY(-2px); }
   .bookmark-btn.saved { opacity: 1; }
   .bookmark-btn svg { width: 100%; height: 100%; }
-  .bookmark-banner {
-    background: rgba(10,8,6,0.96);
-    border: 1px solid var(--gold-dim);
-    border-left: 3px solid var(--gold);
-    padding: 1rem 1.5rem;
-    margin-bottom: 2rem;
-    display: none;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
+  .bookmark-banner { background: rgba(10,8,6,0.96); border: 1px solid var(--gold-dim); border-left: 3px solid var(--gold); padding: 1rem 1.5rem; margin-bottom: 2rem; display: none; align-items: center; justify-content: space-between; gap: 1rem; }
   .bookmark-banner.visible { display: flex; }
-  .bookmark-banner-text {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-  }
-  .bookmark-banner-btn {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--ink);
-    background: var(--gold);
-    border: none;
-    padding: 0.4em 1em;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .bookmark-banner-dismiss {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    color: var(--text-muted);
-    background: none;
-    border: none;
-    cursor: pointer;
-  }
-  .paragraph-highlight {
-    background: rgba(201,168,76,0.08);
-    border-left: 2px solid var(--gold-dim);
-    padding-left: 0.5rem;
-    margin-left: -0.5rem;
-    transition: background 0.5s;
-  }
-  .bookmark-context {
-    position: fixed;
-    background: rgba(10,8,6,0.97);
-    border: 1px solid var(--border-bright);
-    padding: 0.5rem 0;
-    z-index: 1000;
-    display: none;
-    min-width: 180px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  }
+  .bookmark-banner-text { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
+  .bookmark-banner-btn { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.4em 1em; cursor: pointer; white-space: nowrap; }
+  .bookmark-banner-dismiss { font-family: 'Cinzel', serif; font-size: 9px; color: var(--text-muted); background: none; border: none; cursor: pointer; }
+  .paragraph-highlight { background: rgba(201,168,76,0.08); border-left: 2px solid var(--gold-dim); padding-left: 0.5rem; margin-left: -0.5rem; transition: background 0.5s; }
+  .bookmark-context { position: fixed; background: rgba(10,8,6,0.97); border: 1px solid var(--border-bright); padding: 0.5rem 0; z-index: 1000; display: none; min-width: 180px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
   .bookmark-context.visible { display: block; }
-  .bookmark-context-item {
-    padding: 0.6rem 1.2rem;
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: background 0.15s, color 0.15s;
-  }
+  .bookmark-context-item { padding: 0.6rem 1.2rem; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-dim); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background 0.15s, color 0.15s; }
   .bookmark-context-item:hover { background: var(--mid); color: var(--gold); }
+  .chapter-body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 
-  /* Copy protection */
-  .chapter-body {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
+  /* ── Engagement Section ── */
+  .chapter-engagement { max-width: 720px; margin: 0 auto; padding: 0 2rem 6rem; }
+  .engagement-stats { display: flex; gap: 2.5rem; align-items: center; padding: 1.5rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 3rem; flex-wrap: wrap; }
+  .stat-item { display: flex; align-items: center; gap: 0.6rem; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
+  .stat-item svg { width: 14px; height: 14px; fill: var(--gold-dim); flex-shrink: 0; }
+  #like-btn { background: none; border: 1px solid var(--border); padding: 0.5em 1.2em; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); transition: all 0.2s; margin-left: auto; }
+  #like-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  #like-btn svg { width: 14px; height: 14px; fill: var(--text-muted); transition: fill 0.2s; }
+  #like-btn:hover svg, #like-btn.liked svg { fill: var(--gold); }
+  #like-btn.liked { border-color: var(--gold); color: var(--gold); }
+  .comments-section { margin-top: 1rem; }
+  .comments-label { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; }
+  .comments-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .comment-item { padding: 1.25rem 0; border-bottom: 1px solid var(--border); }
+  .comment-item:last-child { border-bottom: none; }
+  .comment-pinned { background: rgba(201,168,76,0.04); border-left: 2px solid var(--gold-dim); padding-left: 1rem; margin-left: -1rem; }
+  .comment-pin-label { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 0.5rem; }
+  .comment-meta { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .comment-name { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--parchment); }
+  .comment-date { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; color: var(--text-muted); }
+  .comment-body { font-family: 'EB Garamond', serif; font-size: 1rem; line-height: 1.7; color: var(--text-body); }
+  #comments-more-btn { display: none; background: none; border: none; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); cursor: pointer; padding: 1rem 0; transition: color 0.2s; }
+  #comments-more-btn:hover { color: var(--gold); }
+  .comment-form { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+  .comment-form-label { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 1.5rem; display: block; }
+  .comment-input { width: 100%; background: var(--surface); border: 1px solid var(--border); padding: 0.75rem 1rem; font-family: 'EB Garamond', serif; font-size: 1rem; color: var(--text-body); outline: none; transition: border-color 0.2s; box-sizing: border-box; margin-bottom: 0.75rem; }
+  .comment-input:focus { border-color: var(--gold-dim); }
+  .comment-input::placeholder { color: var(--text-muted); }
+  textarea.comment-input { resize: vertical; min-height: 100px; }
+  #comment-submit { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.8em 2em; cursor: pointer; transition: background 0.2s; }
+  #comment-submit:hover { background: var(--gold-bright); }
+  #comment-submit:disabled { opacity: 0.5; cursor: default; }
 </style>
 </head>
 <body>
@@ -284,6 +121,7 @@
     }
   })();
 </script>
+
 <div class="chapter-wrap">
   <div class="chapter-header">
     <span class="chapter-label">Ghost in Me — by Mistress Spite</span>
@@ -418,11 +256,11 @@
 
     <p>He lingered in that settlement, enjoying the quiet of his thoughts he'd simply tuned out, long professional at the skill and cultivated it since he was young.</p>
 
-    <p>"Oh, my! The trolley is coming… Do you hear that, Sir Zane?"</span></p>
+    <p>"Oh, my! The trolley is coming… Do you hear that, Sir Zane?"</p>
 
     <p>Zane flinched, a bit harder than he meant to. He was in a sensitive state of being, vulnerable for a hair's breadth of a moment—which was in hindsight a mistake in any circumstance that involved his clumsy associate.</p>
 
-    <p>"Specky git."</span> He murmured under his breath, venom in his tone. She had no right to deserve such arrogant judgement.</p>
+    <p>"Specky git." He murmured under his breath, venom in his tone. She had no right to deserve such arrogant judgement.</p>
 
     <p>Though it was difficult to stay upset at the innocent look her spectacles gave her, its shape rotund and in pristine condition, just as neat and clean as her outfit. A simple one, comprising of a dull, beige turtleneck that appeared to be crafted of material that looked <em>terribly</em> itchy, a smooth, thick jacket slipping off her shoulders, a black skirt partially ridged up by belts horizontally grasping its edges and flipping its underside into view (just barely, though)—paired with gray pants and brown, ankle-high short boots. A small, leather handbag slung across her chest, resting snugly against her thigh.</p>
 
@@ -434,11 +272,11 @@
 
     <p>Zane simply let his eyes adjust to the silhouette, doing nothing to approach the doors, stuck like a rabbit in a fox's eye. Perhaps he'd forgotten he was physically fit and able to function a sliding door.</p>
 
-    <p>"I-I'll get it."</span> Elijah decided, seeing Zane in that state, scrambling forward.</p>
+    <p>"I-I'll get it." Elijah decided, seeing Zane in that state, scrambling forward.</p>
 
     <p>She unlatched the doors, a sweet old lady with curls poking her head through. A thick, hard-to-understand (not for Zane, however) British accent met both their ears.</p>
 
-    <p>"Anything off the trolley dears?"</span> She asked shakily, but warmly. She seemed to have adapted to this job years before Zane was even conceived.</p>
+    <p>"Anything off the trolley dears?" She asked shakily, but warmly. She seemed to have adapted to this job years before Zane was even conceived.</p>
 
     <p>Zane's eyes roamed the ladies for no less than a moment before gauging his options.</p>
 
@@ -448,7 +286,7 @@
 
     <p>Zane neither asked for anything politely or offered that hearty of a thank you as Elijah happily paid on his behalf of his crudeness, the darling old woman asking if either of them required more, or if that'll be all—with a polite decline from the rather <em>kinder</em> half of the party, the little old lady was about to be off—until…</p>
 
-    <p>"Dear…? I may be mistaken, as for someone of my age with sight that wanes by the day… does your neck happen to be glowing?"</span></p>
+    <p>"Dear…? I may be mistaken, as for someone of my age with sight that wanes by the day… does your neck happen to be glowing?"</p>
 
     <p>Zane flinched so hard he conceded his body to a swift halt, teeth abruptly half-sunken into one of the truffles. He'd closed his eyes, and hadn't dared open them in a bout of trepidation.</p>
 
@@ -456,11 +294,11 @@
 
     <p>A beat passed as Zane's hand, trained in cases like these, snatched up his black shirt collar to further ride up against his throat, Adam's apple bobbing in the strain the "cold" caused. He gingerly opened only his right eye to meet her milky brown ones.</p>
 
-    <p>"No, ma'am."</span> He forced, however rushed, "please think nothing of it, it must be a trick of the light."</span> Stumbling over his speech to sound somewhat sophisticated in a moment of sheer vulnerability was no easy task, nor was he covering up the obvious fumble he'd made when he instantly went to conceal his neck.</p>
+    <p>"No, ma'am." He forced, however rushed, "please think nothing of it, it must be a trick of the light." Stumbling over his speech to sound somewhat sophisticated in a moment of sheer vulnerability was no easy task, nor was he covering up the obvious fumble he'd made when he instantly went to conceal his neck.</p>
 
     <p><em><em>Mustn't get attention this time.</em></em></p>
 
-    <p>"If you insist, young man…"</span> The little old lady left with that unsureness writhing like a gust of cold air on a summer day, appearing but just as quick to go. During her departure, she mentioned something about swearing she saw the boy having a "glowing eye"… but then quick to dismiss it (which earned a breath of <em>relief</em> from Zane).</p>
+    <p>"If you insist, young man…" The little old lady left with that unsureness writhing like a gust of cold air on a summer day, appearing but just as quick to go. During her departure, she mentioned something about swearing she saw the boy having a "glowing eye"… but then quick to dismiss it (which earned a breath of <em>relief</em> from Zane).</p>
 
     <p>The sliding doors closed, and Zane sighed, the internal battle clawing at his throat as he shoved another truffle into his mouth.</p>
 
@@ -474,7 +312,7 @@
 
     <p style="text-indent:0;margin-top:2.5rem;margin-bottom:2.5rem;font-style:normal;color:#c9a84c;">The feeling… of being alive.</p>
 
-    <p>"Are they alright, Sir Zane?"</span> A voice slicing through his haze. It made him mistakenly bite his tongue instead of the sweet he had punched between his fingers, earning a string of curses in turn.</p>
+    <p>"Are they alright, Sir Zane?" A voice slicing through his haze. It made him mistakenly bite his tongue instead of the sweet he had punched between his fingers, earning a string of curses in turn.</p>
 
     <p>Antsy, she was, practically giddy from any scrap of praise the man could offer her.</p>
 
@@ -482,19 +320,19 @@
 
     <p>He wondered if he should ever have to feel bad that he never reciprocated those feelings in turn.</p>
 
-    <p>"Yes,"</span> he decided, presuming she would leave him alone after a short, honest reply.</p>
+    <p>"Yes," he decided, presuming she would leave him alone after a short, honest reply.</p>
 
-    <p>"T… they're fine."</span> His voice briefly faltered with the hiccup of pleasure thrumming through his veins.</p>
+    <p>"T… they're fine." His voice briefly faltered with the hiccup of pleasure thrumming through his veins.</p>
 
     <p><em>Ignore it..</em> He pressured himself to listen, adjusting his shirt collar higher.</p>
 
     <p>And, the longer he did, the easier it got. Naturally, it lingered, always prepared to whisk him away the moment he revealed a sign of weakness… which he would never give it the satisfaction.</p>
 
-    <p>"Zane? Sir Zane."</span></p>
+    <p>"Zane? Sir Zane."</p>
 
-    <p>"You once more mistaken my title without respect again… and I shall have you beheaded."</span> His response carried a sort of finality along with it, dealing with something cruel, but he meant every word behind it. A sinister, twisted joy coiled in his stomach, like a pleased feline after an excellent scratch at the right spot. It made him feel <em>sick</em>.</p>
+    <p>"You once more mistaken my title without respect again… and I shall have you beheaded." His response carried a sort of finality along with it, dealing with something cruel, but he meant every word behind it. A sinister, twisted joy coiled in his stomach, like a pleased feline after an excellent scratch at the right spot. It made him feel <em>sick</em>.</p>
 
-    <p>"Of course-!"</span> Elijah straightened with a frantic urge to right her face so not a crease was off center, or, according to what she thought Zane would approve of. She was right, regrettably, the joy in his stomach dwindling a little.</p>
+    <p>"Of course-!" Elijah straightened with a frantic urge to right her face so not a crease was off center, or, according to what she thought Zane would approve of. She was right, regrettably, the joy in his stomach dwindling a little.</p>
 
     <p>To something of which… he'd never truly understand.</p>
 
@@ -502,13 +340,13 @@
 
     <p><em>Perhaps she'll be willing to do it in my stead.</em></p>
 
-    <p>"Sir Zane… it's just … are you sure your threads alright?"</span></p>
+    <p>"Sir Zane… it's just … are you sure your threads alright?"</p>
 
     <p>Zane crushed his box of truffles no more a second after the sentence was finished, his eyes narrowing to pin-pricks. He felt the cold brush from his heart, infecting his veins once again..</p>
 
-    <p>"I'm fine!"</span> He barked, a tad ruder than he meant to come off, but the last thing he wanted was to be approached with matters such as these.</p>
+    <p>"I'm fine!" He barked, a tad ruder than he meant to come off, but the last thing he wanted was to be approached with matters such as these.</p>
 
-    <p>"I'd rather you focus your energy elsewhere."</span> He attempted to direct what little control he had over the conversation into another avenue, gripping tightly the shirt collar he'd yet to let go of.</p>
+    <p>"I'd rather you focus your energy elsewhere." He attempted to direct what little control he had over the conversation into another avenue, gripping tightly the shirt collar he'd yet to let go of.</p>
 
     <p>Perhaps he was a little self-conscious, <em>sure</em>… but for good reason…</p>
 
@@ -542,13 +380,13 @@
 
     <p>Not to mention, compiling what he was on top of all his current problems wasn't aiding him in any situation.</p>
 
-    <p>"Sir, if I may…"</span> Elijah slipped into his reminiscing thoughts like a worm unearthing itself from the very ground he tread, "you look as pale as a sheet. Dare I say you look as if you've seen the headless horseman himself."</span> She jests, and for once, he recognizes that, but a crease underlines her eyes under the guise of worry.</p>
+    <p>"Sir, if I may…" Elijah slipped into his reminiscing thoughts like a worm unearthing itself from the very ground he tread, "you look as pale as a sheet. Dare I say you look as if you've seen the headless horseman himself." She jests, and for once, he recognizes that, but a crease underlines her eyes under the guise of worry.</p>
 
-    <p>"Why don't you rest? We've still hours yet to travel, we've merely just begun our journey…"</span></p>
+    <p>"Why don't you rest? We've still hours yet to travel, we've merely just begun our journey…"</p>
 
     <p>Zane offered her a sour look, lips drawing back in a downturned snarl.</p>
 
-    <p>"Have you calculated precisely how long our travels will transpire for?"</span> He decided to preoccupy with her instead, his condescending tone really added to his flair of ragged and raw emotion when he's caught red-handed with—</p>
+    <p>"Have you calculated precisely how long our travels will transpire for?" He decided to preoccupy with her instead, his condescending tone really added to his flair of ragged and raw emotion when he's caught red-handed with—</p>
 
     <p style="text-indent:0;margin-top:2.5rem;margin-bottom:2.5rem;font-style:normal;color:#c9a84c;">With his threads out.</p>
 
@@ -560,11 +398,11 @@
 
     <p>It truly was difficult to handle such a child. Or more accurately, a toddler trapped in an adolescent body.</p>
 
-    <p>"Well of course, Sir Zane… Approximately two hours at most."</span> She spoke thoughtfully, her eyes roaming all around their shared space. Her eyes lingered among the oil-fueled lanterns that provided the warm light, the flame constantly guttering and flickering faintly.</p>
+    <p>"Well of course, Sir Zane… Approximately two hours at most." She spoke thoughtfully, her eyes roaming all around their shared space. Her eyes lingered among the oil-fueled lanterns that provided the warm light, the flame constantly guttering and flickering faintly.</p>
 
     <p>He was thankful when he spotted the red threads receding, grandly spooling up from the delicate spiral that formed around her, disappearing into nothing but a figment. The dirty-blonde then let his shoulders slump and truly relax—it was difficult to lash his powers down, even through the years of teaching himself how to control whatever this was. Clearly the ample time he dedicated to such endeavors were still not even remotely enough…</p>
 
-    <p>"Excellent."</span> He spoke without mind, his thoughts trailing off, diving down the rabbit hole that was the mysteries that stemmed from his powers.</p>
+    <p>"Excellent." He spoke without mind, his thoughts trailing off, diving down the rabbit hole that was the mysteries that stemmed from his powers.</p>
 
     <p>For example, questions such as: Why was he this way? Why nobody in his family, even when so much as tracing back from trees of ancestry developed his supernatural abilities? Why had there been no mention of power meddling with the blood of humans from ancient text? How he could see what others couldn't, or how these threads were equipped with likely the strongest material known to man—Well, he could always suppose that was an exaggerated title—But if they could so much as shred steel without even a moment's hesitation…</p>
 
@@ -590,17 +428,17 @@
 
     <p>She was always such a pushover, Zane naturally reaped the benefits. If she had no qualms about it, why would he care?</p>
 
-    <p>"Sir… You've been awfully quiet…. And if I may, it seems you've no desire to slumber. Do you want to talk?"</span></p>
+    <p>"Sir… You've been awfully quiet…. And if I may, it seems you've no desire to slumber. Do you want to talk?"</p>
 
     <p>Eyes trained on her.</p>
 
-    <p>"I thoroughly recall wishing I wouldn't hear you pipe up again."</span> He relayed firmly.</p>
+    <p>"I thoroughly recall wishing I wouldn't hear you pipe up again." He relayed firmly.</p>
 
-    <p>"I apologize."</span> She pulled back a little, rubbing her arm in earnest.</p>
+    <p>"I apologize." She pulled back a little, rubbing her arm in earnest.</p>
 
-    <p>"You er… have that look. When you're in your head again."</span> She summarized expertly, which made Zane want to throw her out of the window for such a careful observation from someone he cared so little about.</p>
+    <p>"You er… have that look. When you're in your head again." She summarized expertly, which made Zane want to throw her out of the window for such a careful observation from someone he cared so little about.</p>
 
-    <p>"And precisely why should that matter concern you?"</span> He asked honestly, letting his eyes grow lidded as he shifted. Ever since she offered the sweet promise of sleep, he couldn't take the subconscious depths of his mind off rest, regardless what she observed in his expression.</p>
+    <p>"And precisely why should that matter concern you?" He asked honestly, letting his eyes grow lidded as he shifted. Ever since she offered the sweet promise of sleep, he couldn't take the subconscious depths of his mind off rest, regardless what she observed in his expression.</p>
 
     <p><em>Yet sleep is a long time coming.</em></p>
 
@@ -608,11 +446,11 @@
 
     <p><em>Except the occasional blackouts that still occur…</em></p>
 
-    <p>"How about I get you a refreshment?"</span> A rushed proposal, but a carefully manufactured one. Elijah's expression as well as her tone remained remotely deliberate, as she didn't wish to receive any heat for anything she might have done.</p>
+    <p>"How about I get you a refreshment?" A rushed proposal, but a carefully manufactured one. Elijah's expression as well as her tone remained remotely deliberate, as she didn't wish to receive any heat for anything she might have done.</p>
 
     <p>Zane let his eyes linger on her beret (and that terrible fashion choice consisting of that pin), before he sighed, giving into the bait like a fish to a hooked worm.</p>
 
-    <p>"Perhaps I'll take you up on that offer."</span> And that was all the politeness he could muster up, already drastically low on his kindness stores from reeling back just a few of his usual harsh remarks. This was pushing it.</p>
+    <p>"Perhaps I'll take you up on that offer." And that was all the politeness he could muster up, already drastically low on his kindness stores from reeling back just a few of his usual harsh remarks. This was pushing it.</p>
 
     <p>He commended himself for a job well done in secret, naturally.</p>
 
@@ -622,7 +460,7 @@
 
     <p>He sighs a hefty sigh, wishing Elijah could draw that heavy, expecting gaze off him already.</p>
 
-    <p>"Well then, would you be so kind as to fetch me that drink? If you'd make it snappy, I don't plan on becoming a shriveled corpse from dehydration before I get answers."</span></p>
+    <p>"Well then, would you be so kind as to fetch me that drink? If you'd make it snappy, I don't plan on becoming a shriveled corpse from dehydration before I get answers."</p>
 
     <div class="chapter-divider"></div>
 
@@ -652,6 +490,40 @@
     <a href="content.html">← Back to Content</a>
     <span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);">End of Chapter I</span>
     <a href="chapter.html?chapter=2">Chapter II — The Meeting →</a>
+  </div>
+</div>
+
+<div class="chapter-engagement">
+  <div class="engagement-stats">
+    <div class="stat-item">
+      <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5C21.3 7.6 17 4.5 12 4.5zm0 12.5c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z"/></svg>
+      <span id="witness-count">—</span>&nbsp;Witnesses
+    </div>
+    <div class="stat-item">
+      <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
+      <span id="like-count">—</span>&nbsp;Kudos
+    </div>
+    <div class="stat-item">
+      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+      <span id="comment-count">—</span>&nbsp;Comments
+    </div>
+    <button id="like-btn" title="Leave kudos">
+      <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
+      Kudos
+    </button>
+  </div>
+  <div class="comments-section">
+    <div class="comments-label">Comments</div>
+    <div id="comments-list"></div>
+    <button id="comments-more-btn"></button>
+    <div class="comment-form">
+      <span class="comment-form-label">Leave Your Mark</span>
+      <form id="comment-form">
+        <input type="text" class="comment-input" id="comment-name" placeholder="Your name (optional)" maxlength="60">
+        <textarea class="comment-input" id="comment-message" placeholder="What did you think?" maxlength="1000" required></textarea>
+        <button type="submit" id="comment-submit">Leave Your Mark</button>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -695,46 +567,21 @@
     panel.classList.toggle('open');
   });
 </script>
-
-<script>
-  (function() {
-    const cord = document.getElementById('cord-wrap');
-    const dot = document.getElementById('news-dot');
-    const dismissed = localStorage.getItem('news-dismissed');
-    if (dismissed) {
-      if (cord) cord.classList.add('pulled');
-      if (dot) dot.classList.add('off');
-    }
-    if (cord) {
-      cord.addEventListener('click', () => {
-        cord.classList.add('pulled');
-        if (dot) dot.classList.add('off');
-        localStorage.setItem('news-dismissed', '1');
-      });
-    }
-  })();
-</script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
 
-
 <script>
-// Copy protection — preserves bookmark right-click
 document.addEventListener('keydown', (e) => {
-  // Block Ctrl+C, Ctrl+A, Ctrl+X
   if (e.ctrlKey && ['c','a','x','u'].includes(e.key.toLowerCase())) {
     const sel = window.getSelection();
-    // Only block if selection is inside chapter body
-    if (sel && sel.anchorNode && sel.anchorNode.closest && 
+    if (sel && sel.anchorNode && sel.anchorNode.closest &&
         sel.anchorNode.closest && document.querySelector('.chapter-body') &&
         document.querySelector('.chapter-body').contains(sel.anchorNode)) {
       e.preventDefault();
     }
   }
 });
-
-// Block drag to copy
-document.querySelector('.chapter-body') && 
+document.querySelector('.chapter-body') &&
 document.querySelector('.chapter-body').addEventListener('dragstart', e => e.preventDefault());
 </script>
 
@@ -776,7 +623,6 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
   dismissBtn && dismissBtn.addEventListener('click', () => banner.classList.remove('visible'));
 
   bookmarkBtn && bookmarkBtn.addEventListener('click', () => {
-    // Toggle — if already saved, remove it
     if (bookmarkBtn.classList.contains('saved')) {
       localStorage.removeItem(chapterKey);
       bookmarkBtn.classList.remove('saved');
@@ -786,7 +632,6 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
       setTimeout(() => { bookmarkBtn.style.transform = ''; }, 300);
       return;
     }
-    // Save bookmark at current reading position
     const paras = document.querySelectorAll('.chapter-body p');
     let closest = null, closestDist = Infinity, closestIdx = 0;
     paras.forEach((p, i) => {
@@ -832,5 +677,7 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
   });
 })();
 </script>
+<script src="engagement.js"></script>
+<script>document.addEventListener("DOMContentLoaded", () => initEngagement("chapter-1"));</script>
 </body>
 </html>
