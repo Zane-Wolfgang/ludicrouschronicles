@@ -349,7 +349,7 @@
 </script>
 <!-- Full page fireplace background -->
 <div class="fireplace-bg">
-  <video id="fireplace-vid" autoplay loop muted playsinline>
+  <video id="fireplace-vid" autoplay loop muted playsinline oncontextmenu="return false;">
     <source src="images/Fire_Place.mp4" type="video/mp4">
   </video>
 </div>
@@ -396,7 +396,7 @@
   <!-- RIGHT: player -->
   <div class="videos-right">
     <div class="tv-wrap" id="tv-wrap">
-      <video id="main-video" preload="none" controls>
+      <video id="main-video" preload="none" controls controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture disableRemotePlayback oncontextmenu="return false;">
         <source src="images/video-pants.mp4" type="video/mp4">
       </video>
       <div class="tv-filter" id="tv-filter">
