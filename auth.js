@@ -15,7 +15,9 @@ function tierFromUser(user) {
   return 'free';
 }
 
-// Wait for Netlify Identity to be ready, then resolve the user
+// Wait for Netlify Identity to be ready, then resolve the user.
+// Uses polling instead of event listeners because 'init' may have already fired
+// by the time auth.js loads (common when user is loaded from localStorage cache).
 let _identityReady = null;
 function waitForIdentity() {
   if (_identityReady) return _identityReady;
@@ -24,13 +26,26 @@ function waitForIdentity() {
       setTimeout(() => resolve(null), 2000);
       return;
     }
-    const current = window.netlifyIdentity.currentUser();
-    if (current !== undefined) {
-      resolve(current);
-      return;
+
+    const startTime = Date.now();
+    const maxWaitMs = 3000;
+    const pollIntervalMs = 50;
+
+    function checkUser() {
+      const current = window.netlifyIdentity.currentUser();
+      // currentUser() returns undefined before init, null (not logged in) or user object after
+      if (current !== undefined) {
+        resolve(current);
+        return;
+      }
+      if (Date.now() - startTime >= maxWaitMs) {
+        resolve(null);
+        return;
+      }
+      setTimeout(checkUser, pollIntervalMs);
     }
-    window.netlifyIdentity.on('init', (user) => resolve(user));
-    setTimeout(() => resolve(window.netlifyIdentity.currentUser() || null), 3000);
+
+    checkUser();
   });
   return _identityReady;
 }
@@ -74,9 +89,10 @@ function addAuthButton() {
 }
 
 // Admin-only tier switcher panel
-function addAdminSwitcher() {
+async function addAdminSwitcher() {
   if (!window.netlifyIdentity) return;
-  const user = window.netlifyIdentity.currentUser();
+  // Wait for identity to be ready so we can check role
+  const user = await waitForIdentity();
   if (!user) return;
   const roles = user.app_metadata?.roles || [];
   if (!roles.includes('admin')) return;
@@ -100,7 +116,7 @@ function addAdminSwitcher() {
 
   const label = document.createElement('div');
   label.style.cssText = 'font-size:8px;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim, #8a6e2f);margin-bottom:0.5rem;';
-  label.textContent = 'Admin · Viewing as';
+  label.textContent = 'Admin · Viewing as: ' + current;
 
   const buttons = document.createElement('div');
   buttons.style.cssText = 'display:flex;gap:0.3rem;';
