@@ -11,11 +11,15 @@ description: >-
 
   \
 
-  U﻿PSIDE DOWN by Black Gryph0n: [https://www.youtube.com/watch?v=sJ0yPYUnLlE&list=PLRAvHkMU1jFZJyTcWjY2G7wuLTU60iVC3&index=498&pp=iAQB8AUBsAgC](https://www.youtube.com/watch?v=sJ0yPYUnLlE&list=PLRAvHkMU1jFZJyTcWjY2G7wuLTU60iVC3&index=498&pp=iAQB8AUBsAgC\)\
+  U﻿PSIDE DOWN by Black Gryph0n: 
+
+
+  [UPSIDE DOWN (A Hazbin Hotel Song) - Black Gryph0n & Baasik - YouTube](https://www.youtube.com/watch?v=sJ0yPYUnLlE)
+
 
   \
 
-  E﻿dited  version by this guy: <https://www.youtube.com/watch?v=8kbAuGNw9uk&list=PLRAvHkMU1jFZJyTcWjY2G7wuLTU60iVC3&index=499&pp=iAQB8AUBsAgC>
+  E﻿dited  version by this guy: [https://www.youtube.com/watch?v=8kbAuGNw9uk](https://www.youtube.com/watch?v=8kbAuGNw9uk&list=PLRAvHkMU1jFZJyTcWjY2G7wuLTU60iVC3&index=499&pp=iAQB8AUBsAgC)
 type: animation
 tier: free
 ---
