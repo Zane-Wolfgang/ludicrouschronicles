@@ -5,6 +5,11 @@ const tierRank = { free: 0, devoted: 1, bound: 2 };
 function tierFromUser(user) {
   if (!user) return 'free';
   const roles = user.app_metadata?.roles || [];
+  if (roles.includes('admin')) {
+    // Admin override: read simulated tier from sessionStorage, default to bound
+    const simulated = sessionStorage.getItem('admin-tier') || 'bound';
+    return ['free', 'devoted', 'bound'].includes(simulated) ? simulated : 'bound';
+  }
   if (roles.includes('bound')) return 'bound';
   if (roles.includes('devoted')) return 'devoted';
   return 'free';
@@ -19,15 +24,12 @@ function waitForIdentity() {
       setTimeout(() => resolve(null), 2000);
       return;
     }
-    // currentUser() returns null if not logged in (after init), undefined if not initialized yet
     const current = window.netlifyIdentity.currentUser();
     if (current !== undefined) {
       resolve(current);
       return;
     }
-    // Not initialized yet — listen for init
     window.netlifyIdentity.on('init', (user) => resolve(user));
-    // Safety fallback in case init never fires
     setTimeout(() => resolve(window.netlifyIdentity.currentUser() || null), 3000);
   });
   return _identityReady;
@@ -71,7 +73,75 @@ function addAuthButton() {
   window.netlifyIdentity.on('logout', () => location.reload());
 }
 
-document.addEventListener('DOMContentLoaded', addAuthButton);
+// Admin-only tier switcher panel
+function addAdminSwitcher() {
+  if (!window.netlifyIdentity) return;
+  const user = window.netlifyIdentity.currentUser();
+  if (!user) return;
+  const roles = user.app_metadata?.roles || [];
+  if (!roles.includes('admin')) return;
+
+  const current = sessionStorage.getItem('admin-tier') || 'bound';
+
+  const panel = document.createElement('div');
+  panel.id = 'admin-tier-switcher';
+  panel.style.cssText = `
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    background: rgba(10,8,6,0.97);
+    border: 1px solid var(--gold-dim, #8a6e2f);
+    padding: 0.75rem 0.9rem;
+    font-family: 'Cinzel', serif;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    min-width: 200px;
+  `;
+
+  const label = document.createElement('div');
+  label.style.cssText = 'font-size:8px;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim, #8a6e2f);margin-bottom:0.5rem;';
+  label.textContent = 'Admin · Viewing as';
+
+  const buttons = document.createElement('div');
+  buttons.style.cssText = 'display:flex;gap:0.3rem;';
+
+  ['free', 'devoted', 'bound'].forEach(tier => {
+    const btn = document.createElement('button');
+    btn.textContent = tier;
+    btn.style.cssText = `
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.4em 0.7em;
+      cursor: pointer;
+      border: 1px solid ${tier === current ? 'var(--gold, #c9a84c)' : 'var(--border, rgba(201,168,76,0.18))'};
+      background: ${tier === current ? 'var(--gold, #c9a84c)' : 'transparent'};
+      color: ${tier === current ? '#0a0806' : 'var(--text-muted, #7a7260)'};
+      transition: all 0.2s;
+      flex: 1;
+    `;
+    btn.addEventListener('click', () => {
+      sessionStorage.setItem('admin-tier', tier);
+      location.reload();
+    });
+    buttons.appendChild(btn);
+  });
+
+  const hint = document.createElement('div');
+  hint.style.cssText = 'font-size:8px;color:var(--text-muted, #7a7260);margin-top:0.5rem;font-style:italic;font-family:"EB Garamond",serif;letter-spacing:0.05em;';
+  hint.textContent = 'Session only · only you see this';
+
+  panel.appendChild(label);
+  panel.appendChild(buttons);
+  panel.appendChild(hint);
+  document.body.appendChild(panel);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  addAuthButton();
+  addAdminSwitcher();
+});
 
 // Export for use in other scripts
 window.getUserTier = getUserTier;
