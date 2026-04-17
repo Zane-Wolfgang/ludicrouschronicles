@@ -326,12 +326,11 @@ function markdownToHtml(md) {
     .map(p => p.startsWith('<') ? inlineConvert(p) : `<p>${inlineConvert(p).replace(/\n/g, '<br>')}</p>`)
     .join('\n');
 }
-
-loadStory();
 </script>
 
 <script src="auth.js"></script>
 <script src="socials.js"></script>
+<script>loadStory();</script>
 <script>
   const trigger = document.getElementById('socials-trigger');
   const panel = document.getElementById('socials-panel');
