@@ -1,7 +1,7 @@
 ---
-title: "EARLY ACCESS: Upside Down | Mr. Vasily Ragovski Backstory (16+)"
+title: Upside Down | Mr. Vasily Ragovski Backstory (16+)
 date: 2026-04-12T19:25:27.609Z
-video: https://f005.backblazeb2.com/file/Moi-Videos-Oui/Upside_Down_Animatic.mp4.mov
+video: https://f005.backblazeb2.com/file/Moi-Videos-Oui/Upside_Down_Animatic.mov
 thumbnail: /images/uploads/vasilythumbnail.png
 description: >-
   C﻿ompared to the first I've done, this was surprisingly a lot less lenient and
@@ -17,5 +17,5 @@ description: >-
 
   E﻿dited  version by this guy: <https://www.youtube.com/watch?v=8kbAuGNw9uk&list=PLRAvHkMU1jFZJyTcWjY2G7wuLTU60iVC3&index=499&pp=iAQB8AUBsAgC>
 type: animation
-tier: bound
+tier: free
 ---
