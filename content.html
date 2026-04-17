@@ -227,8 +227,13 @@ async function loadAllContent() {
   const grid = document.getElementById('content-grid');
   if (!grid) return;
 
+  // Wait for auth to be fully ready — critical for tier-gated cards to point to correct URLs
   const userTier = window.getUserTier ? await window.getUserTier() : 'free';
   const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
+
+  // Clear any previous content (in case of reload)
+  grid.innerHTML = '';
+
   const seen = new Set();
   const allCards = [];
 
@@ -328,6 +333,13 @@ async function loadAllContent() {
 </script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
-<script>loadAllContent();</script>
+<script>
+// Run AFTER auth.js loads AND after a small delay to ensure Identity widget has finalized its user state
+(async () => {
+  // Give Netlify Identity a chance to finish its init cycle before we read the tier
+  await new Promise(r => setTimeout(r, 100));
+  loadAllContent();
+})();
+</script>
 </body>
 </html>
