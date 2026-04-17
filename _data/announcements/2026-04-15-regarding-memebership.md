@@ -1,5 +1,5 @@
 ---
-title: Regarding Memebership
+title: Regarding Membership
 date: 2026-04-15T17:40:08.666Z
 tag: Update
 ---
