@@ -589,6 +589,18 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
 (function() {
   const chapterKey = 'bookmark_' + window.location.pathname;
   let targetParagraph = null;
+
+  function applyHighlight(idx) {
+    document.querySelectorAll('.chapter-body p.paragraph-highlight').forEach(p => p.classList.remove('paragraph-highlight'));
+    const paras = document.querySelectorAll('.chapter-body p');
+    const target = paras[idx];
+    if (target) target.classList.add('paragraph-highlight');
+  }
+
+  function clearHighlights() {
+    document.querySelectorAll('.chapter-body p.paragraph-highlight').forEach(p => p.classList.remove('paragraph-highlight'));
+  }
+
   const saved = localStorage.getItem(chapterKey);
   const banner = document.getElementById('bookmark-banner');
   const bannerText = document.getElementById('bookmark-banner-text');
@@ -604,6 +616,7 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
       : 'You have a saved bookmark';
     bookmarkBtn.classList.add('saved');
     bookmarkBtn.querySelector('path').setAttribute('fill', 'var(--gold)');
+    if (data.index !== undefined) applyHighlight(data.index);
   }
 
   jumpBtn && jumpBtn.addEventListener('click', () => {
@@ -613,8 +626,7 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
       const target = paras[data.index];
       if (target) {
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        target.classList.add('paragraph-highlight');
-        setTimeout(() => target.classList.remove('paragraph-highlight'), 3000);
+        applyHighlight(data.index);
       }
     }
     banner.classList.remove('visible');
@@ -628,6 +640,7 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
       bookmarkBtn.classList.remove('saved');
       bookmarkBtn.querySelector('path').setAttribute('fill', 'rgba(10,8,6,0.8)');
       banner.classList.remove('visible');
+      clearHighlights();
       bookmarkBtn.style.transform = 'translateY(2px)';
       setTimeout(() => { bookmarkBtn.style.transform = ''; }, 300);
       return;
@@ -641,6 +654,7 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
     });
     const text = closest ? closest.textContent.trim() : '';
     localStorage.setItem(chapterKey, JSON.stringify({ index: closestIdx, paragraphText: text }));
+    applyHighlight(closestIdx);
     bookmarkBtn.classList.add('saved');
     bookmarkBtn.querySelector('path').setAttribute('fill', 'var(--gold)');
     bookmarkBtn.style.transform = 'translateY(-4px) scale(1.1)';
@@ -669,8 +683,7 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
     const idx = paras.indexOf(targetParagraph);
     const text = targetParagraph.textContent.trim();
     localStorage.setItem(chapterKey, JSON.stringify({ index: idx, paragraphText: text }));
-    targetParagraph.classList.add('paragraph-highlight');
-    setTimeout(() => targetParagraph.classList.remove('paragraph-highlight'), 2000);
+    applyHighlight(idx);
     bookmarkBtn.classList.add('saved');
     bookmarkBtn.querySelector('path').setAttribute('fill', 'var(--gold)');
     context.classList.remove('visible');
