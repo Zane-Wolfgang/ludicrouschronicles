@@ -10,5 +10,5 @@ description: >-
 
   T﻿hat... stolen thing was Rachel, I'll have you know.
 type: animation
-tier: devoted
+tier: free
 ---
