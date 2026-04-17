@@ -16,38 +16,54 @@ function tierFromUser(user) {
 }
 
 // Wait for Netlify Identity to be ready, then resolve the user.
-// Uses polling instead of event listeners because 'init' may have already fired
-// by the time auth.js loads (common when user is loaded from localStorage cache).
-let _identityReady = null;
+// IMPORTANT: We do NOT cache the resolved user — we poll fresh each call,
+// because Identity may become ready AFTER an initial null resolution.
 function waitForIdentity() {
-  if (_identityReady) return _identityReady;
-  _identityReady = new Promise((resolve) => {
+  return new Promise((resolve) => {
     if (!window.netlifyIdentity) {
-      setTimeout(() => resolve(null), 2000);
+      // Poll briefly for widget to load
+      let widgetWait = 0;
+      const widgetInt = setInterval(() => {
+        if (window.netlifyIdentity) {
+          clearInterval(widgetInt);
+          waitForCurrentUser(resolve);
+        } else if ((widgetWait += 50) >= 2000) {
+          clearInterval(widgetInt);
+          resolve(null);
+        }
+      }, 50);
       return;
     }
-
-    const startTime = Date.now();
-    const maxWaitMs = 3000;
-    const pollIntervalMs = 50;
-
-    function checkUser() {
-      const current = window.netlifyIdentity.currentUser();
-      // currentUser() returns undefined before init, null (not logged in) or user object after
-      if (current !== undefined) {
-        resolve(current);
-        return;
-      }
-      if (Date.now() - startTime >= maxWaitMs) {
-        resolve(null);
-        return;
-      }
-      setTimeout(checkUser, pollIntervalMs);
-    }
-
-    checkUser();
+    waitForCurrentUser(resolve);
   });
-  return _identityReady;
+}
+
+function waitForCurrentUser(resolve) {
+  // If currentUser is already defined (user object or null), resolve immediately
+  const immediate = window.netlifyIdentity.currentUser();
+  if (immediate) {
+    resolve(immediate);
+    return;
+  }
+  // If it's null, it could mean either "logged out" or "not yet initialized".
+  // Netlify Identity sets currentUser to null during loading, then to actual user if logged in.
+  // Poll briefly to see if a user appears.
+  let waited = 0;
+  const maxWaitMs = 3000;
+  const pollIntervalMs = 50;
+  const interval = setInterval(() => {
+    const user = window.netlifyIdentity.currentUser();
+    if (user) {
+      clearInterval(interval);
+      resolve(user);
+      return;
+    }
+    waited += pollIntervalMs;
+    if (waited >= maxWaitMs) {
+      clearInterval(interval);
+      resolve(null); // truly logged out
+    }
+  }, pollIntervalMs);
 }
 
 async function getUserTier() {
@@ -90,32 +106,25 @@ function addAuthButton() {
 
 // Admin-only tier switcher panel
 async function addAdminSwitcher() {
-  if (!window.netlifyIdentity) return;
-  // Wait for identity to be ready so we can check role
   const user = await waitForIdentity();
   if (!user) return;
   const roles = user.app_metadata?.roles || [];
   if (!roles.includes('admin')) return;
 
+  if (document.getElementById('admin-tier-switcher')) return;
+
   const current = sessionStorage.getItem('admin-tier') || 'bound';
 
   const panel = document.createElement('div');
   panel.id = 'admin-tier-switcher';
-  panel.style.cssText = `
-    position: fixed;
-    bottom: 1rem;
-    right: 1rem;
-    z-index: 9999;
-    background: rgba(10,8,6,0.97);
-    border: 1px solid var(--gold-dim, #8a6e2f);
-    padding: 0.75rem 0.9rem;
-    font-family: 'Cinzel', serif;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-    min-width: 200px;
-  `;
+  panel.style.cssText =
+    'position:fixed;bottom:1rem;right:1rem;z-index:99999;' +
+    'background:rgba(10,8,6,0.97);border:1px solid #8a6e2f;' +
+    'padding:0.75rem 0.9rem;font-family:"Cinzel",serif;' +
+    'box-shadow:0 4px 20px rgba(0,0,0,0.6);min-width:200px;';
 
   const label = document.createElement('div');
-  label.style.cssText = 'font-size:8px;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim, #8a6e2f);margin-bottom:0.5rem;';
+  label.style.cssText = 'font-size:8px;letter-spacing:0.25em;text-transform:uppercase;color:#8a6e2f;margin-bottom:0.5rem;';
   label.textContent = 'Admin · Viewing as: ' + current;
 
   const buttons = document.createElement('div');
@@ -124,19 +133,14 @@ async function addAdminSwitcher() {
   ['free', 'devoted', 'bound'].forEach(tier => {
     const btn = document.createElement('button');
     btn.textContent = tier;
-    btn.style.cssText = `
-      font-family: 'Cinzel', serif;
-      font-size: 9px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      padding: 0.4em 0.7em;
-      cursor: pointer;
-      border: 1px solid ${tier === current ? 'var(--gold, #c9a84c)' : 'var(--border, rgba(201,168,76,0.18))'};
-      background: ${tier === current ? 'var(--gold, #c9a84c)' : 'transparent'};
-      color: ${tier === current ? '#0a0806' : 'var(--text-muted, #7a7260)'};
-      transition: all 0.2s;
-      flex: 1;
-    `;
+    const isActive = tier === current;
+    btn.style.cssText =
+      'font-family:"Cinzel",serif;font-size:9px;letter-spacing:0.15em;' +
+      'text-transform:uppercase;padding:0.4em 0.7em;cursor:pointer;' +
+      'border:1px solid ' + (isActive ? '#c9a84c' : 'rgba(201,168,76,0.18)') + ';' +
+      'background:' + (isActive ? '#c9a84c' : 'transparent') + ';' +
+      'color:' + (isActive ? '#0a0806' : '#7a7260') + ';' +
+      'transition:all 0.2s;flex:1;';
     btn.addEventListener('click', () => {
       sessionStorage.setItem('admin-tier', tier);
       location.reload();
@@ -145,21 +149,34 @@ async function addAdminSwitcher() {
   });
 
   const hint = document.createElement('div');
-  hint.style.cssText = 'font-size:8px;color:var(--text-muted, #7a7260);margin-top:0.5rem;font-style:italic;font-family:"EB Garamond",serif;letter-spacing:0.05em;';
+  hint.style.cssText = 'font-size:8px;color:#7a7260;margin-top:0.5rem;font-style:italic;font-family:"EB Garamond",serif;letter-spacing:0.05em;';
   hint.textContent = 'Session only · only you see this';
 
   panel.appendChild(label);
   panel.appendChild(buttons);
   panel.appendChild(hint);
-  document.body.appendChild(panel);
+
+  if (document.body) {
+    document.body.appendChild(panel);
+  } else {
+    document.addEventListener('DOMContentLoaded', () => document.body.appendChild(panel));
+  }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initAuth() {
   addAuthButton();
   addAdminSwitcher();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAuth);
+} else {
+  initAuth();
+}
 
 // Export for use in other scripts
 window.getUserTier = getUserTier;
 window.canAccess = canAccess;
 window.tierRank = tierRank;
+window.waitForIdentity = waitForIdentity;
+window.tierFromUser = tierFromUser;
