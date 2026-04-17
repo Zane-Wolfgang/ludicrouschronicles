@@ -109,14 +109,21 @@ const videos = readDataDir('_data/videos').map(v => ({
   thumbnail: v.thumbnail || ''
 }));
 
-const shortStories = readDataDir('_data/short-stories').map(s => ({
-  ...s,
-  type: 'Short Story',
-  label: 'Short Story',
-  filter_type: 'story',
-  href: 'membership.html',
-  thumbnail: ''
-}));
+// Short stories — href MUST use slug-based URL, not hardcoded membership.html
+// This was a bug: previously href was hardcoded to 'membership.html', which meant
+// even unlocked short stories sent users to the paywall instead of story.html.
+const shortStories = readDataDir('_data/short-stories').map(s => {
+  const slug = s.filename ? s.filename.replace('.md','') : s.title.toLowerCase().replace(/\s+/g,'-');
+  return {
+    ...s,
+    slug,
+    type: 'Short Story',
+    label: 'Short Story',
+    filter_type: 'story',
+    href: `story.html?story=${slug}`,
+    thumbnail: s.art || s.thumbnail || ''
+  };
+});
 
 const wips = readDataDir('_data/wips').map(w => ({
   ...w,
@@ -137,19 +144,9 @@ console.log(`Content: ${contentIndex.length} items`);
 
 console.log('Build complete!');
 
-// Generate short stories index (reuse existing shortStories variable)
-const shortStoriesIndexed = shortStories.map(s => ({
-  ...s,
-  slug: s.filename ? s.filename.replace('.md','') : s.title.toLowerCase().replace(/\s+/g,'-'),
-  type: 'Story',
-  label: 'Short Story',
-  filter_type: 'story',
-  href: `story.html?story=${s.filename ? s.filename.replace('.md','') : s.title.toLowerCase().replace(/\s+/g,'-')}`,
-  thumbnail: s.art || s.thumbnail || '',
-  description: s.description || ''
-}));
-fs.writeFileSync('_data/short-stories-index.json', JSON.stringify(shortStoriesIndexed, null, 2));
-console.log(`Short Stories: ${shortStoriesIndexed.length} items`);
+// Generate separate short stories index (same data as content-index entries)
+fs.writeFileSync('_data/short-stories-index.json', JSON.stringify(shortStories, null, 2));
+console.log(`Short Stories: ${shortStories.length} items`);
 
 // Generate socials index
 const socials = readDataDir('_data/socials')
