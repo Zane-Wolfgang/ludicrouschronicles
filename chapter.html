@@ -12,257 +12,41 @@
 <link rel="stylesheet" href="style.css">
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <style>
-  .chapter-wrap {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 8rem 2rem 6rem;
-  }
-
-  .chapter-header {
-    text-align: center;
-    margin-bottom: 4rem;
-    padding-bottom: 3rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .chapter-label {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.4em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    margin-bottom: 1rem;
-    display: block;
-  }
-
-  .chapter-title {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(2rem, 5vw, 3rem);
-    color: var(--gold);
-    margin-bottom: 0.5rem;
-    text-shadow:
-      -1px -1px 0 #0a0600,
-       1px -1px 0 #0a0600,
-      -1px  1px 0 #0a0600,
-       1px  1px 0 #0a0600,
-      0 0 30px rgba(201,168,76,0.3);
-  }
-
-  .chapter-art {
-    width: 100%;
-    max-width: 680px;
-    margin: 2.5rem auto;
-    display: block;
-    border: 1px solid var(--border);
-    box-shadow: 0 0 40px rgba(0,0,0,0.6);
-  }
-
-  .chapter-divider {
-    width: 80px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
-    margin: 3rem auto;
-  }
-
-  .chapter-body {
-    font-family: 'EB Garamond', Georgia, serif;
-    font-size: 1.22rem;
-    line-height: 2;
-    color: #c9a84c;
-    font-style: normal;
-  }
-
-  .chapter-body p {
-    margin-bottom: 1.6em;
-    text-indent: 2.5em;
-  }
-
-  .chapter-body p.dropcap {
-    text-indent: 0;
-  }
-
-  .chapter-body em,
-  .chapter-body i {
-    font-style: italic;
-    color: #e0bc6a;
-    font-weight: 400;
-  }
-
-  .chapter-body strong,
-  .chapter-body b {
-    font-weight: 600;
-    color: #e0bc6a;
-    font-style: normal;
-  }
-
-  .chapter-body strong em,
-  .chapter-body em strong,
-  .chapter-body b i,
-  .chapter-body i b {
-    font-style: italic;
-    font-weight: 600;
-    color: #e8c87a;
-  }
-
-  .chapter-body p.dropcap::first-letter {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: 4rem;
-    float: left;
-    line-height: 0.8;
-    margin-right: 0.1em;
-    margin-top: 0.1em;
-    color: var(--gold);
-    text-shadow: 0 0 20px rgba(201,168,76,0.4);
-  }
-
-  .chapter-body p.beat {
-    text-indent: 0;
-    margin-top: 2.5rem;
-    margin-bottom: 2.5rem;
-  }
-
-  .chapter-body img {
-    max-width: 100%;
-    display: block;
-    margin: 2rem auto;
-    border: 1px solid var(--border);
-    box-shadow: 0 0 20px rgba(0,0,0,0.4);
-    user-select: none;
-    -webkit-user-drag: none;
-  }
-
-  .chapter-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 3rem;
-    border-top: 1px solid var(--border);
-    margin-top: 4rem;
-  }
-
-  .chapter-nav a {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-
+  .chapter-wrap { max-width: 720px; margin: 0 auto; padding: 8rem 2rem 6rem; }
+  .chapter-header { text-align: center; margin-bottom: 4rem; padding-bottom: 3rem; border-bottom: 1px solid var(--border); }
+  .chapter-label { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 1rem; display: block; }
+  .chapter-title { font-family: 'Cinzel Decorative', serif; font-size: clamp(2rem, 5vw, 3rem); color: var(--gold); margin-bottom: 0.5rem; text-shadow: -1px -1px 0 #0a0600, 1px -1px 0 #0a0600, -1px 1px 0 #0a0600, 1px 1px 0 #0a0600, 0 0 30px rgba(201,168,76,0.3); }
+  .chapter-art { width: 100%; max-width: 680px; margin: 2.5rem auto; display: block; border: 1px solid var(--border); box-shadow: 0 0 40px rgba(0,0,0,0.6); }
+  .chapter-divider { width: 80px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), transparent); margin: 3rem auto; }
+  .chapter-body { font-family: 'EB Garamond', Georgia, serif; font-size: 1.22rem; line-height: 2; color: #c9a84c; font-style: normal; }
+  .chapter-body p { margin-bottom: 1.6em; text-indent: 2.5em; }
+  .chapter-body p.dropcap { text-indent: 0; }
+  .chapter-body em, .chapter-body i { font-style: italic; color: #e0bc6a; font-weight: 400; }
+  .chapter-body strong, .chapter-body b { font-weight: 600; color: #e0bc6a; font-style: normal; }
+  .chapter-body strong em, .chapter-body em strong, .chapter-body b i, .chapter-body i b { font-style: italic; font-weight: 600; color: #e8c87a; }
+  .chapter-body p.dropcap::first-letter { font-family: 'Cinzel Decorative', serif; font-size: 4rem; float: left; line-height: 0.8; margin-right: 0.1em; margin-top: 0.1em; color: var(--gold); text-shadow: 0 0 20px rgba(201,168,76,0.4); }
+  .chapter-body p.beat { text-indent: 0; margin-top: 2.5rem; margin-bottom: 2.5rem; }
+  .chapter-body img { max-width: 100%; display: block; margin: 2rem auto; border: 1px solid var(--border); box-shadow: 0 0 20px rgba(0,0,0,0.4); user-select: none; -webkit-user-drag: none; }
+  .chapter-nav { display: flex; justify-content: space-between; align-items: center; padding-top: 3rem; border-top: 1px solid var(--border); margin-top: 4rem; }
+  .chapter-nav a { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); text-decoration: none; transition: color 0.2s; }
   .chapter-nav a:hover { color: var(--gold); }
-
-  #chapter-loading {
-    text-align: center;
-    padding: 6rem 0;
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    color: var(--gold-dim);
-    text-transform: uppercase;
-  }
-
-  .bookmark-btn {
-    position: fixed;
-    top: 5rem;
-    right: 2rem;
-    width: 36px;
-    height: 48px;
-    cursor: pointer;
-    z-index: 100;
-    opacity: 0.5;
-    transition: opacity 0.2s, transform 0.2s;
-    background: none;
-    border: none;
-    padding: 0;
-  }
+  #chapter-loading { text-align: center; padding: 6rem 0; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.3em; color: var(--gold-dim); text-transform: uppercase; }
+  .bookmark-btn { position: fixed; top: 5rem; right: 2rem; width: 36px; height: 48px; cursor: pointer; z-index: 100; opacity: 0.5; transition: opacity 0.2s, transform 0.2s; background: none; border: none; padding: 0; }
   .bookmark-btn:hover { opacity: 1; transform: translateY(-2px); }
   .bookmark-btn.saved { opacity: 1; }
   .bookmark-btn svg { width: 100%; height: 100%; }
-
-  .bookmark-banner {
-    background: rgba(10,8,6,0.96);
-    border: 1px solid var(--gold-dim);
-    border-left: 3px solid var(--gold);
-    padding: 1rem 1.5rem;
-    margin-bottom: 2rem;
-    display: none;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
+  .bookmark-banner { background: rgba(10,8,6,0.96); border: 1px solid var(--gold-dim); border-left: 3px solid var(--gold); padding: 1rem 1.5rem; margin-bottom: 2rem; display: none; align-items: center; justify-content: space-between; gap: 1rem; }
   .bookmark-banner.visible { display: flex; }
-  .bookmark-banner-text {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-  }
-  .bookmark-banner-btn {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--ink);
-    background: var(--gold);
-    border: none;
-    padding: 0.4em 1em;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .bookmark-banner-dismiss {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    color: var(--text-muted);
-    background: none;
-    border: none;
-    cursor: pointer;
-    letter-spacing: 0.1em;
-  }
-
-  .paragraph-highlight {
-    background: rgba(201,168,76,0.08);
-    border-left: 2px solid var(--gold-dim);
-    padding-left: 0.5rem;
-    margin-left: -0.5rem;
-    transition: background 0.5s;
-  }
-
-  .bookmark-context {
-    position: fixed;
-    background: rgba(10,8,6,0.97);
-    border: 1px solid var(--border-bright);
-    padding: 0.5rem 0;
-    z-index: 1000;
-    display: none;
-    min-width: 180px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  }
+  .bookmark-banner-text { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
+  .bookmark-banner-btn { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.4em 1em; cursor: pointer; white-space: nowrap; }
+  .bookmark-banner-dismiss { font-family: 'Cinzel', serif; font-size: 9px; color: var(--text-muted); background: none; border: none; cursor: pointer; letter-spacing: 0.1em; }
+  .paragraph-highlight { background: rgba(201,168,76,0.08); border-left: 2px solid var(--gold-dim); padding-left: 0.5rem; margin-left: -0.5rem; transition: background 0.5s; }
+  .bookmark-context { position: fixed; background: rgba(10,8,6,0.97); border: 1px solid var(--border-bright); padding: 0.5rem 0; z-index: 1000; display: none; min-width: 180px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
   .bookmark-context.visible { display: block; }
-  .bookmark-context-item {
-    padding: 0.6rem 1.2rem;
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: background 0.15s, color 0.15s;
-  }
+  .bookmark-context-item { padding: 0.6rem 1.2rem; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-dim); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background 0.15s, color 0.15s; }
   .bookmark-context-item:hover { background: var(--mid); color: var(--gold); }
+  .chapter-body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 
-  .chapter-body {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-
-  /* ── Engagement Section ── */
   .chapter-engagement { max-width: 720px; margin: 0 auto; padding: 0 2rem 6rem; }
   .engagement-stats { display: flex; gap: 2.5rem; align-items: center; padding: 1.5rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 3rem; flex-wrap: wrap; }
   .stat-item { display: flex; align-items: center; gap: 0.6rem; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
@@ -389,7 +173,7 @@
   </div>
 </div>
 
-<div class="chapter-engagement">
+<div class="chapter-engagement" id="chapter-engagement-wrap" style="display:none;">
   <div class="engagement-stats">
     <div class="stat-item">
       <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5C21.3 7.6 17 4.5 12 4.5zm0 12.5c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z"/></svg>
@@ -465,11 +249,18 @@ async function loadChapter() {
     const res = await fetch('/_data/content-index.json');
     const items = await res.json();
     const chapter = items.find(i =>
-      i.number == num ||
-      (i.filename && i.filename.includes('chapter-' + num))
+      i.type === 'Chapter' && (i.number == num || (i.filename && i.filename.includes('chapter-' + num)))
     );
 
     if (!chapter) { window.location.href = 'content.html'; return; }
+
+    // Tier check — redirect if locked
+    const userTier = window.getUserTier ? await window.getUserTier() : 'free';
+    const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
+    if (tRank[chapter.tier || 'free'] > tRank[userTier]) {
+      window.location.href = 'membership.html';
+      return;
+    }
 
     document.title = `Chapter ${chapter.number} — ${chapter.title} — Ludicrous Chronicles`;
     document.getElementById('ch-title').textContent = `Chapter ${chapter.number}`;
@@ -511,7 +302,7 @@ async function loadChapter() {
       document.querySelector('.chapter-nav').insertBefore(prevLink, document.querySelector('.chapter-nav').firstChild);
     }
 
-    const nextChapter = items.find(i => i.number == (parseInt(chapter.number) + 1));
+    const nextChapter = items.find(i => i.type === 'Chapter' && i.number == (parseInt(chapter.number) + 1));
     if (nextChapter) {
       const nextLink = document.getElementById('ch-next');
       nextLink.textContent = `Chapter ${nextChapter.number} →`;
@@ -525,7 +316,9 @@ async function loadChapter() {
 
     document.getElementById('chapter-loading').style.display = 'none';
     document.getElementById('chapter-content').style.display = 'block';
-    initEngagement('chapter-' + chapter.number);
+    document.getElementById('chapter-engagement-wrap').style.display = 'block';
+    if (typeof initEngagement === 'function') initEngagement('chapter-' + chapter.number);
+    if (typeof initBookmark === 'function') initBookmark();
 
   } catch(e) {
     document.getElementById('chapter-loading').textContent = 'Chapter not found.';
@@ -548,18 +341,12 @@ function markdownToHtml(md) {
 
   if (md.includes('<p>')) return inlineConvert(md);
 
-  const paragraphs = md.split(/\n\n+/);
-  return paragraphs
+  return md.split(/\n\n+/)
     .map(p => p.trim())
     .filter(p => p.length > 0)
-    .map(p => {
-      if (p.startsWith('<')) return inlineConvert(p);
-      return `<p>${inlineConvert(p).replace(/\n/g, '<br>')}</p>`;
-    })
+    .map(p => p.startsWith('<') ? inlineConvert(p) : `<p>${inlineConvert(p).replace(/\n/g, '<br>')}</p>`)
     .join('\n');
 }
-
-loadChapter();
 </script>
 
 <script src="auth.js"></script>
@@ -598,7 +385,7 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
 </script>
 
 <script>
-(function() {
+function initBookmark() {
   const chapterKey = 'bookmark_' + window.location.pathname + window.location.search;
   let targetParagraph = null;
 
@@ -700,8 +487,9 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
     bookmarkBtn.querySelector('path').setAttribute('fill', 'var(--gold)');
     context.classList.remove('visible');
   });
-})();
+}
 </script>
 <script src="engagement.js"></script>
+<script>loadChapter();</script>
 </body>
 </html>
