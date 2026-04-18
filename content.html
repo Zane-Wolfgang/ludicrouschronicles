@@ -146,6 +146,7 @@
 </footer>
 
 <script>
+  // Filter tabs — match either data-type OR data-voice="true" when filter is 'voice'
   const filterBtns = document.querySelectorAll('.filter-btn');
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -154,11 +155,13 @@
       const filter = btn.dataset.filter;
       const cards = document.querySelectorAll('.content-card');
       cards.forEach(card => {
-        if (filter === 'all' || card.dataset.type === filter) {
-          card.style.display = 'block';
-        } else {
-          card.style.display = 'none';
-        }
+        const cardType = card.dataset.type;
+        const isVoice = card.dataset.voice === 'true';
+        let show = false;
+        if (filter === 'all') show = true;
+        else if (filter === 'voice') show = isVoice || cardType === 'voice';
+        else show = cardType === filter;
+        card.style.display = show ? 'block' : 'none';
       });
     });
   });
@@ -196,7 +199,7 @@ function makeLock() {
   return `<div class="content-lock"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>`;
 }
 
-function makeCard(href, img, title, typeLabel, typeDisplay, isLocked, filterType, isFree, onclick) {
+function makeCard(href, img, title, typeLabel, typeDisplay, isLocked, filterType, isFree, onclick, isVoice) {
   const thumbStyle = isLocked
     ? (img ? `--preview-img: url('${img}')` : '')
     : (img ? `background-image:url('${img}');background-size:cover;background-position:center;` : '');
@@ -208,6 +211,7 @@ function makeCard(href, img, title, typeLabel, typeDisplay, isLocked, filterType
   a.href = onclick ? '#' : href;
   a.className = 'content-card';
   a.dataset.type = filterType;
+  if (isVoice) a.dataset.voice = 'true';
   if (onclick) a.addEventListener('click', e => { e.preventDefault(); onclick(); });
   a.innerHTML = `
     <div class="content-thumb${blurClass}" style="${thumbStyle}">
@@ -227,11 +231,9 @@ async function loadAllContent() {
   const grid = document.getElementById('content-grid');
   if (!grid) return;
 
-  // Wait for auth to be fully ready — critical for tier-gated cards to point to correct URLs
   const userTier = window.getUserTier ? await window.getUserTier() : 'free';
   const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
 
-  // Clear any previous content (in case of reload)
   grid.innerHTML = '';
 
   const seen = new Set();
@@ -261,7 +263,8 @@ async function loadAllContent() {
         const filterType = item.type === 'Video' ? 'video' : (item.filter_type || 'story');
         const sortDate = new Date(item.date||0).getTime();
         addEntry(sortDate, makeCard(href, item.thumbnail||'', displayTitle,
-          item.label||item.type, typeDisplay, isLocked, filterType, !isLocked), displayTitle);
+          item.label||item.type, typeDisplay, isLocked, filterType, !isLocked,
+          null, item.is_voice === true), displayTitle);
       });
     }
   } catch(e) { console.error('content-index error:', e); }
@@ -334,9 +337,7 @@ async function loadAllContent() {
 <script src="auth.js"></script>
 <script src="socials.js"></script>
 <script>
-// Run AFTER auth.js loads AND after a small delay to ensure Identity widget has finalized its user state
 (async () => {
-  // Give Netlify Identity a chance to finish its init cycle before we read the tier
   await new Promise(r => setTimeout(r, 100));
   loadAllContent();
 })();
