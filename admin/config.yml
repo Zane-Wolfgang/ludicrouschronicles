@@ -28,6 +28,7 @@ collections:
       - { label: "Date", name: "date", widget: "datetime" }
       - { label: "Chapter Art", name: "art", widget: "image", required: false }
       - { label: "Body", name: "body", widget: "markdown" }
+      - { label: "Include in Voice tab", name: "is_voice", widget: "boolean", default: false, required: false, hint: "Check this if the chapter has a voice/narration recording. It will appear in both Story and Voice tabs." }
       - label: "Access Tier"
         name: "tier"
         widget: "select"
@@ -85,6 +86,7 @@ collections:
           - { label: "Behind the Scenes", value: "behind" }
           - { label: "Timelapse", value: "timelapse" }
           - { label: "Blooper", value: "blooper" }
+      - { label: "Include in Voice tab", name: "is_voice", widget: "boolean", default: false, required: false, hint: "Check this if the video has voice acting / narration. It will appear in both Video and Voice tabs." }
       - label: "Access Tier"
         name: "tier"
         widget: "select"
