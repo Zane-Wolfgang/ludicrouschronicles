@@ -97,9 +97,33 @@
     color: #c9a84c;
   }
 
-  .announcement-body em {
+  .announcement-body p {
+    margin: 0 0 1em;
+  }
+
+  .announcement-body p:last-child { margin-bottom: 0; }
+
+  .announcement-body em, .announcement-body i {
     font-style: italic;
     color: #e0bc6a;
+  }
+
+  .announcement-body strong, .announcement-body b {
+    font-weight: 600;
+    color: #e0bc6a;
+    font-style: normal;
+  }
+
+  .announcement-body strong em, .announcement-body em strong,
+  .announcement-body b i, .announcement-body i b {
+    font-style: italic;
+    font-weight: 600;
+    color: #e8c87a;
+  }
+
+  .announcement-body a {
+    color: var(--gold);
+    text-decoration: underline;
   }
 
   .no-news {
@@ -211,6 +235,34 @@
 </script>
 
 <script>
+// Convert CMS markdown body into rendered HTML.
+// Handles: ***bold italic***, **bold**, *italic*, _italic_, [links](url), paragraphs, line breaks.
+// Strips CMS's backslash line-break encoding.
+function markdownToHtml(md) {
+  if (!md) return '';
+  // Strip stray backslashes that CMS inserts for line breaks
+  md = md.replace(/\\/g, '');
+
+  function inlineConvert(str) {
+    return str
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+      .replace(/\*\*\*(.*?)\*\*\*/gs, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/gs, '<em>$1</em>')
+      .replace(/_(.*?)_/gs, '<em>$1</em>');
+  }
+
+  // If content already has <p> tags, just inline-convert
+  if (md.includes('<p>')) return inlineConvert(md);
+
+  // Split on double newlines for paragraphs; single newlines become <br>
+  return md.split(/\n\n+/)
+    .map(p => p.trim())
+    .filter(p => p.length > 0)
+    .map(p => p.startsWith('<') ? inlineConvert(p) : `<p>${inlineConvert(p).replace(/\n/g, '<br>')}</p>`)
+    .join('\n');
+}
+
 async function loadAnnouncements() {
   const container = document.getElementById('announcements-container');
   try {
@@ -237,7 +289,7 @@ async function loadAnnouncements() {
           ${item.tag ? `<span class="announcement-tag">${item.tag}</span>` : ''}
         </div>
         <div class="announcement-title">${item.title || ''}</div>
-        <div class="announcement-body">${item.body || ''}</div>
+        <div class="announcement-body">${markdownToHtml(item.body || '')}</div>
       </div>`;
     }).join('');
   } catch(e) {
