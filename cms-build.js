@@ -44,6 +44,16 @@ function parseFrontmatter(fileContent) {
   return fm;
 }
 
+// Normalize boolean-ish values from frontmatter to a real boolean
+function toBool(v) {
+  if (v === true || v === false) return v;
+  if (typeof v === 'string') {
+    const s = v.trim().toLowerCase();
+    return s === 'true' || s === 'yes' || s === '1';
+  }
+  return false;
+}
+
 function readDataDir(dir) {
   // Try both relative path and path relative to this script
   const dirs = [
@@ -93,6 +103,7 @@ const chapters = readDataDir('_data/chapters').map(c => ({
   type: 'Chapter',
   label: 'Ghost in Me Book',
   filter_type: 'story',
+  is_voice: toBool(c.is_voice),
   title: c.number == 1 ? c.title : ('Chapter ' + (chapterNums[parseInt(c.number)] || c.number) + ' \u2014 ' + c.title),
   href: c.number == 1 ? 'chapter-1.html' : ('chapter.html?chapter=' + c.number),
   thumbnail: c.art || '',
@@ -104,14 +115,13 @@ const videos = readDataDir('_data/videos').map(v => ({
   type: 'Video',
   label: 'Video',
   filter_type: 'video',
+  is_voice: toBool(v.is_voice),
   href: 'videos.html',
   description: v.description || '',
   thumbnail: v.thumbnail || ''
 }));
 
-// Short stories — href MUST use slug-based URL, not hardcoded membership.html
-// This was a bug: previously href was hardcoded to 'membership.html', which meant
-// even unlocked short stories sent users to the paywall instead of story.html.
+// Short stories — use slug-based URL so unlocked stories go to the story page
 const shortStories = readDataDir('_data/short-stories').map(s => {
   const slug = s.filename ? s.filename.replace('.md','') : s.title.toLowerCase().replace(/\s+/g,'-');
   return {
@@ -156,8 +166,6 @@ fs.writeFileSync('_data/socials-index.json', JSON.stringify(socials, null, 2));
 console.log(`Socials: ${socials.length} items`);
 
 // ── Image compression ──
-// Compresses images in images/uploads/ to max 1200px wide
-// Originals are preserved, compressed versions overwrite for web serving
 const sharp = require('sharp');
 
 async function compressImages() {
@@ -174,7 +182,6 @@ async function compressImages() {
     const tmpPath = filePath + '.tmp';
     try {
       const meta = await sharp(filePath).metadata();
-      // Only compress if wider than 1200px or larger than 500KB
       const stats = fs.statSync(filePath);
       if (meta.width <= 2400 && stats.size <= 2048000) continue;
 
