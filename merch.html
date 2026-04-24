@@ -22,7 +22,6 @@
     position: relative;
     overflow: hidden;
   }
-
   .merch-bg {
     position: absolute;
     inset: 0;
@@ -30,7 +29,6 @@
       radial-gradient(ellipse 60% 50% at 50% 60%, rgba(201,168,76,0.06) 0%, transparent 70%),
       var(--deep);
   }
-
   .merch-bg::before {
     content: '';
     position: absolute;
@@ -39,9 +37,7 @@
       repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(201,168,76,0.03) 80px),
       repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(201,168,76,0.025) 80px);
   }
-
   .merch-content { position: relative; }
-
   .soon-label {
     font-family: 'Cinzel', serif;
     font-size: 10px;
@@ -54,19 +50,14 @@
     justify-content: center;
     gap: 1.2rem;
   }
-
-  .soon-label::before,
-  .soon-label::after {
+  .soon-label::before, .soon-label::after {
     content: '';
     display: block;
     width: 50px;
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--gold-dim));
   }
-  .soon-label::after {
-    background: linear-gradient(270deg, transparent, var(--gold-dim));
-  }
-
+  .soon-label::after { background: linear-gradient(270deg, transparent, var(--gold-dim)); }
   .merch-title {
     font-family: 'Cinzel Decorative', serif;
     font-size: clamp(2.5rem, 6vw, 4.5rem);
@@ -74,7 +65,6 @@
     line-height: 1.15;
     margin-bottom: 0.5em;
   }
-
   .merch-sub {
     font-family: 'EB Garamond', serif;
     font-style: italic;
@@ -83,14 +73,12 @@
     max-width: 500px;
     margin: 0 auto 3rem;
   }
-
   .merch-divider {
     width: 100px;
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--gold), transparent);
     margin: 0 auto 3rem;
   }
-
   .notify-row {
     display: flex;
     gap: 1px;
@@ -99,7 +87,6 @@
     background: var(--border);
     border: 1px solid var(--border);
   }
-
   .notify-input {
     flex: 1;
     background: var(--surface);
@@ -112,10 +99,8 @@
     color: var(--parchment);
     min-width: 0;
   }
-
   .notify-input::placeholder { color: var(--text-muted); }
   .notify-input:focus { background: var(--mid); }
-
   .notify-btn {
     font-family: 'Cinzel', serif;
     font-size: 10px;
@@ -129,9 +114,20 @@
     transition: background 0.2s;
     white-space: nowrap;
   }
-
   .notify-btn:hover { background: var(--gold-bright); }
-
+  .notify-btn:disabled { opacity: 0.6; cursor: default; }
+  .notify-msg {
+    max-width: 460px;
+    margin: 0.75rem auto 0;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-align: center;
+    min-height: 1.2em;
+  }
+  .notify-msg.success { color: var(--gold); }
+  .notify-msg.error { color: #c0705a; }
   .teaser-items {
     display: flex;
     gap: 2rem;
@@ -144,7 +140,6 @@
     margin-left: auto;
     margin-right: auto;
   }
-
   .teaser-item {
     font-family: 'Cinzel', serif;
     font-size: 10px;
@@ -155,7 +150,6 @@
     align-items: center;
     gap: 0.6rem;
   }
-
   .teaser-item::before {
     content: '';
     width: 4px;
@@ -209,6 +203,7 @@
     }
   })();
 </script>
+
 <div class="merch-hero">
   <div class="merch-bg"></div>
   <div class="merch-content">
@@ -217,9 +212,10 @@
     <p class="merch-sub fade-up fade-up-3">Clothing and goods from the Chronicles. Worth the wait.</p>
     <div class="merch-divider fade-up fade-up-3"></div>
     <div class="notify-row fade-up fade-up-4">
-      <input class="notify-input" type="email" placeholder="Leave your email to be notified" />
-      <button class="notify-btn">Notify Me</button>
+      <input class="notify-input" id="notify-email" type="email" placeholder="Leave your email to be notified" />
+      <button class="notify-btn" id="notify-btn">Notify Me</button>
     </div>
+    <div class="notify-msg" id="notify-msg"></div>
     <div class="teaser-items fade-up fade-up-4">
       <span class="teaser-item">Apparel</span>
       <span class="teaser-item">Clothing</span>
@@ -228,7 +224,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
@@ -296,6 +291,49 @@
       });
     }
   })();
+</script>
+
+<script>
+  const notifyBtn = document.getElementById('notify-btn');
+  const notifyEmail = document.getElementById('notify-email');
+  const notifyMsg = document.getElementById('notify-msg');
+
+  async function subscribe() {
+    const email = notifyEmail.value.trim();
+    if (!email || !email.includes('@')) {
+      notifyMsg.textContent = 'Please enter a valid email.';
+      notifyMsg.className = 'notify-msg error';
+      return;
+    }
+    notifyBtn.disabled = true;
+    notifyBtn.textContent = 'Sending...';
+    notifyMsg.textContent = '';
+    notifyMsg.className = 'notify-msg';
+    try {
+      const res = await fetch('/.netlify/functions/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        notifyMsg.textContent = "You're on the list. We'll be in touch.";
+        notifyMsg.className = 'notify-msg success';
+        notifyEmail.value = '';
+        notifyBtn.textContent = 'Done ✓';
+      } else {
+        throw new Error();
+      }
+    } catch(e) {
+      notifyMsg.textContent = 'Something went wrong. Try again shortly.';
+      notifyMsg.className = 'notify-msg error';
+      notifyBtn.disabled = false;
+      notifyBtn.textContent = 'Notify Me';
+    }
+  }
+
+  notifyBtn.addEventListener('click', subscribe);
+  notifyEmail.addEventListener('keydown', e => { if (e.key === 'Enter') subscribe(); });
 </script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
