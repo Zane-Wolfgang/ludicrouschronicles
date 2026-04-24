@@ -1,4 +1,5 @@
-const fetch = require('node-fetch');
+// Netlify Function — adds email to Brevo Newsletter list (ID 3)
+// Uses native fetch (Node 18+) — no external dependencies needed
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -38,8 +39,7 @@ exports.handler = async (event) => {
     }
 
     const data = await res.json();
-    // Brevo returns 400 with code "duplicate_parameter" if contact already exists
-    // and updateEnabled didn't catch it — still treat as success
+    // Brevo returns 400 with code "duplicate_parameter" if already exists
     if (data.code === 'duplicate_parameter') {
       return { statusCode: 200, body: JSON.stringify({ success: true }) };
     }
