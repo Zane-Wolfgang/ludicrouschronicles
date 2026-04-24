@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-// Parse frontmatter from markdown files
 process.on('uncaughtException', err => { console.error('CRASH:', err); process.exit(1); });
+
 function parseFrontmatter(fileContent) {
   const match = fileContent.match(/^---\n([\s\S]*?)\n---([\s\S]*)$/);
   if (!match) return {};
@@ -16,7 +16,6 @@ function parseFrontmatter(fileContent) {
     const key = line.slice(0, colonIdx).trim();
     const val = line.slice(colonIdx + 1).trim();
     if (val === '>-' || val === '>') {
-      // YAML block scalar — collect indented lines
       let block = [];
       i++;
       while (i < lines.length && (lines[i].startsWith('  ') || lines[i] === '')) {
@@ -25,7 +24,6 @@ function parseFrontmatter(fileContent) {
       }
       fm[key] = block.join(' ').trim();
     } else if (val === '|' || val === '|-') {
-      // Literal block scalar
       let block = [];
       i++;
       while (i < lines.length && (lines[i].startsWith('  ') || lines[i] === '')) {
@@ -38,13 +36,11 @@ function parseFrontmatter(fileContent) {
       i++;
     }
   }
-  // Body content below frontmatter
   const body = match[2] ? match[2].trim() : '';
   if (body) fm.body = body;
   return fm;
 }
 
-// Normalize boolean-ish values from frontmatter to a real boolean
 function toBool(v) {
   if (v === true || v === false) return v;
   if (typeof v === 'string') {
@@ -55,11 +51,7 @@ function toBool(v) {
 }
 
 function readDataDir(dir) {
-  // Try both relative path and path relative to this script
-  const dirs = [
-    dir,
-    path.join(__dirname, dir),
-  ];
+  const dirs = [dir, path.join(__dirname, dir)];
   for (const d of dirs) {
     if (fs.existsSync(d)) {
       const files = fs.readdirSync(d).filter(f => f.endsWith('.md') && !f.startsWith('.'));
@@ -74,12 +66,11 @@ function readDataDir(dir) {
   return [];
 }
 
-// Generate gallery index — read from both locations since CMS sometimes saves to wrong folder
+// Gallery index
 const galleryRaw = [
   ...readDataDir('_data/gallery'),
   ...readDataDir('gallery'),
 ];
-// Build slideshow arrays from image2/3/4 fields
 const gallery = galleryRaw.map(item => {
   const images = [item.image].filter(Boolean);
   if (item.image2) images.push(item.image2);
@@ -89,15 +80,15 @@ const gallery = galleryRaw.map(item => {
 });
 fs.writeFileSync('_data/gallery-index.json', JSON.stringify(gallery, null, 2));
 console.log(`Gallery: ${gallery.length} items`);
-console.log('Gallery dirs checked:', ['_data/gallery','gallery'].map(d => d + ': ' + (require('fs').existsSync(d) ? require('fs').readdirSync(d).length + ' files' : 'missing')));
 
-// Generate announcements index
+// Announcements index
 const announcements = readDataDir('_data/announcements');
 fs.writeFileSync('_data/announcements-index.json', JSON.stringify(announcements, null, 2));
 console.log(`Announcements: ${announcements.length} items`);
 
-// Generate content index (chapters + videos + short stories + wips)
+// Content index
 const chapterNums = { 1:'I',2:'II',3:'III',4:'IV',5:'V',6:'VI',7:'VII',8:'VIII',9:'IX',10:'X' };
+
 const chapters = readDataDir('_data/chapters').map(c => ({
   ...c,
   type: 'Chapter',
@@ -121,7 +112,6 @@ const videos = readDataDir('_data/videos').map(v => ({
   thumbnail: v.thumbnail || ''
 }));
 
-// Short stories — use slug-based URL so unlocked stories go to the story page
 const shortStories = readDataDir('_data/short-stories').map(s => {
   const slug = s.filename ? s.filename.replace('.md','') : s.title.toLowerCase().replace(/\s+/g,'-');
   return {
@@ -144,7 +134,6 @@ const wips = readDataDir('_data/wips').map(w => ({
   thumbnail: w.image || ''
 }));
 
-// Chapters sorted by number, everything else newest first
 const sortedChapters = [...chapters].sort((a,b) => parseInt(a.number||0) - parseInt(b.number||0));
 const sortedOther = [...videos, ...shortStories, ...wips].sort((a,b) => new Date(b.date) - new Date(a.date));
 const contentIndex = [...sortedChapters, ...sortedOther];
@@ -152,51 +141,15 @@ const contentIndex = [...sortedChapters, ...sortedOther];
 fs.writeFileSync('_data/content-index.json', JSON.stringify(contentIndex, null, 2));
 console.log(`Content: ${contentIndex.length} items`);
 
-console.log('Build complete!');
-
-// Generate separate short stories index (same data as content-index entries)
+// Short stories index
 fs.writeFileSync('_data/short-stories-index.json', JSON.stringify(shortStories, null, 2));
 console.log(`Short Stories: ${shortStories.length} items`);
 
-// Generate socials index
+// Socials index
 const socials = readDataDir('_data/socials')
   .filter(s => s.active !== false && s.active !== 'false')
   .sort((a, b) => (parseInt(a.order) || 99) - (parseInt(b.order) || 99));
 fs.writeFileSync('_data/socials-index.json', JSON.stringify(socials, null, 2));
 console.log(`Socials: ${socials.length} items`);
 
-// ── Image compression ──
-const sharp = require('sharp');
-
-async function compressImages() {
-  const uploadsDir = 'images/uploads';
-  if (!fs.existsSync(uploadsDir)) return;
-
-  const files = fs.readdirSync(uploadsDir).filter(f =>
-    /\.(jpg|jpeg|png|webp)$/i.test(f) && !f.startsWith('.')
-  );
-
-  let compressed = 0;
-  for (const file of files) {
-    const filePath = path.join(uploadsDir, file);
-    const tmpPath = filePath + '.tmp';
-    try {
-      const meta = await sharp(filePath).metadata();
-      const stats = fs.statSync(filePath);
-      if (meta.width <= 2400 && stats.size <= 2048000) continue;
-
-      await sharp(filePath)
-        .resize({ width: 2400, withoutEnlargement: true })
-        .jpeg({ quality: 93, progressive: true })
-        .toFile(tmpPath);
-
-      fs.renameSync(tmpPath, filePath);
-      compressed++;
-    } catch(e) {
-      if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
-    }
-  }
-  console.log(`Images compressed: ${compressed} of ${files.length}`);
-}
-
-compressImages().catch(console.error);
+console.log('Build complete!');
