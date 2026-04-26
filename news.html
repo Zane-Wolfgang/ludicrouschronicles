@@ -12,44 +12,13 @@
 <link rel="stylesheet" href="style.css">
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <style>
-  .news-page {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 8rem 2rem 4rem;
-  }
-  .news-header {
-    text-align: center;
-    margin-bottom: 4rem;
-    padding-bottom: 3rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .news-label {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.4em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    display: block;
-    margin-bottom: 0.75rem;
-  }
-  .news-title {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    color: var(--gold);
-    text-shadow: 0 0 30px rgba(201,168,76,0.3);
-  }
-  .announcement {
-    padding: 2.5rem 0;
-    border-bottom: 1px solid var(--border);
-    transition: background 0.2s;
-  }
+  .news-page { max-width: 760px; margin: 0 auto; padding: 8rem 2rem 6rem; }
+  .news-header { text-align: center; margin-bottom: 4rem; padding-bottom: 3rem; border-bottom: 1px solid var(--border); }
+  .news-label { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--gold-dim); display: block; margin-bottom: 0.75rem; }
+  .news-title { font-family: 'Cinzel Decorative', serif; font-size: clamp(1.8rem, 4vw, 2.8rem); color: var(--gold); text-shadow: 0 0 30px rgba(201,168,76,0.3); }
+  .announcement { padding: 2.5rem 0; border-bottom: 1px solid var(--border); }
   .announcement:last-child { border-bottom: none; }
-  .announcement-new {
-    background: rgba(201,168,76,0.04);
-    border-left: 2px solid var(--gold-dim);
-    padding-left: 1.5rem;
-    margin-left: -1.5rem;
-  }
+  .announcement-new { background: rgba(201,168,76,0.04); border-left: 2px solid var(--gold-dim); padding-left: 1.5rem; margin-left: -1.5rem; }
   .announcement-meta { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
   .announcement-date { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-dim); }
   .announcement-tag { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); border: 1px solid var(--border); padding: 0.2em 0.6em; }
@@ -59,87 +28,24 @@
   .announcement-body p:last-child { margin-bottom: 0; }
   .announcement-body em, .announcement-body i { font-style: italic; color: #e0bc6a; }
   .announcement-body strong, .announcement-body b { font-weight: 600; color: #e0bc6a; font-style: normal; }
-  .announcement-body strong em, .announcement-body em strong,
-  .announcement-body b i, .announcement-body i b { font-style: italic; font-weight: 600; color: #e8c87a; }
+  .announcement-body strong em, .announcement-body em strong, .announcement-body b i, .announcement-body i b { font-style: italic; font-weight: 600; color: #e8c87a; }
   .announcement-body a { color: var(--gold); text-decoration: underline; }
   .no-news { text-align: center; padding: 4rem 0; font-family: 'EB Garamond', serif; font-style: italic; color: var(--text-muted); font-size: 1.1rem; }
 
-  /* Newsletter panel */
-  .newsletter-panel {
-    max-width: 760px;
-    margin: 0 auto 4rem;
-    border: 1px solid var(--gold-dim);
-    background: var(--surface);
-    padding: 2.5rem 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-  .newsletter-panel-text { flex: 1; min-width: 200px; }
-  .newsletter-panel-eyebrow {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    display: block;
-    margin-bottom: 0.5rem;
-  }
-  .newsletter-panel-heading {
-    font-family: 'Cinzel', serif;
-    font-size: 1rem;
-    color: var(--parchment);
-    margin: 0 0 0.4rem;
-  }
-  .newsletter-panel-sub {
-    font-family: 'EB Garamond', serif;
-    font-style: italic;
-    font-size: 0.95rem;
-    color: var(--text-muted);
-    margin: 0;
-  }
-  .newsletter-panel-form { display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border); flex-shrink: 0; }
-  .newsletter-panel-input {
-    background: var(--deep);
-    border: none;
-    outline: none;
-    padding: 0.75rem 1rem;
-    font-family: 'EB Garamond', serif;
-    font-style: italic;
-    font-size: 0.95rem;
-    color: var(--parchment);
-    width: 220px;
-  }
-  .newsletter-panel-input::placeholder { color: var(--text-muted); }
-  .newsletter-panel-input:focus { background: var(--mid); }
-  .newsletter-panel-btn {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--ink);
-    background: var(--gold);
-    border: none;
-    padding: 0.75rem 1.2rem;
-    cursor: pointer;
-    transition: background 0.2s;
-    white-space: nowrap;
-  }
-  .newsletter-panel-btn:hover { background: var(--gold-bright); }
-  .newsletter-panel-btn:disabled { opacity: 0.6; cursor: default; }
-  .newsletter-panel-msg {
-    width: 100%;
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-top: 0.5rem;
-    min-height: 1em;
-  }
-  .newsletter-panel-msg.success { color: var(--gold); }
-  .newsletter-panel-msg.error { color: #c0705a; }
+  /* Newsletter float box */
+  .newsletter-float { position: fixed; left: 1.2rem; top: 50%; transform: translateY(-50%); z-index: 90; width: 165px; background: rgba(10,8,6,0.96); border: 1px solid var(--gold-dim); padding: 1.1rem 1rem; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+  .newsletter-float-label { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold-dim); display: block; margin-bottom: 0.4rem; }
+  .newsletter-float-text { font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.82rem; color: var(--text-muted); margin: 0 0 0.7rem; line-height: 1.4; }
+  .newsletter-float-input { width: 100%; background: var(--surface); border: 1px solid var(--border); outline: none; padding: 0.45rem 0.55rem; font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.82rem; color: var(--parchment); box-sizing: border-box; margin-bottom: 0.35rem; }
+  .newsletter-float-input::placeholder { color: var(--text-muted); }
+  .newsletter-float-input:focus { border-color: var(--gold-dim); }
+  .newsletter-float-btn { width: 100%; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.5rem; cursor: pointer; transition: background 0.2s; }
+  .newsletter-float-btn:hover { background: var(--gold-bright); }
+  .newsletter-float-btn:disabled { opacity: 0.6; cursor: default; }
+  .newsletter-float-msg { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.35rem; min-height: 1em; text-align: center; }
+  .newsletter-float-msg.success { color: var(--gold); }
+  .newsletter-float-msg.error { color: #c0705a; }
+  @media (max-width: 1100px) { .newsletter-float { display: none; } }
 </style>
 </head>
 <body>
@@ -165,16 +71,8 @@
     const btn = document.getElementById('nav-hamburger');
     const links = document.querySelector('.nav-links');
     if (btn && links) {
-      btn.addEventListener('click', () => {
-        btn.classList.toggle('open');
-        links.classList.toggle('open');
-      });
-      links.querySelectorAll('a').forEach(a => {
-        a.addEventListener('click', () => {
-          btn.classList.remove('open');
-          links.classList.remove('open');
-        });
-      });
+      btn.addEventListener('click', () => { btn.classList.toggle('open'); links.classList.toggle('open'); });
+      links.querySelectorAll('a').forEach(a => { a.addEventListener('click', () => { btn.classList.remove('open'); links.classList.remove('open'); }); });
     }
   })();
 </script>
@@ -189,46 +87,25 @@
   </div>
 </div>
 
-<!-- Newsletter panel -->
-<div class="newsletter-panel">
-  <div class="newsletter-panel-text">
-    <span class="newsletter-panel-eyebrow">Stay in the loop</span>
-    <h3 class="newsletter-panel-heading">Want to know when something new drops?</h3>
-    <p class="newsletter-panel-sub">Leave your email and we'll send word — new chapters, art, videos, and announcements.</p>
-    <div class="newsletter-panel-msg" id="news-notify-msg"></div>
-  </div>
-  <div>
-    <div class="newsletter-panel-form">
-      <input class="newsletter-panel-input" id="news-notify-email" type="email" placeholder="Your email address" />
-      <button class="newsletter-panel-btn" id="news-notify-btn">Notify Me</button>
-    </div>
-  </div>
+<!-- Newsletter float box -->
+<div class="newsletter-float">
+  <span class="newsletter-float-label">Stay updated</span>
+  <p class="newsletter-float-text">New drops, stories & art — straight to your inbox.</p>
+  <input class="newsletter-float-input" id="float-email" type="email" placeholder="Your email" />
+  <button class="newsletter-float-btn" id="float-btn">Notify Me</button>
+  <div class="newsletter-float-msg" id="float-msg"></div>
 </div>
 
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
   <div class="socials-panel" id="socials-panel">
     <div class="socials-title">Find Me</div>
-    <a class="socials-link" href="https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw" target="_blank">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
-      YouTube
-    </a>
-    <a class="socials-link" href="https://discord.gg/gBeqSG8mD" target="_blank">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>
-      Discord
-    </a>
-    <a class="socials-link" href="https://x.com/spite_mstrs" target="_blank">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>
-      X / Twitter
-    </a>
-    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>
-      AO3
-    </a>
+    <a class="socials-link" href="https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>YouTube</a>
+    <a class="socials-link" href="https://discord.gg/gBeqSG8mD" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>Discord</a>
+    <a class="socials-link" href="https://x.com/spite_mstrs" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>X / Twitter</a>
+    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>AO3</a>
   </div>
-  <div class="socials-arrow" id="socials-arrow">
-    <svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg>
-  </div>
+  <div class="socials-arrow" id="socials-arrow"><svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg></div>
 </div>
 
 <footer>
@@ -240,36 +117,18 @@
 <script>
   const trigger = document.getElementById('socials-trigger');
   const panel = document.getElementById('socials-panel');
-  document.getElementById('socials-arrow').addEventListener('click', () => {
-    trigger.classList.toggle('open');
-    panel.classList.toggle('open');
-  });
+  document.getElementById('socials-arrow').addEventListener('click', () => { trigger.classList.toggle('open'); panel.classList.toggle('open'); });
 </script>
 <script>
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; });
-      }
-    });
-  }
+  if (window.netlifyIdentity) { window.netlifyIdentity.on("init", user => { if (!user) { window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; }); } }); }
 </script>
 <script>
   (function() {
     const cord = document.getElementById('cord-wrap');
     const dot = document.getElementById('news-dot');
     const dismissed = localStorage.getItem('news-dismissed');
-    if (dismissed) {
-      if (cord) cord.classList.add('pulled');
-      if (dot) dot.classList.add('off');
-    }
-    if (cord) {
-      cord.addEventListener('click', () => {
-        cord.classList.add('pulled');
-        if (dot) dot.classList.add('off');
-        localStorage.setItem('news-dismissed', '1');
-      });
-    }
+    if (dismissed) { if (cord) cord.classList.add('pulled'); if (dot) dot.classList.add('off'); }
+    if (cord) { cord.addEventListener('click', () => { cord.classList.add('pulled'); if (dot) dot.classList.add('off'); localStorage.setItem('news-dismissed', '1'); }); }
   })();
 </script>
 
@@ -286,11 +145,8 @@ function markdownToHtml(md) {
       .replace(/_(.*?)_/gs, '<em>$1</em>');
   }
   if (md.includes('<p>')) return inlineConvert(md);
-  return md.split(/\n\n+/)
-    .map(p => p.trim())
-    .filter(p => p.length > 0)
-    .map(p => p.startsWith('<') ? inlineConvert(p) : `<p>${inlineConvert(p).replace(/\n/g, '<br>')}</p>`)
-    .join('\n');
+  return md.split(/\n\n+/).map(p => p.trim()).filter(p => p.length > 0)
+    .map(p => p.startsWith('<') ? inlineConvert(p) : `<p>${inlineConvert(p).replace(/\n/g, '<br>')}</p>`).join('\n');
 }
 
 async function loadAnnouncements() {
@@ -299,10 +155,7 @@ async function loadAnnouncements() {
     const res = await fetch('/_data/announcements-index.json');
     if (!res.ok) throw new Error();
     const items = await res.json();
-    if (!items || items.length === 0) {
-      container.innerHTML = '<p class="no-news">Nothing here yet. Check back soon.</p>';
-      return;
-    }
+    if (!items || items.length === 0) { container.innerHTML = '<p class="no-news">Nothing here yet. Check back soon.</p>'; return; }
     const dismissedAt = parseInt(localStorage.getItem('news-dismissed-at') || '0');
     container.innerHTML = items.map(item => {
       const itemDate = new Date(item.date).getTime();
@@ -318,54 +171,29 @@ async function loadAnnouncements() {
         <div class="announcement-body">${markdownToHtml(item.body || '')}</div>
       </div>`;
     }).join('');
-  } catch(e) {
-    container.innerHTML = '<p class="no-news">Nothing here yet. Check back soon.</p>';
-  }
+  } catch(e) { container.innerHTML = '<p class="no-news">Nothing here yet. Check back soon.</p>'; }
 }
-
 loadAnnouncements();
 </script>
-
 <script>
-  async function newsletterSubscribe(emailId, btnId, msgId) {
-    const emailEl = document.getElementById(emailId);
-    const btn = document.getElementById(btnId);
-    const msg = document.getElementById(msgId);
-    const email = emailEl.value.trim();
-    if (!email || !email.includes('@')) {
-      msg.textContent = 'Please enter a valid email.';
-      msg.className = 'newsletter-panel-msg error';
-      return;
+  (function() {
+    const btn = document.getElementById('float-btn');
+    const input = document.getElementById('float-email');
+    const msg = document.getElementById('float-msg');
+    async function submit() {
+      const email = input.value.trim();
+      if (!email || !email.includes('@')) { msg.textContent = 'Invalid email.'; msg.className = 'newsletter-float-msg error'; return; }
+      btn.disabled = true; btn.textContent = 'Sending...'; msg.textContent = '';
+      try {
+        const res = await fetch('/.netlify/functions/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+        const data = await res.json();
+        if (data.success) { msg.textContent = "You're on the list."; msg.className = 'newsletter-float-msg success'; input.value = ''; btn.textContent = 'Done ✓'; }
+        else throw new Error();
+      } catch(e) { msg.textContent = 'Try again.'; msg.className = 'newsletter-float-msg error'; btn.disabled = false; btn.textContent = 'Notify Me'; }
     }
-    btn.disabled = true;
-    btn.textContent = 'Sending...';
-    msg.textContent = '';
-    try {
-      const res = await fetch('/.netlify/functions/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        msg.textContent = "You're on the list. We'll be in touch.";
-        msg.className = 'newsletter-panel-msg success';
-        emailEl.value = '';
-        btn.textContent = 'Done ✓';
-      } else throw new Error();
-    } catch(e) {
-      msg.textContent = 'Something went wrong. Try again.';
-      msg.className = 'newsletter-panel-msg error';
-      btn.disabled = false;
-      btn.textContent = 'Notify Me';
-    }
-  }
-
-  document.getElementById('news-notify-btn').addEventListener('click', () =>
-    newsletterSubscribe('news-notify-email', 'news-notify-btn', 'news-notify-msg'));
-  document.getElementById('news-notify-email').addEventListener('keydown', e => {
-    if (e.key === 'Enter') newsletterSubscribe('news-notify-email', 'news-notify-btn', 'news-notify-msg');
-  });
+    btn.addEventListener('click', submit);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+  })();
 </script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
