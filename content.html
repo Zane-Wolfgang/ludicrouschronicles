@@ -34,54 +34,57 @@
   .content-thumb.blurred .content-lock { z-index: 2; }
   .blur-overlay { position: absolute; inset: 0; background: rgba(10,8,6,0.35); z-index: 1; }
 
-  /* Newsletter signup strip */
-  .newsletter-strip {
+  /* Newsletter panel */
+  .newsletter-panel {
+    margin: 4rem auto 0;
     max-width: 800px;
-    margin: 0 auto;
-    padding: 3rem 2rem 4rem;
-    text-align: center;
-    border-top: 1px solid var(--border);
+    border: 1px solid var(--gold-dim);
+    background: var(--surface);
+    padding: 2.5rem 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
   }
-  .newsletter-strip-label {
+  .newsletter-panel-text { flex: 1; min-width: 200px; }
+  .newsletter-panel-eyebrow {
     font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.4em;
+    font-size: 9px;
+    letter-spacing: 0.35em;
     text-transform: uppercase;
     color: var(--gold-dim);
     display: block;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
   }
-  .newsletter-strip p {
+  .newsletter-panel-heading {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    color: var(--parchment);
+    margin: 0 0 0.4rem;
+  }
+  .newsletter-panel-sub {
     font-family: 'EB Garamond', serif;
     font-style: italic;
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: var(--text-muted);
-    margin: 0 auto 1.5rem;
-    max-width: 400px;
+    margin: 0;
   }
-  .newsletter-row {
-    display: flex;
-    gap: 1px;
-    max-width: 420px;
-    margin: 0 auto;
-    background: var(--border);
-    border: 1px solid var(--border);
-  }
-  .newsletter-input {
-    flex: 1;
-    background: var(--surface);
+  .newsletter-panel-form { display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border); flex-shrink: 0; }
+  .newsletter-panel-input {
+    background: var(--deep);
     border: none;
     outline: none;
-    padding: 0.8rem 1rem;
+    padding: 0.75rem 1rem;
     font-family: 'EB Garamond', serif;
     font-style: italic;
     font-size: 0.95rem;
     color: var(--parchment);
-    min-width: 0;
+    width: 220px;
   }
-  .newsletter-input::placeholder { color: var(--text-muted); }
-  .newsletter-input:focus { background: var(--mid); }
-  .newsletter-btn {
+  .newsletter-panel-input::placeholder { color: var(--text-muted); }
+  .newsletter-panel-input:focus { background: var(--mid); }
+  .newsletter-panel-btn {
     font-family: 'Cinzel', serif;
     font-size: 9px;
     letter-spacing: 0.18em;
@@ -89,24 +92,24 @@
     color: var(--ink);
     background: var(--gold);
     border: none;
-    padding: 0.8rem 1.2rem;
+    padding: 0.75rem 1.2rem;
     cursor: pointer;
     transition: background 0.2s;
     white-space: nowrap;
   }
-  .newsletter-btn:hover { background: var(--gold-bright); }
-  .newsletter-btn:disabled { opacity: 0.6; cursor: default; }
-  .newsletter-msg {
-    max-width: 420px;
-    margin: 0.6rem auto 0;
+  .newsletter-panel-btn:hover { background: var(--gold-bright); }
+  .newsletter-panel-btn:disabled { opacity: 0.6; cursor: default; }
+  .newsletter-panel-msg {
+    width: 100%;
     font-family: 'Cinzel', serif;
     font-size: 9px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    min-height: 1.2em;
+    margin-top: 0.5rem;
+    min-height: 1em;
   }
-  .newsletter-msg.success { color: var(--gold); }
-  .newsletter-msg.error { color: #c0705a; }
+  .newsletter-panel-msg.success { color: var(--gold); }
+  .newsletter-panel-msg.error { color: #c0705a; }
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
@@ -176,19 +179,25 @@
       <p>Most content is reserved for members. Join to access the full archive.</p>
       <a href="membership.html" class="btn-primary">View Membership Tiers</a>
     </div>
+
+    <!-- Newsletter panel -->
+    <div class="newsletter-panel">
+      <div class="newsletter-panel-text">
+        <span class="newsletter-panel-eyebrow">Stay in the loop</span>
+        <h3 class="newsletter-panel-heading">Want to know when something new drops?</h3>
+        <p class="newsletter-panel-sub">Leave your email and we'll send word — new chapters, art, videos, and announcements.</p>
+        <div class="newsletter-panel-msg" id="content-notify-msg"></div>
+      </div>
+      <div>
+        <div class="newsletter-panel-form">
+          <input class="newsletter-panel-input" id="content-notify-email" type="email" placeholder="Your email address" />
+          <button class="newsletter-panel-btn" id="content-notify-btn">Notify Me</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
-
-<!-- Newsletter signup strip -->
-<div class="newsletter-strip">
-  <span class="newsletter-strip-label">Stay in the loop</span>
-  <p>Get notified when there's something new — stories, art, videos, and announcements.</p>
-  <div class="newsletter-row">
-    <input class="newsletter-input" id="content-notify-email" type="email" placeholder="Your email" />
-    <button class="newsletter-btn" id="content-notify-btn">Notify Me</button>
-  </div>
-  <div class="newsletter-msg" id="content-notify-msg"></div>
-</div>
 
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
@@ -407,15 +416,14 @@ async function loadAllContent() {
 </script>
 
 <script>
-  // Newsletter signup (shared function)
-  async function newsletterSubscribe(emailInputId, btnId, msgId) {
-    const emailEl = document.getElementById(emailInputId);
+  async function newsletterSubscribe(emailId, btnId, msgId) {
+    const emailEl = document.getElementById(emailId);
     const btn = document.getElementById(btnId);
     const msg = document.getElementById(msgId);
     const email = emailEl.value.trim();
     if (!email || !email.includes('@')) {
       msg.textContent = 'Please enter a valid email.';
-      msg.className = 'newsletter-msg error';
+      msg.className = 'newsletter-panel-msg error';
       return;
     }
     btn.disabled = true;
@@ -429,14 +437,14 @@ async function loadAllContent() {
       });
       const data = await res.json();
       if (data.success) {
-        msg.textContent = "You're on the list.";
-        msg.className = 'newsletter-msg success';
+        msg.textContent = "You're on the list. We'll be in touch.";
+        msg.className = 'newsletter-panel-msg success';
         emailEl.value = '';
         btn.textContent = 'Done ✓';
       } else throw new Error();
     } catch(e) {
       msg.textContent = 'Something went wrong. Try again.';
-      msg.className = 'newsletter-msg error';
+      msg.className = 'newsletter-panel-msg error';
       btn.disabled = false;
       btn.textContent = 'Notify Me';
     }
