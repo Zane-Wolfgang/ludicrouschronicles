@@ -75,7 +75,6 @@
     color: var(--gold-dim);
   }
 
-      /* Lightbox */
   .lightbox {
     display: none;
     position: fixed;
@@ -130,92 +129,41 @@
   }
   .lightbox.zoomed .lightbox-hint { opacity: 0; }
 
-  .gallery-item.locked {
-    position: relative;
-  }
-
-  /* Move overlay to top on locked items so it doesn't clash with Patron badge */
+  .gallery-item.locked { position: relative; }
   .gallery-item.locked .gallery-overlay {
-    top: 0;
-    bottom: auto;
+    top: 0; bottom: auto;
     padding: 1rem 1rem 2rem;
     background: linear-gradient(180deg, rgba(10,8,6,0.85) 0%, transparent 100%);
   }
-
-
-  /* Block Edge/Bing image search buttons on locked items */
-  .gallery-item.locked img {
-    pointer-events: none !important;
-  }
-
-  .gallery-item.locked::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    cursor: pointer;
-  }
-
-  .gallery-item.locked img {
-    filter: brightness(0.92) blur(6px);
-    transform: scale(1.05);
-  }
-
-  .gallery-item.locked:hover img {
-    filter: brightness(1.0) blur(5px);
-  }
+  .gallery-item.locked img { pointer-events: none !important; }
+  .gallery-item.locked::after { content: ''; position: absolute; inset: 0; z-index: 3; cursor: pointer; }
+  .gallery-item.locked img { filter: brightness(0.92) blur(6px); transform: scale(1.05); }
+  .gallery-item.locked:hover img { filter: brightness(1.0) blur(5px); }
 
   .gallery-lock-badge {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    width: 24px;
-    height: 24px;
+    position: absolute; top: 0.75rem; right: 0.75rem;
+    width: 24px; height: 24px;
     border: 1px solid rgba(201,168,76,0.5);
     background: rgba(10,8,6,0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
+    display: flex; align-items: center; justify-content: center; z-index: 2;
   }
-
-  .gallery-lock-badge svg {
-    width: 10px;
-    height: 10px;
-    fill: var(--gold-dim);
-  }
+  .gallery-lock-badge svg { width: 10px; height: 10px; fill: var(--gold-dim); }
 
   .gallery-tier-label {
-    position: absolute;
-    bottom: 0.75rem;
-    left: 0.75rem;
-    font-family: 'Cinzel', serif;
-    font-size: 8px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    background: rgba(10,8,6,0.8);
-    padding: 0.2em 0.6em;
-    border: 1px solid var(--border);
-    z-index: 2;
+    position: absolute; bottom: 0.75rem; left: 0.75rem;
+    font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--gold-dim);
+    background: rgba(10,8,6,0.8); padding: 0.2em 0.6em;
+    border: 1px solid var(--border); z-index: 2;
   }
 
   .lightbox-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    background: rgba(10,8,6,0.7);
-    border: 1px solid var(--border-bright);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 20;
-    transition: border-color 0.2s;
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 40px; height: 40px;
+    background: rgba(10,8,6,0.7); border: 1px solid var(--border-bright);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 20; transition: border-color 0.2s;
   }
-
   .lightbox-nav:hover { border-color: var(--gold); }
   .lightbox-nav svg { width: 14px; height: 14px; fill: var(--gold); }
   .lightbox-nav.prev { left: 0.75rem; }
@@ -223,15 +171,9 @@
   .lightbox-nav.hidden { display: none; }
 
   .lightbox-page-count {
-    position: absolute;
-    bottom: 3rem;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    color: var(--text-muted);
-    z-index: 20;
+    position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%);
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em;
+    color: var(--text-muted); z-index: 20;
   }
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
@@ -278,6 +220,7 @@
     }
   })();
 </script>
+
 <div class="page-header">
   <div class="section-label fade-up fade-up-1">Original Art</div>
   <h1 class="section-title fade-up fade-up-2">The Gallery</h1>
@@ -396,40 +339,32 @@
         <img loading="lazy" decoding="async" src="images/art-birthday.png" alt="Happy Birthday" />
         <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
         <div class="gallery-tier-label">Patron</div>
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">Happy Birthday</div>
-        </div>
+        <div class="gallery-overlay"><div class="gallery-overlay-title">Happy Birthday</div></div>
       </div>
 
       <div class="gallery-item locked" onclick="window.location.href='membership.html'">
         <img loading="lazy" decoding="async" src="images/art-dont-miss-legs.png" alt="Don't You Miss Your Legs?" />
         <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
         <div class="gallery-tier-label">Patron</div>
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">Don't You Miss Your Legs?</div>
-        </div>
+        <div class="gallery-overlay"><div class="gallery-overlay-title">Don't You Miss Your Legs?</div></div>
       </div>
 
-      <div class="gallery-item locked" onclick="window.location.href='membership.html'">
+      <!-- A Helping Hand — 2-page slideshow when unlocked -->
+      <div class="gallery-item locked" id="helping-hand-item" onclick="window.location.href='membership.html'">
         <img loading="lazy" decoding="async" src="images/art-helping-hand.png" alt="A Helping Hand" />
         <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
         <div class="gallery-tier-label">Patron</div>
-        <div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:2.5rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / 2</div>
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">A Helping Hand</div>
-        </div>
+        <div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / 2</div>
+        <div class="gallery-overlay"><div class="gallery-overlay-title">A Helping Hand</div></div>
       </div>
-
-
 
       <div class="gallery-item locked" onclick="window.location.href='membership.html'">
         <img loading="lazy" decoding="async" src="images/art-blue-threads.png" alt="Blue Threads" />
         <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
         <div class="gallery-tier-label">Patron</div>
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">Blue Threads</div>
-        </div>
+        <div class="gallery-overlay"><div class="gallery-overlay-title">Blue Threads</div></div>
       </div>
+
     </div>
   </div>
 </section>
@@ -450,7 +385,6 @@
   <div class="lightbox-page-count" id="lb-pages"></div>
   <div class="lightbox-hint" id="lb-hint">Click image to zoom</div>
 </div>
-
 
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
@@ -548,6 +482,10 @@
     zoomed = false;
     lbInner.scrollTop = 0;
     lbInner.scrollLeft = 0;
+    // Reset slideshow nav for single images
+    document.getElementById('lb-prev').classList.add('hidden');
+    document.getElementById('lb-next').classList.add('hidden');
+    document.getElementById('lb-pages').textContent = '';
   }
 
   function closeLightbox() {
@@ -567,13 +505,10 @@
       const rect = lbImg.getBoundingClientRect();
       const clickX = (e.clientX - rect.left) / rect.width;
       const clickY = (e.clientY - rect.top) / rect.height;
-
       lbInner.style.scrollBehavior = 'auto';
-
       lb.classList.add('zoomed');
       lbHint.style.opacity = '0';
       zoomed = true;
-
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           lbInner.scrollLeft = (lbImg.offsetWidth * clickX) - (lbInner.clientWidth / 2);
@@ -633,7 +568,16 @@
 </script>
 
 <script>
-// Dynamic CMS Gallery Loader
+// Hardcoded slideshow definitions — title → [images, type]
+// Add any future multi-page hardcoded pieces here
+const HARDCODED_SLIDESHOWS = {
+  'A Helping Hand': {
+    images: ['images/art-helping-hand.png', 'images/art-nobody-special.png'],
+    titles: ['A Helping Hand', 'Nobody Special'],
+    type: 'Character Art'
+  }
+};
+
 async function loadCMSGallery() {
   try {
     const res = await fetch('/_data/gallery-index.json');
@@ -643,7 +587,6 @@ async function loadCMSGallery() {
 
     const userTier = window.getUserTier ? await window.getUserTier() : 'free';
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-
     const grid = document.querySelector('.gallery-grid');
     if (!grid) return;
 
@@ -659,7 +602,6 @@ async function loadCMSGallery() {
     });
 
     Object.values(sets).forEach(s => s.sort((a,b) => a.set_order - b.set_order));
-
     const firstHardcoded = grid.firstChild;
 
     singles.forEach(item => {
@@ -668,13 +610,10 @@ async function loadCMSGallery() {
     });
 
     Object.entries(sets).forEach(([setName, items]) => {
-      const first = items[0];
-      const el = makeCMSGalleryItem(first, userTier, tRank);
+      const el = makeCMSGalleryItem(items[0], userTier, tRank);
       grid.insertBefore(el, grid.firstChild);
     });
-
-  } catch(e) {
-  }
+  } catch(e) {}
 }
 
 function makeCMSGalleryItem(item, userTier, tRank) {
@@ -693,10 +632,8 @@ function makeCMSGalleryItem(item, userTier, tRank) {
       <img loading="lazy" src="${images[0]}" alt="${item.title}" />
       <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
       <div class="gallery-tier-label">${item.tier === 'devoted' ? 'Patron' : 'Bound'}</div>
-      ${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:2.5rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-title">${item.title}</div>
-      </div>`;
+      ${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}
+      <div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div></div>`;
   } else {
     div.className = 'gallery-item';
     if (isSlideshow) {
@@ -723,17 +660,33 @@ async function checkHardcodedLocks() {
   document.querySelectorAll('.gallery-item.locked').forEach(item => {
     const tierLabel = item.querySelector('.gallery-tier-label');
     if (!tierLabel) return;
-    const itemTier = tierLabel.textContent === 'Patron' ? 'devoted' : 'bound';
+    const itemTier = tierLabel.textContent.trim() === 'Patron' ? 'devoted' : 'bound';
     if (tRank[userTier] >= tRank[itemTier]) {
       item.classList.remove('locked');
       const img = item.querySelector('img');
-      const title = item.querySelector('.gallery-overlay-title')?.textContent || '';
-      const type = item.querySelector('.gallery-overlay-type')?.textContent || '';
-      if (img) {
-        item.setAttribute('onclick', `openLightbox('${img.getAttribute('src')}', '${title}', '${type}')`);
-        item.querySelector('.gallery-lock-badge')?.remove();
-        tierLabel.remove();
+      const titleEl = item.querySelector('.gallery-overlay-title');
+      const title = titleEl?.textContent?.trim() || '';
+      if (!img) return;
+
+      // Check if this is a known multi-page slideshow
+      const slideshow = HARDCODED_SLIDESHOWS[title];
+      if (slideshow) {
+        item.setAttribute('onclick',
+          `openSlideshow(${JSON.stringify(slideshow.images)}, ${JSON.stringify(slideshow.titles)}, '${slideshow.type}')`
+        );
+        // Update overlay to show type + page count
+        const overlay = item.querySelector('.gallery-overlay');
+        if (overlay) {
+          overlay.innerHTML = `
+            <div class="gallery-overlay-title">${title}</div>
+            <div class="gallery-overlay-type">${slideshow.type} · ${slideshow.images.length} pages</div>`;
+        }
+      } else {
+        item.setAttribute('onclick', `openLightbox('${img.getAttribute('src')}', '${title}', 'Illustration')`);
       }
+
+      item.querySelector('.gallery-lock-badge')?.remove();
+      tierLabel.remove();
     }
   });
 }
@@ -741,13 +694,11 @@ async function checkHardcodedLocks() {
 <script src="auth.js"></script>
 <script src="socials.js"></script>
 <script>
-// Run AFTER auth.js has loaded so window.getUserTier exists
 loadCMSGallery();
 checkHardcodedLocks();
 </script>
 
 <script>
-// Open lightbox from URL hash — retries for async CMS items
 function openFromHash() {
   const hash = decodeURIComponent(window.location.hash.slice(1));
   if (!hash) return false;
