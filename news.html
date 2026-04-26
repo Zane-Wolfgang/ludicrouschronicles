@@ -17,14 +17,12 @@
     margin: 0 auto;
     padding: 8rem 2rem 6rem;
   }
-
   .news-header {
     text-align: center;
     margin-bottom: 4rem;
     padding-bottom: 3rem;
     border-bottom: 1px solid var(--border);
   }
-
   .news-label {
     font-family: 'Cinzel', serif;
     font-size: 10px;
@@ -34,37 +32,30 @@
     display: block;
     margin-bottom: 0.75rem;
   }
-
   .news-title {
     font-family: 'Cinzel Decorative', serif;
     font-size: clamp(1.8rem, 4vw, 2.8rem);
     color: var(--gold);
     text-shadow: 0 0 30px rgba(201,168,76,0.3);
   }
-
   .announcement {
     padding: 2.5rem 0;
     border-bottom: 1px solid var(--border);
     transition: background 0.2s;
   }
-
   .announcement:last-child { border-bottom: none; }
-
-  /* Highlight unread announcements */
   .announcement-new {
     background: rgba(201,168,76,0.04);
     border-left: 2px solid var(--gold-dim);
     padding-left: 1.5rem;
     margin-left: -1.5rem;
   }
-
   .announcement-meta {
     display: flex;
     align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
   }
-
   .announcement-date {
     font-family: 'Cinzel', serif;
     font-size: 9px;
@@ -72,7 +63,6 @@
     text-transform: uppercase;
     color: var(--gold-dim);
   }
-
   .announcement-tag {
     font-family: 'Cinzel', serif;
     font-size: 8px;
@@ -82,50 +72,25 @@
     border: 1px solid var(--border);
     padding: 0.2em 0.6em;
   }
-
   .announcement-title {
     font-family: 'Cinzel', serif;
     font-size: 1.1rem;
     color: var(--parchment);
     margin-bottom: 0.75rem;
   }
-
   .announcement-body {
     font-family: 'EB Garamond', serif;
     font-size: 1.1rem;
     line-height: 1.85;
     color: #c9a84c;
   }
-
-  .announcement-body p {
-    margin: 0 0 1em;
-  }
-
+  .announcement-body p { margin: 0 0 1em; }
   .announcement-body p:last-child { margin-bottom: 0; }
-
-  .announcement-body em, .announcement-body i {
-    font-style: italic;
-    color: #e0bc6a;
-  }
-
-  .announcement-body strong, .announcement-body b {
-    font-weight: 600;
-    color: #e0bc6a;
-    font-style: normal;
-  }
-
+  .announcement-body em, .announcement-body i { font-style: italic; color: #e0bc6a; }
+  .announcement-body strong, .announcement-body b { font-weight: 600; color: #e0bc6a; font-style: normal; }
   .announcement-body strong em, .announcement-body em strong,
-  .announcement-body b i, .announcement-body i b {
-    font-style: italic;
-    font-weight: 600;
-    color: #e8c87a;
-  }
-
-  .announcement-body a {
-    color: var(--gold);
-    text-decoration: underline;
-  }
-
+  .announcement-body b i, .announcement-body i b { font-style: italic; font-weight: 600; color: #e8c87a; }
+  .announcement-body a { color: var(--gold); text-decoration: underline; }
   .no-news {
     text-align: center;
     padding: 4rem 0;
@@ -134,6 +99,80 @@
     color: var(--text-muted);
     font-size: 1.1rem;
   }
+
+  /* Newsletter signup strip */
+  .newsletter-strip {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 3rem 2rem 4rem;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  .newsletter-strip-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+  .newsletter-strip p {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin: 0 auto 1.5rem;
+    max-width: 400px;
+  }
+  .newsletter-row {
+    display: flex;
+    gap: 1px;
+    max-width: 420px;
+    margin: 0 auto;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .newsletter-input {
+    flex: 1;
+    background: var(--surface);
+    border: none;
+    outline: none;
+    padding: 0.8rem 1rem;
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--parchment);
+    min-width: 0;
+  }
+  .newsletter-input::placeholder { color: var(--text-muted); }
+  .newsletter-input:focus { background: var(--mid); }
+  .newsletter-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--gold);
+    border: none;
+    padding: 0.8rem 1.2rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .newsletter-btn:hover { background: var(--gold-bright); }
+  .newsletter-btn:disabled { opacity: 0.6; cursor: default; }
+  .newsletter-msg {
+    max-width: 420px;
+    margin: 0.6rem auto 0;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    min-height: 1.2em;
+  }
+  .newsletter-msg.success { color: var(--gold); }
+  .newsletter-msg.error { color: #c0705a; }
 </style>
 </head>
 <body>
@@ -178,10 +217,20 @@
     <span class="news-label">Ludicrous Chronicles</span>
     <h1 class="news-title">News</h1>
   </div>
-
   <div id="announcements-container">
     <p class="no-news">Nothing here yet. Check back soon.</p>
   </div>
+</div>
+
+<!-- Newsletter signup strip -->
+<div class="newsletter-strip">
+  <span class="newsletter-strip-label">Stay in the loop</span>
+  <p>Get notified when there's something new — stories, art, videos, and announcements.</p>
+  <div class="newsletter-row">
+    <input class="newsletter-input" id="news-notify-email" type="email" placeholder="Your email" />
+    <button class="newsletter-btn" id="news-notify-btn">Notify Me</button>
+  </div>
+  <div class="newsletter-msg" id="news-notify-msg"></div>
 </div>
 
 <!-- Socials Sidebar -->
@@ -200,7 +249,7 @@
       <svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>
       X / Twitter
     </a>
-    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank" title="Note: This work is for authorized viewers only. However, it's available on this site to read for free">
+    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank">
       <svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>
       AO3
     </a>
@@ -233,16 +282,29 @@
     });
   }
 </script>
+<script>
+  (function() {
+    const cord = document.getElementById('cord-wrap');
+    const dot = document.getElementById('news-dot');
+    const dismissed = localStorage.getItem('news-dismissed');
+    if (dismissed) {
+      if (cord) cord.classList.add('pulled');
+      if (dot) dot.classList.add('off');
+    }
+    if (cord) {
+      cord.addEventListener('click', () => {
+        cord.classList.add('pulled');
+        if (dot) dot.classList.add('off');
+        localStorage.setItem('news-dismissed', '1');
+      });
+    }
+  })();
+</script>
 
 <script>
-// Convert CMS markdown body into rendered HTML.
-// Handles: ***bold italic***, **bold**, *italic*, _italic_, [links](url), paragraphs, line breaks.
-// Strips CMS's backslash line-break encoding.
 function markdownToHtml(md) {
   if (!md) return '';
-  // Strip stray backslashes that CMS inserts for line breaks
   md = md.replace(/\\/g, '');
-
   function inlineConvert(str) {
     return str
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
@@ -251,11 +313,7 @@ function markdownToHtml(md) {
       .replace(/\*(.*?)\*/gs, '<em>$1</em>')
       .replace(/_(.*?)_/gs, '<em>$1</em>');
   }
-
-  // If content already has <p> tags, just inline-convert
   if (md.includes('<p>')) return inlineConvert(md);
-
-  // Split on double newlines for paragraphs; single newlines become <br>
   return md.split(/\n\n+/)
     .map(p => p.trim())
     .filter(p => p.length > 0)
@@ -269,15 +327,11 @@ async function loadAnnouncements() {
     const res = await fetch('/_data/announcements-index.json');
     if (!res.ok) throw new Error();
     const items = await res.json();
-
     if (!items || items.length === 0) {
       container.innerHTML = '<p class="no-news">Nothing here yet. Check back soon.</p>';
       return;
     }
-
-    // Check when visitor last dismissed the cord
     const dismissedAt = parseInt(localStorage.getItem('news-dismissed-at') || '0');
-
     container.innerHTML = items.map(item => {
       const itemDate = new Date(item.date).getTime();
       const isNew = itemDate > dismissedAt;
@@ -298,6 +352,49 @@ async function loadAnnouncements() {
 }
 
 loadAnnouncements();
+</script>
+
+<script>
+  // Newsletter signup
+  async function newsletterSubscribe(emailInputId, btnId, msgId) {
+    const emailEl = document.getElementById(emailInputId);
+    const btn = document.getElementById(btnId);
+    const msg = document.getElementById(msgId);
+    const email = emailEl.value.trim();
+    if (!email || !email.includes('@')) {
+      msg.textContent = 'Please enter a valid email.';
+      msg.className = 'newsletter-msg error';
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    msg.textContent = '';
+    try {
+      const res = await fetch('/.netlify/functions/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        msg.textContent = "You're on the list.";
+        msg.className = 'newsletter-msg success';
+        emailEl.value = '';
+        btn.textContent = 'Done ✓';
+      } else throw new Error();
+    } catch(e) {
+      msg.textContent = 'Something went wrong. Try again.';
+      msg.className = 'newsletter-msg error';
+      btn.disabled = false;
+      btn.textContent = 'Notify Me';
+    }
+  }
+
+  document.getElementById('news-notify-btn').addEventListener('click', () =>
+    newsletterSubscribe('news-notify-email', 'news-notify-btn', 'news-notify-msg'));
+  document.getElementById('news-notify-email').addEventListener('keydown', e => {
+    if (e.key === 'Enter') newsletterSubscribe('news-notify-email', 'news-notify-btn', 'news-notify-msg');
+  });
 </script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
