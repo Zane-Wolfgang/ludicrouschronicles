@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="ImageToolbar" content="no">
-<title>Gallery — Ludicrous Chronicles</title>
+<title>Content — Ludicrous Chronicles</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
@@ -12,169 +11,43 @@
   <link rel="icon" type="image/png" href="images/favicon.png">
 <link rel="stylesheet" href="style.css">
 <style>
-  .gallery-grid {
-    columns: 3;
-    column-gap: 12px;
-    margin-top: 3rem;
-  }
+  .filter-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .filter-btn { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); background: transparent; border: 1px solid var(--border); padding: 0.5em 1.2em; cursor: pointer; transition: all 0.2s; }
+  .filter-btn:hover, .filter-btn.active { color: var(--gold); border-color: var(--gold-dim); }
+  .content-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 2.5rem; }
+  .content-card { background: var(--deep); overflow: hidden; position: relative; cursor: pointer; transition: background 0.2s; text-decoration: none; display: block; }
+  .content-card:hover { background: var(--mid); }
+  .content-thumb { width: 100%; aspect-ratio: 4/3; background: var(--surface); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border); position: relative; }
+  .content-thumb-label { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
+  .content-lock { position: absolute; top: 0.75rem; right: 0.75rem; width: 24px; height: 24px; border: 1px solid var(--border-bright); display: flex; align-items: center; justify-content: center; background: rgba(10,8,6,0.8); }
+  .content-lock svg { width: 10px; height: 10px; fill: var(--gold-dim); }
+  .content-info { padding: 1.25rem 1.5rem; }
+  .content-type { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 0.4rem; }
+  .content-title { font-family: 'Cinzel', serif; font-size: 0.95rem; color: var(--parchment); margin-bottom: 0.4rem; }
+  .content-desc { font-size: 0.875rem; color: var(--text-muted); font-style: italic; }
+  .content-free-badge { position: absolute; top: 0.75rem; left: 0.75rem; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); background: var(--gold); padding: 0.2em 0.7em; }
+  .members-cta { background: var(--surface); border: 1px solid var(--border); padding: 3rem; text-align: center; margin-top: 4rem; }
+  .members-cta p { font-style: italic; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .content-thumb.blurred { position: relative; overflow: hidden; }
+  .content-thumb.blurred::before { content: ''; position: absolute; inset: 0; background-image: var(--preview-img); background-size: cover; background-position: center; filter: blur(8px) brightness(0.6); transform: scale(1.1); z-index: 0; }
+  .content-thumb.blurred .content-thumb-label { position: relative; z-index: 1; }
+  .content-thumb.blurred .content-lock { z-index: 2; }
+  .blur-overlay { position: absolute; inset: 0; background: rgba(10,8,6,0.35); z-index: 1; }
 
-  .gallery-item {
-    break-inside: avoid;
-    margin-bottom: 12px;
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    display: block;
-    border: 1px solid var(--border);
-    transition: border-color 0.25s, transform 0.25s;
-  }
-
-  .gallery-item:hover {
-    border-color: var(--gold-dim);
-    transform: scale(1.01);
-  }
-
-  .gallery-item img {
-    width: 100%;
-    display: block;
-    filter: brightness(0.92);
-    transition: filter 0.3s;
-  }
-
-  .gallery-item:hover img {
-    filter: brightness(1.05);
-  }
-
-  .gallery-overlay {
-    position: absolute;
-    bottom: -8px;
-    left: 0;
-    right: 0;
-    padding: 2rem 1rem 1.2rem;
-    background: linear-gradient(0deg, rgba(10,8,6,0.85) 0%, transparent 100%);
-    opacity: 0;
-    transition: opacity 0.25s;
-  }
-
-  .gallery-item:hover .gallery-overlay {
-    opacity: 1;
-  }
-
-  .gallery-overlay-title {
-    font-family: 'Cinzel', serif;
-    font-size: 0.85rem;
-    color: var(--parchment);
-    margin-bottom: 0.2rem;
-  }
-
-  .gallery-overlay-type {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-  }
-
-  .lightbox {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(10,8,6,0.96);
-    z-index: 200;
-  }
-  .lightbox.open { display: flex; align-items: center; justify-content: center; }
-  .lightbox-inner {
-    position: relative;
-    display: inline-block;
-    max-width: 90vw;
-    max-height: 88vh;
-    overflow: auto;
-  }
-  .lightbox.zoomed .lightbox-img { cursor: zoom-out; }
-  .lightbox-img {
-    display: block;
-    max-width: 88vw;
-    max-height: 85vh;
-    object-fit: contain;
-    border: 1px solid var(--border);
-    -webkit-user-drag: none;
-    user-select: none;
-    cursor: zoom-in;
-  }
-  .lightbox.zoomed .lightbox-inner { max-width: 95vw; max-height: 92vh; overflow: auto; transition: none; }
-  .lightbox.zoomed .lightbox-img { max-width: none; max-height: none; width: 160vw; }
-  .lightbox-close {
-    position: fixed; top: 1.5rem; right: 2rem;
-    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.2em;
-    text-transform: uppercase; color: var(--text-muted);
-    background: none; border: none; cursor: pointer; z-index: 202;
-    transition: color 0.2s;
-  }
-  .lightbox-close:hover { color: var(--gold); }
-  .lightbox-caption {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    padding: 1.5rem 1rem 0.8rem;
-    font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em;
-    text-transform: uppercase; color: var(--parchment); text-align: center;
-    background: linear-gradient(0deg, rgba(10,8,6,0.85) 0%, transparent 100%);
-    transition: transform 0.35s ease, opacity 0.35s ease;
-    pointer-events: none;
-  }
-  .lightbox.zoomed .lightbox-caption { transform: translateY(110%); opacity: 0; }
-  .lightbox-hint {
-    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
-    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em;
-    text-transform: uppercase; color: var(--text-muted); opacity: 0.6;
-    pointer-events: none; z-index: 202; transition: opacity 0.3s;
-  }
-  .lightbox.zoomed .lightbox-hint { opacity: 0; }
-
-  .gallery-item.locked { position: relative; }
-  .gallery-item.locked .gallery-overlay {
-    top: 0; bottom: auto;
-    padding: 1rem 1rem 2rem;
-    background: linear-gradient(180deg, rgba(10,8,6,0.85) 0%, transparent 100%);
-  }
-  .gallery-item.locked img { pointer-events: none !important; }
-  .gallery-item.locked::after { content: ''; position: absolute; inset: 0; z-index: 3; cursor: pointer; }
-  .gallery-item.locked img { filter: brightness(0.92) blur(6px); transform: scale(1.05); }
-  .gallery-item.locked:hover img { filter: brightness(1.0) blur(5px); }
-
-  .gallery-lock-badge {
-    position: absolute; top: 0.75rem; right: 0.75rem;
-    width: 24px; height: 24px;
-    border: 1px solid rgba(201,168,76,0.5);
-    background: rgba(10,8,6,0.8);
-    display: flex; align-items: center; justify-content: center; z-index: 2;
-  }
-  .gallery-lock-badge svg { width: 10px; height: 10px; fill: var(--gold-dim); }
-
-  .gallery-tier-label {
-    position: absolute; bottom: 0.75rem; left: 0.75rem;
-    font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.2em;
-    text-transform: uppercase; color: var(--gold-dim);
-    background: rgba(10,8,6,0.8); padding: 0.2em 0.6em;
-    border: 1px solid var(--border); z-index: 2;
-  }
-
-  .lightbox-nav {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    width: 40px; height: 40px;
-    background: rgba(10,8,6,0.7); border: 1px solid var(--border-bright);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; z-index: 20; transition: border-color 0.2s;
-  }
-  .lightbox-nav:hover { border-color: var(--gold); }
-  .lightbox-nav svg { width: 14px; height: 14px; fill: var(--gold); }
-  .lightbox-nav.prev { left: 0.75rem; }
-  .lightbox-nav.next { right: 0.75rem; }
-  .lightbox-nav.hidden { display: none; }
-
-  .lightbox-page-count {
-    position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%);
-    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em;
-    color: var(--text-muted); z-index: 20;
-  }
+  /* Newsletter float box */
+  .newsletter-float { position: fixed; left: 1.2rem; top: 50%; transform: translateY(-50%); z-index: 90; width: 165px; background: rgba(10,8,6,0.96); border: 1px solid var(--gold-dim); padding: 1.1rem 1rem; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+  .newsletter-float-label { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold-dim); display: block; margin-bottom: 0.4rem; }
+  .newsletter-float-text { font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.82rem; color: var(--text-muted); margin: 0 0 0.7rem; line-height: 1.4; }
+  .newsletter-float-input { width: 100%; background: var(--surface); border: 1px solid var(--border); outline: none; padding: 0.45rem 0.55rem; font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.82rem; color: var(--parchment); box-sizing: border-box; margin-bottom: 0.35rem; }
+  .newsletter-float-input::placeholder { color: var(--text-muted); }
+  .newsletter-float-input:focus { border-color: var(--gold-dim); }
+  .newsletter-float-btn { width: 100%; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.5rem; cursor: pointer; transition: background 0.2s; }
+  .newsletter-float-btn:hover { background: var(--gold-bright); }
+  .newsletter-float-btn:disabled { opacity: 0.6; cursor: default; }
+  .newsletter-float-msg { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.35rem; min-height: 1em; text-align: center; }
+  .newsletter-float-msg.success { color: var(--gold); }
+  .newsletter-float-msg.error { color: #c0705a; }
+  @media (max-width: 1100px) { .newsletter-float { display: none; } }
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
@@ -184,8 +57,8 @@
   <a href="index.html" class="nav-brand">Ludicrous Chronicles</a>
   <ul class="nav-links">
     <li><a href="about.html">About</a></li>
-    <li><a href="content.html">Content</a></li>
-    <li><a href="gallery.html" class="active">Gallery</a></li>
+    <li><a href="content.html" class="active">Content</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
     <li><a href="videos.html">Videos</a></li>
     <li class="nav-news-item">
       <a href="news.html">News<span class="nav-news-dot" id="news-dot"></span></a>
@@ -207,217 +80,62 @@
     const btn = document.getElementById('nav-hamburger');
     const links = document.querySelector('.nav-links');
     if (btn && links) {
-      btn.addEventListener('click', () => {
-        btn.classList.toggle('open');
-        links.classList.toggle('open');
-      });
-      links.querySelectorAll('a').forEach(a => {
-        a.addEventListener('click', () => {
-          btn.classList.remove('open');
-          links.classList.remove('open');
-        });
-      });
+      btn.addEventListener('click', () => { btn.classList.toggle('open'); links.classList.toggle('open'); });
+      links.querySelectorAll('a').forEach(a => { a.addEventListener('click', () => { btn.classList.remove('open'); links.classList.remove('open'); }); });
     }
   })();
 </script>
 
 <div class="page-header">
-  <div class="section-label fade-up fade-up-1">Original Art</div>
-  <h1 class="section-title fade-up fade-up-2">The Gallery</h1>
-  <p class="section-body fade-up fade-up-3">Illustrations made for the Chronicles — every piece drawn by hand.</p>
+  <div class="section-label fade-up fade-up-1">The Archive</div>
+  <h1 class="section-title fade-up fade-up-2">Content</h1>
+  <p class="section-body fade-up fade-up-3">Stories, illustrations, and voice recordings. Some free. Some for members.</p>
 </div>
 
 <section>
   <div class="section-inner">
-    <div class="gallery-grid">
-
-      <div class="gallery-item" onclick="openLightbox('images/art-01-witch-lantern.png', 'Nearly There', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-01-witch-lantern.png" alt="Nearly There" />
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">Nearly There</div>
-          <div class="gallery-overlay-type">Character Art</div>
-        </div>
-      </div>
-
-      <div class="gallery-item" onclick="openLightbox('images/art-02-dark-garden.png', 'The Dark Garden', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-02-dark-garden.png" alt="The Dark Garden" />
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">The Dark Garden</div>
-          <div class="gallery-overlay-type">Character Art</div>
-        </div>
-      </div>
-
-      <div class="gallery-item" onclick="openLightbox('images/art-03-bridge.png', 'The Offer', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-03-bridge.png" alt="The Offer" />
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">The Offer</div>
-          <div class="gallery-overlay-type">Character Art</div>
-        </div>
-      </div>
-
-      <div class="gallery-item" onclick="openLightbox('images/art-04-train.png', 'The Beginning', 'Chapter Art')">
-        <img loading="lazy" decoding="async" src="images/art-04-train.png" alt="The Beginning" />
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">The Beginning</div>
-          <div class="gallery-overlay-type">Chapter Art</div>
-        </div>
-      </div>
-
-      <div class="gallery-item" onclick="openLightbox('images/art-05-asteroid.png', 'Among Asteroids', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-05-asteroid.png" alt="Among Asteroids" />
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">Among Asteroids</div>
-          <div class="gallery-overlay-type">Character Art</div>
-        </div>
-      </div>
-
-      <div class="gallery-item" onclick="openLightbox('images/art-06-tunnel.png', 'The Tunnel', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-06-tunnel.png" alt="The Tunnel" />
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">The Tunnel</div>
-          <div class="gallery-overlay-type">Character Art</div>
-        </div>
-      </div>
-
-      <div class="gallery-item" onclick="openLightbox('images/art-07-steampunk.png', 'Fix You Up', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-07-steampunk.png" alt="Fix You Up" />
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">Fix You Up</div>
-          <div class="gallery-overlay-type">Character Art</div>
-        </div>
-      </div>
-
-      <div class="gallery-item" onclick="openLightbox('images/art-08-lightning.png', 'The Storm', 'Chapter Art')">
-        <img loading="lazy" decoding="async" src="images/art-08-lightning.png" alt="The Storm" />
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">The Storm</div>
-          <div class="gallery-overlay-type">Chapter Art</div>
-        </div>
-      </div>
-
-      <div class="gallery-item" onclick="openLightbox('images/art-09-needle.png', 'Patching Up', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-09-needle.png" alt="Patching Up" />
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">Patching Up</div>
-          <div class="gallery-overlay-type">Character Art</div>
-        </div>
-      </div>
-
-      <div class="gallery-item" onclick="openLightbox('images/art-10-cards.png', 'Faces of the Suits', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-10-cards.png" alt="Faces of the Suits" />
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">Faces of the Suits</div>
-          <div class="gallery-overlay-type">Character Art</div>
-        </div>
-      </div>
-
-      <div class="gallery-item" onclick="openLightbox('images/art-11-portraits.png', 'Oh What Could Have Been', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-11-portraits.png" alt="Oh What Could Have Been" />
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">Oh What Could Have Been</div>
-          <div class="gallery-overlay-type">Character Art</div>
-        </div>
-      </div>
-
-      <div class="gallery-item" onclick="openLightbox('images/art-12-gentleman.png', 'To Law And Order', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-12-gentleman.png" alt="To Law And Order" />
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">To Law And Order</div>
-          <div class="gallery-overlay-type">Character Art</div>
-        </div>
-      </div>
-
-      <div class="gallery-item" onclick="openLightbox('images/art-13-rain.png', 'In the Rain', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-13-rain.png" alt="In the Rain" />
-        <div class="gallery-overlay">
-          <div class="gallery-overlay-title">In the Rain</div>
-          <div class="gallery-overlay-type">Character Art</div>
-        </div>
-      </div>
-
-      <div class="gallery-item locked" onclick="window.location.href='membership.html'">
-        <img loading="lazy" decoding="async" src="images/art-birthday.png" alt="Happy Birthday" />
-        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Patron</div>
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Happy Birthday</div></div>
-      </div>
-
-      <div class="gallery-item locked" onclick="window.location.href='membership.html'">
-        <img loading="lazy" decoding="async" src="images/art-dont-miss-legs.png" alt="Don't You Miss Your Legs?" />
-        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Patron</div>
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Don't You Miss Your Legs?</div></div>
-      </div>
-
-      <!-- A Helping Hand — 2-page slideshow when unlocked -->
-      <div class="gallery-item locked" id="helping-hand-item" onclick="window.location.href='membership.html'">
-        <img loading="lazy" decoding="async" src="images/art-helping-hand.png" alt="A Helping Hand" />
-        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Patron</div>
-        <div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / 2</div>
-        <div class="gallery-overlay"><div class="gallery-overlay-title">A Helping Hand</div></div>
-      </div>
-
-      <div class="gallery-item locked" onclick="window.location.href='membership.html'">
-        <img loading="lazy" decoding="async" src="images/art-blue-threads.png" alt="Blue Threads" />
-        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Patron</div>
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Blue Threads</div></div>
-      </div>
-
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="story">Story</button>
+      <button class="filter-btn" data-filter="voice">Voice</button>
+      <button class="filter-btn" data-filter="art">Art</button>
+      <button class="filter-btn" data-filter="behind">Behind the Scenes</button>
+      <button class="filter-btn" data-filter="video">Video</button>
+    </div>
+    <div class="content-grid" id="content-grid"></div>
+    <div class="members-cta">
+      <div class="section-label" style="justify-content:center;">Unlock the vault</div>
+      <h2 class="section-title">Want more?</h2>
+      <p>Most content is reserved for members. Join to access the full archive.</p>
+      <a href="membership.html" class="btn-primary">View Membership Tiers</a>
     </div>
   </div>
 </section>
 
-<!-- Lightbox -->
-<div class="lightbox" id="lightbox">
-  <button class="lightbox-close" id="lb-close">Close ✕</button>
-  <div class="lightbox-inner" id="lb-inner">
-    <img class="lightbox-img" id="lb-img" src="" alt="" />
-    <div class="lightbox-caption" id="lb-caption"></div>
-  </div>
-  <div class="lightbox-nav prev hidden" id="lb-prev">
-    <svg viewBox="0 0 14 14"><path d="M9 2L4 7l5 5"/></svg>
-  </div>
-  <div class="lightbox-nav next hidden" id="lb-next">
-    <svg viewBox="0 0 14 14"><path d="M5 2l5 5-5 5"/></svg>
-  </div>
-  <div class="lightbox-page-count" id="lb-pages"></div>
-  <div class="lightbox-hint" id="lb-hint">Click image to zoom</div>
+<!-- Newsletter float box -->
+<div class="newsletter-float">
+  <span class="newsletter-float-label">Stay updated</span>
+  <p class="newsletter-float-text">New drops, stories & art — straight to your inbox.</p>
+  <input class="newsletter-float-input" id="float-email" type="email" placeholder="Your email" />
+  <button class="newsletter-float-btn" id="float-btn">Notify Me</button>
+  <div class="newsletter-float-msg" id="float-msg"></div>
 </div>
 
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
   <div class="socials-panel" id="socials-panel">
     <div class="socials-title">Find Me</div>
-    <a class="socials-link" href="https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw" target="_blank">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
-      YouTube
-    </a>
-    <a class="socials-link" href="https://discord.gg/gBeqSG8mD" target="_blank">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>
-      Discord
-    </a>
-    <a class="socials-link" href="https://x.com/spite_mstrs" target="_blank">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>
-      X / Twitter
-    </a>
-    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank" title="Note: This work is for authorized viewers only. However, it's available on this site to read for free">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>
-      AO3
-    </a>
+    <a class="socials-link" href="https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>YouTube</a>
+    <a class="socials-link" href="https://discord.gg/gBeqSG8mD" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>Discord</a>
+    <a class="socials-link" href="https://x.com/spite_mstrs" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>X / Twitter</a>
+    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>AO3</a>
   </div>
-  <div class="socials-arrow" id="socials-arrow">
-    <svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg>
-  </div>
+  <div class="socials-arrow" id="socials-arrow"><svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg></div>
 </div>
 <script>
   const trigger = document.getElementById('socials-trigger');
   const panel = document.getElementById('socials-panel');
-  document.getElementById('socials-arrow').addEventListener('click', () => {
-    trigger.classList.toggle('open');
-    panel.classList.toggle('open');
-  });
+  document.getElementById('socials-arrow').addEventListener('click', () => { trigger.classList.toggle('open'); panel.classList.toggle('open'); });
 </script>
 
 <footer>
@@ -427,302 +145,155 @@
 </footer>
 
 <script>
-  let slideImages = [];
-  let slideTitles = [];
-  let slideType = '';
-  let slideIndex = 0;
-
-  function openSlideshow(images, titles, type) {
-    slideImages = images;
-    slideTitles = titles;
-    slideType = type;
-    slideIndex = 0;
-    showSlide(0);
-    lb.classList.add('open');
-    lb.classList.remove('zoomed');
-    document.body.style.overflow = 'hidden';
-    zoomed = false;
-  }
-
-  function showSlide(index) {
-    lbImg.src = slideImages[index];
-    lbCaption.textContent = slideTitles[index] + ' — ' + slideType;
-    document.getElementById('lb-pages').textContent = slideImages.length > 1 ? (index + 1) + ' / ' + slideImages.length : '';
-    document.getElementById('lb-prev').classList.toggle('hidden', index === 0);
-    document.getElementById('lb-next').classList.toggle('hidden', index === slideImages.length - 1);
-    lbHint.textContent = 'Click image to zoom';
-    lbHint.style.opacity = '0.6';
-  }
-
-  document.getElementById('lb-prev').addEventListener('click', e => {
-    e.stopPropagation();
-    if (slideIndex > 0) { slideIndex--; showSlide(slideIndex); }
-  });
-
-  document.getElementById('lb-next').addEventListener('click', e => {
-    e.stopPropagation();
-    if (slideIndex < slideImages.length - 1) { slideIndex++; showSlide(slideIndex); }
-  });
-
-  const lb = document.getElementById('lightbox');
-  const lbInner = document.getElementById('lb-inner');
-  const lbImg = document.getElementById('lb-img');
-  const lbCaption = document.getElementById('lb-caption');
-  const lbHint = document.getElementById('lb-hint');
-  let zoomed = false;
-
-  function openLightbox(src, title, type) {
-    lbImg.src = src;
-    lbCaption.textContent = title + ' — ' + type;
-    lb.classList.add('open');
-    lb.classList.remove('zoomed');
-    lbHint.style.opacity = '0.6';
-    lbHint.textContent = 'Click image to zoom';
-    document.body.style.overflow = 'hidden';
-    zoomed = false;
-    lbInner.scrollTop = 0;
-    lbInner.scrollLeft = 0;
-    // Reset slideshow nav for single images
-    document.getElementById('lb-prev').classList.add('hidden');
-    document.getElementById('lb-next').classList.add('hidden');
-    document.getElementById('lb-pages').textContent = '';
-  }
-
-  function closeLightbox() {
-    lb.classList.remove('open','zoomed');
-    document.body.style.overflow = '';
-    zoomed = false;
-  }
-
-  document.getElementById('lb-close').addEventListener('click', e => {
-    e.stopPropagation();
-    closeLightbox();
-  });
-
-  lbImg.addEventListener('click', e => {
-    e.stopPropagation();
-    if (!zoomed) {
-      const rect = lbImg.getBoundingClientRect();
-      const clickX = (e.clientX - rect.left) / rect.width;
-      const clickY = (e.clientY - rect.top) / rect.height;
-      lbInner.style.scrollBehavior = 'auto';
-      lb.classList.add('zoomed');
-      lbHint.style.opacity = '0';
-      zoomed = true;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          lbInner.scrollLeft = (lbImg.offsetWidth * clickX) - (lbInner.clientWidth / 2);
-          lbInner.scrollTop = (lbImg.offsetHeight * clickY) - (lbInner.clientHeight / 2);
-        });
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.filter;
+      document.querySelectorAll('.content-card').forEach(card => {
+        const isVoice = card.dataset.voice === 'true';
+        let show = filter === 'all' || (filter === 'voice' ? (isVoice || card.dataset.type === 'voice') : card.dataset.type === filter);
+        card.style.display = show ? 'block' : 'none';
       });
-    } else {
-      lb.classList.remove('zoomed');
-      lbHint.textContent = 'Click image to zoom';
-      lbHint.style.opacity = '0.6';
-      zoomed = false;
-    }
-  });
-
-  lb.addEventListener('click', e => {
-    if (e.target !== lbImg) closeLightbox();
-  });
-
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
-
-  document.addEventListener('contextmenu', e => {
-    if (e.target.tagName === 'IMG') e.preventDefault();
-  });
-  document.querySelectorAll('img').forEach(img => {
-    img.setAttribute('draggable', 'false');
-    img.style.userSelect = 'none';
-    img.style.webkitUserDrag = 'none';
+    });
   });
 </script>
-
 <script>
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; });
-      }
-    });
-  }
+  if (window.netlifyIdentity) { window.netlifyIdentity.on("init", user => { if (!user) { window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; }); } }); }
 </script>
 <script>
   (function() {
     const cord = document.getElementById('cord-wrap');
     const dot = document.getElementById('news-dot');
     const dismissed = localStorage.getItem('news-dismissed');
-    if (dismissed) {
-      if (cord) cord.classList.add('pulled');
-      if (dot) dot.classList.add('off');
-    }
-    if (cord) {
-      cord.addEventListener('click', () => {
-        cord.classList.add('pulled');
-        if (dot) dot.classList.add('off');
-        localStorage.setItem('news-dismissed', '1');
-      });
-    }
+    if (dismissed) { if (cord) cord.classList.add('pulled'); if (dot) dot.classList.add('off'); }
+    if (cord) { cord.addEventListener('click', () => { cord.classList.add('pulled'); if (dot) dot.classList.add('off'); localStorage.setItem('news-dismissed', '1'); }); }
   })();
 </script>
 
 <script>
-// Hardcoded slideshow definitions — title → [images, type]
-// Add any future multi-page hardcoded pieces here
-const HARDCODED_SLIDESHOWS = {
-  'A Helping Hand': {
-    images: ['images/art-helping-hand.png', 'images/art-nobody-special.png'],
-    titles: ['A Helping Hand', 'Nobody Special'],
-    type: 'Character Art'
-  }
-};
+function makeLock() { return `<div class="content-lock"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>`; }
 
-async function loadCMSGallery() {
-  try {
-    const res = await fetch('/_data/gallery-index.json');
-    if (!res.ok) return;
-    const items = await res.json();
-    if (!items || items.length === 0) return;
-
-    const userTier = window.getUserTier ? await window.getUserTier() : 'free';
-    const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-    const grid = document.querySelector('.gallery-grid');
-    if (!grid) return;
-
-    const sets = {};
-    const singles = [];
-    items.forEach(item => {
-      if (item.set) {
-        if (!sets[item.set]) sets[item.set] = [];
-        sets[item.set].push(item);
-      } else {
-        singles.push(item);
-      }
-    });
-
-    Object.values(sets).forEach(s => s.sort((a,b) => a.set_order - b.set_order));
-    const firstHardcoded = grid.firstChild;
-
-    singles.forEach(item => {
-      const el = makeCMSGalleryItem(item, userTier, tRank);
-      grid.insertBefore(el, firstHardcoded);
-    });
-
-    Object.entries(sets).forEach(([setName, items]) => {
-      const el = makeCMSGalleryItem(items[0], userTier, tRank);
-      grid.insertBefore(el, grid.firstChild);
-    });
-  } catch(e) {}
+function makeCard(href, img, title, typeLabel, typeDisplay, isLocked, filterType, isFree, onclick, isVoice) {
+  const thumbStyle = isLocked ? (img ? `--preview-img: url('${img}')` : '') : (img ? `background-image:url('${img}');background-size:cover;background-position:center;` : '');
+  const blurClass = isLocked ? ' blurred' : '';
+  const a = document.createElement('a');
+  a.href = onclick ? '#' : href;
+  a.className = 'content-card';
+  a.dataset.type = filterType;
+  if (isVoice) a.dataset.voice = 'true';
+  if (onclick) a.addEventListener('click', e => { e.preventDefault(); onclick(); });
+  a.innerHTML = `
+    <div class="content-thumb${blurClass}" style="${thumbStyle}">
+      ${isLocked ? '<div class="blur-overlay"></div>' : ''}
+      <span class="content-thumb-label" style="position:relative;z-index:1;">${typeLabel}</span>
+      ${isLocked ? makeLock() : ''}${isFree ? '<div class="content-free-badge">Free</div>' : ''}
+    </div>
+    <div class="content-info">
+      <div class="content-type">${typeDisplay}</div>
+      <div class="content-title">${title}</div>
+      <div class="content-desc">${isLocked ? 'Members only.' : ''}</div>
+    </div>`;
+  return a;
 }
 
-function makeCMSGalleryItem(item, userTier, tRank) {
-  userTier = userTier || 'free';
-  tRank = tRank || { free: 0, devoted: 1, bound: 2 };
-  const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
-  const images = item.images && item.images.length > 0 ? item.images : [item.image];
-  const titles = images.map((_, i) => i === 0 ? item.title : `${item.title} (${i+1})`);
-  const isSlideshow = images.length > 1;
-  const div = document.createElement('div');
-
-  if (isLocked) {
-    div.className = 'gallery-item locked';
-    div.setAttribute('onclick', "window.location.href='membership.html'");
-    div.innerHTML = `
-      <img loading="lazy" src="${images[0]}" alt="${item.title}" />
-      <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-      <div class="gallery-tier-label">${item.tier === 'devoted' ? 'Patron' : 'Bound'}</div>
-      ${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}
-      <div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div></div>`;
-  } else {
-    div.className = 'gallery-item';
-    if (isSlideshow) {
-      div.setAttribute('onclick', `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, '${item.type}')`);
-    } else {
-      div.setAttribute('onclick', `openLightbox('${images[0]}', '${item.title}', '${item.type}')`);
-    }
-    div.innerHTML = `
-      <img loading="lazy" src="${images[0]}" alt="${item.title}" />
-      ${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-title">${item.title}</div>
-        <div class="gallery-overlay-type">${item.type}${isSlideshow ? ' · ' + images.length + ' pages' : ''}</div>
-      </div>`;
-  }
-  return div;
-}
-
-async function checkHardcodedLocks() {
+async function loadAllContent() {
+  const grid = document.getElementById('content-grid');
+  if (!grid) return;
   const userTier = window.getUserTier ? await window.getUserTier() : 'free';
   const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-  if (tRank[userTier] === 0) return;
+  grid.innerHTML = '';
+  const seen = new Set(), allCards = [];
+  function addEntry(date, card, title) { if (seen.has(title)) return; seen.add(title); allCards.push({ date: new Date(date || 0).getTime(), card }); }
 
-  document.querySelectorAll('.gallery-item.locked').forEach(item => {
-    const tierLabel = item.querySelector('.gallery-tier-label');
-    if (!tierLabel) return;
-    const itemTier = tierLabel.textContent.trim() === 'Patron' ? 'devoted' : 'bound';
-    if (tRank[userTier] >= tRank[itemTier]) {
-      item.classList.remove('locked');
-      const img = item.querySelector('img');
-      const titleEl = item.querySelector('.gallery-overlay-title');
-      const title = titleEl?.textContent?.trim() || '';
-      if (!img) return;
-
-      // Check if this is a known multi-page slideshow
-      const slideshow = HARDCODED_SLIDESHOWS[title];
-      if (slideshow) {
-        item.setAttribute('onclick',
-          `openSlideshow(${JSON.stringify(slideshow.images)}, ${JSON.stringify(slideshow.titles)}, '${slideshow.type}')`
-        );
-        // Update overlay to show type + page count
-        const overlay = item.querySelector('.gallery-overlay');
-        if (overlay) {
-          overlay.innerHTML = `
-            <div class="gallery-overlay-title">${title}</div>
-            <div class="gallery-overlay-type">${slideshow.type} · ${slideshow.images.length} pages</div>`;
-        }
-      } else {
-        item.setAttribute('onclick', `openLightbox('${img.getAttribute('src')}', '${title}', 'Illustration')`);
-      }
-
-      item.querySelector('.gallery-lock-badge')?.remove();
-      tierLabel.remove();
+  try {
+    const res = await fetch('/_data/content-index.json');
+    if (res.ok) {
+      const items = await res.json();
+      items.forEach(item => {
+        const isLocked = tRank[item.tier||'free'] > tRank[userTier];
+        const chNum = parseInt(item.number||0);
+        const displayTitle = item.type === 'Chapter' && chNum === 1 ? 'Chapter I — ' + item.title : item.title;
+        const typeDisplay = item.type === 'Chapter'
+          ? (isLocked ? `Ghost in Me Book · ${item.tier==='devoted'?'Patron':'Bound'}` : 'Ghost in Me Book')
+          : (isLocked ? `${item.type} · ${item.tier==='devoted'?'Patron':'Bound'}` : item.type);
+        let href = isLocked ? 'membership.html' : (item.href || '#');
+        if (!isLocked && item.type === 'Video') href = `videos.html?play=${encodeURIComponent(item.title)}`;
+        const filterType = item.type === 'Video' ? 'video' : (item.filter_type || 'story');
+        addEntry(new Date(item.date||0).getTime(), makeCard(href, item.thumbnail||'', displayTitle, item.label||item.type, typeDisplay, isLocked, filterType, !isLocked, null, item.is_voice === true), displayTitle);
+      });
     }
+  } catch(e) { console.error('content-index error:', e); }
+
+  try {
+    const res = await fetch('/_data/gallery-index.json');
+    if (res.ok) {
+      const items = await res.json();
+      items.forEach(item => {
+        const isLocked = tRank[item.tier||'free'] > tRank[userTier];
+        addEntry(new Date(item.date||0).getTime(), makeCard(
+          isLocked ? 'membership.html' : '#', item.image||'', item.title,
+          item.type||'Illustration', isLocked ? `Art · ${item.tier==='devoted'?'Patron':'Bound'}` : 'Art',
+          isLocked, 'art', !isLocked,
+          isLocked ? null : () => { window.location.href = `gallery.html#${encodeURIComponent(item.title)}`; }
+        ), item.title);
+      });
+    }
+  } catch(e) {}
+
+  const freeGallery = [
+    ['images/art-01-witch-lantern.png','Nearly There','Character Art'],['images/art-02-dark-garden.png','The Dark Garden','Character Art'],
+    ['images/art-03-bridge.png','The Offer','Character Art'],['images/art-04-train.png','The Beginning (Art)','Chapter Art'],
+    ['images/art-05-asteroid.png','Among Asteroids','Character Art'],['images/art-06-tunnel.png','The Tunnel','Character Art'],
+    ['images/art-07-steampunk.png','Fix You Up','Character Art'],['images/art-08-lightning.png','The Storm','Chapter Art'],
+    ['images/art-09-needle.png','Patching Up','Character Art'],['images/art-10-cards.png','Faces of the Suits','Character Art'],
+    ['images/art-11-portraits.png','Oh What Could Have Been','Character Art'],['images/art-12-gentleman.png','To Law And Order','Character Art'],
+    ['images/art-13-rain.png','In the Rain','Character Art'],
+  ];
+  const baseDate = new Date(2024,0,1).getTime();
+  freeGallery.forEach(([img, title, type], i) => { addEntry(baseDate - (i * 86400000), makeCard('#', img, title, type, 'Art', false, 'art', false, () => { window.location.href = `gallery.html#${encodeURIComponent(title)}`; }), title); });
+
+  const paidArt = [
+    { img: 'images/art-birthday.png', title: 'Happy Birthday', tier: 'devoted' },
+    { img: 'images/art-dont-miss-legs.png', title: "Don't You Miss Your Legs?", tier: 'devoted' },
+    { img: 'images/art-blue-threads.png', title: 'Blue Threads', tier: 'devoted' },
+    { img: 'images/art-helping-hand.png', title: 'A Helping Hand', tier: 'devoted' },
+  ];
+  const oldestDate = new Date(2023,0,1).getTime();
+  paidArt.forEach((item, i) => {
+    const isLocked = tRank[item.tier] > tRank[userTier];
+    addEntry(oldestDate - (i * 86400000), makeCard(isLocked ? 'membership.html' : `gallery.html#${encodeURIComponent(item.title)}`, item.img, item.title, 'Illustration', isLocked ? 'Art · Patron' : 'Art', isLocked, 'art', false), item.title);
   });
+
+  allCards.sort((a, b) => b.date - a.date);
+  allCards.forEach(c => grid.appendChild(c.card));
 }
+</script>
+<script>
+  (function() {
+    const btn = document.getElementById('float-btn');
+    const input = document.getElementById('float-email');
+    const msg = document.getElementById('float-msg');
+    async function submit() {
+      const email = input.value.trim();
+      if (!email || !email.includes('@')) { msg.textContent = 'Invalid email.'; msg.className = 'newsletter-float-msg error'; return; }
+      btn.disabled = true; btn.textContent = 'Sending...'; msg.textContent = '';
+      try {
+        const res = await fetch('/.netlify/functions/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+        const data = await res.json();
+        if (data.success) { msg.textContent = "You're on the list."; msg.className = 'newsletter-float-msg success'; input.value = ''; btn.textContent = 'Done ✓'; }
+        else throw new Error();
+      } catch(e) { msg.textContent = 'Try again.'; msg.className = 'newsletter-float-msg error'; btn.disabled = false; btn.textContent = 'Notify Me'; }
+    }
+    btn.addEventListener('click', submit);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+  })();
 </script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
 <script>
-loadCMSGallery();
-checkHardcodedLocks();
-</script>
-
-<script>
-function openFromHash() {
-  const hash = decodeURIComponent(window.location.hash.slice(1));
-  if (!hash) return false;
-  const hashLower = hash.toLowerCase();
-  let found = false;
-  document.querySelectorAll('.gallery-item:not(.locked)').forEach(item => {
-    const title = item.querySelector('.gallery-overlay-title')?.textContent?.trim();
-    if (title && title.toLowerCase() === hashLower) {
-      const img = item.querySelector('img');
-      const type = item.querySelector('.gallery-overlay-type')?.textContent?.trim();
-      if (img) { openLightbox(img.src, title, type || ''); found = true; }
-    }
-  });
-  return found;
-}
-window.addEventListener('load', () => {
-  if (!window.location.hash) return;
-  if (openFromHash()) return;
-  [50, 200, 500, 1000].forEach(delay => {
-    setTimeout(() => {
-      if (!document.getElementById('lightbox').classList.contains('open')) openFromHash();
-    }, delay);
-  });
-});
+(async () => { await new Promise(r => setTimeout(r, 100)); loadAllContent(); })();
 </script>
 </body>
 </html>
