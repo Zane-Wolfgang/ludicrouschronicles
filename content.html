@@ -33,6 +33,80 @@
   .content-thumb.blurred .content-thumb-label { position: relative; z-index: 1; }
   .content-thumb.blurred .content-lock { z-index: 2; }
   .blur-overlay { position: absolute; inset: 0; background: rgba(10,8,6,0.35); z-index: 1; }
+
+  /* Newsletter signup strip */
+  .newsletter-strip {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 3rem 2rem 4rem;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  .newsletter-strip-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+  .newsletter-strip p {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin: 0 auto 1.5rem;
+    max-width: 400px;
+  }
+  .newsletter-row {
+    display: flex;
+    gap: 1px;
+    max-width: 420px;
+    margin: 0 auto;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .newsletter-input {
+    flex: 1;
+    background: var(--surface);
+    border: none;
+    outline: none;
+    padding: 0.8rem 1rem;
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--parchment);
+    min-width: 0;
+  }
+  .newsletter-input::placeholder { color: var(--text-muted); }
+  .newsletter-input:focus { background: var(--mid); }
+  .newsletter-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--gold);
+    border: none;
+    padding: 0.8rem 1.2rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .newsletter-btn:hover { background: var(--gold-bright); }
+  .newsletter-btn:disabled { opacity: 0.6; cursor: default; }
+  .newsletter-msg {
+    max-width: 420px;
+    margin: 0.6rem auto 0;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    min-height: 1.2em;
+  }
+  .newsletter-msg.success { color: var(--gold); }
+  .newsletter-msg.error { color: #c0705a; }
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
@@ -105,6 +179,17 @@
   </div>
 </section>
 
+<!-- Newsletter signup strip -->
+<div class="newsletter-strip">
+  <span class="newsletter-strip-label">Stay in the loop</span>
+  <p>Get notified when there's something new — stories, art, videos, and announcements.</p>
+  <div class="newsletter-row">
+    <input class="newsletter-input" id="content-notify-email" type="email" placeholder="Your email" />
+    <button class="newsletter-btn" id="content-notify-btn">Notify Me</button>
+  </div>
+  <div class="newsletter-msg" id="content-notify-msg"></div>
+</div>
+
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
   <div class="socials-panel" id="socials-panel">
@@ -121,7 +206,7 @@
       <svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>
       X / Twitter
     </a>
-    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank" title="Note: This work is for authorized viewers only. However, it's available on this site to read for free">
+    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank">
       <svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>
       AO3
     </a>
@@ -146,7 +231,6 @@
 </footer>
 
 <script>
-  // Filter tabs — match either data-type OR data-voice="true" when filter is 'voice'
   const filterBtns = document.querySelectorAll('.filter-btn');
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -230,22 +314,16 @@ function makeCard(href, img, title, typeLabel, typeDisplay, isLocked, filterType
 async function loadAllContent() {
   const grid = document.getElementById('content-grid');
   if (!grid) return;
-
   const userTier = window.getUserTier ? await window.getUserTier() : 'free';
   const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-
   grid.innerHTML = '';
-
   const seen = new Set();
   const allCards = [];
-
   function addEntry(date, card, title) {
     if (seen.has(title)) return;
     seen.add(title);
     allCards.push({ date: new Date(date || 0).getTime(), card });
   }
-
-  // CMS content
   try {
     const res = await fetch('/_data/content-index.json');
     if (res.ok) {
@@ -268,8 +346,6 @@ async function loadAllContent() {
       });
     }
   } catch(e) { console.error('content-index error:', e); }
-
-  // CMS gallery
   try {
     const res = await fetch('/_data/gallery-index.json');
     if (res.ok) {
@@ -287,8 +363,6 @@ async function loadAllContent() {
       });
     }
   } catch(e) {}
-
-  // Hardcoded free gallery
   const freeGallery = [
     ['images/art-01-witch-lantern.png', 'Nearly There', 'Character Art'],
     ['images/art-02-dark-garden.png', 'The Dark Garden', 'Character Art'],
@@ -311,8 +385,6 @@ async function loadAllContent() {
       () => { window.location.href = `gallery.html#${encodeURIComponent(title)}`; }
     ), title);
   });
-
-  // Hardcoded paid art
   const paidArt = [
     { img: 'images/art-birthday.png', title: 'Happy Birthday', tier: 'devoted' },
     { img: 'images/art-dont-miss-legs.png', title: "Don't You Miss Your Legs?", tier: 'devoted' },
@@ -329,10 +401,52 @@ async function loadAllContent() {
       isLocked, 'art', false
     ), item.title);
   });
-
   allCards.sort((a, b) => b.date - a.date);
   allCards.forEach(c => grid.appendChild(c.card));
 }
+</script>
+
+<script>
+  // Newsletter signup (shared function)
+  async function newsletterSubscribe(emailInputId, btnId, msgId) {
+    const emailEl = document.getElementById(emailInputId);
+    const btn = document.getElementById(btnId);
+    const msg = document.getElementById(msgId);
+    const email = emailEl.value.trim();
+    if (!email || !email.includes('@')) {
+      msg.textContent = 'Please enter a valid email.';
+      msg.className = 'newsletter-msg error';
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    msg.textContent = '';
+    try {
+      const res = await fetch('/.netlify/functions/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        msg.textContent = "You're on the list.";
+        msg.className = 'newsletter-msg success';
+        emailEl.value = '';
+        btn.textContent = 'Done ✓';
+      } else throw new Error();
+    } catch(e) {
+      msg.textContent = 'Something went wrong. Try again.';
+      msg.className = 'newsletter-msg error';
+      btn.disabled = false;
+      btn.textContent = 'Notify Me';
+    }
+  }
+
+  document.getElementById('content-notify-btn').addEventListener('click', () =>
+    newsletterSubscribe('content-notify-email', 'content-notify-btn', 'content-notify-msg'));
+  document.getElementById('content-notify-email').addEventListener('keydown', e => {
+    if (e.key === 'Enter') newsletterSubscribe('content-notify-email', 'content-notify-btn', 'content-notify-msg');
+  });
 </script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
