@@ -49,21 +49,6 @@
   .lightbox-nav.next { right: 0.75rem; }
   .lightbox-nav.hidden { display: none; }
   .lightbox-page-count { position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%); font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; color: var(--text-muted); z-index: 20; }
-
-  /* Newsletter float box */
-  .newsletter-float { position: fixed; left: 1.2rem; top: 50%; transform: translateY(-50%); z-index: 90; width: 165px; background: rgba(10,8,6,0.96); border: 1px solid var(--gold-dim); padding: 1.1rem 1rem; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
-  .newsletter-float-label { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold-dim); display: block; margin-bottom: 0.4rem; }
-  .newsletter-float-text { font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.82rem; color: var(--text-muted); margin: 0 0 0.7rem; line-height: 1.4; }
-  .newsletter-float-input { width: 100%; background: var(--surface); border: 1px solid var(--border); outline: none; padding: 0.45rem 0.55rem; font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.82rem; color: var(--parchment); box-sizing: border-box; margin-bottom: 0.35rem; }
-  .newsletter-float-input::placeholder { color: var(--text-muted); }
-  .newsletter-float-input:focus { border-color: var(--gold-dim); }
-  .newsletter-float-btn { width: 100%; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.5rem; cursor: pointer; transition: background 0.2s; }
-  .newsletter-float-btn:hover { background: var(--gold-bright); }
-  .newsletter-float-btn:disabled { opacity: 0.6; cursor: default; }
-  .newsletter-float-msg { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.35rem; min-height: 1em; text-align: center; }
-  .newsletter-float-msg.success { color: var(--gold); }
-  .newsletter-float-msg.error { color: #c0705a; }
-  @media (max-width: 1100px) { .newsletter-float { display: none; } }
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
@@ -171,14 +156,12 @@
         <div class="gallery-tier-label">Patron</div>
         <div class="gallery-overlay"><div class="gallery-overlay-title">Happy Birthday</div></div>
       </div>
-
       <div class="gallery-item locked" onclick="window.location.href='membership.html'">
         <img loading="lazy" decoding="async" src="images/art-dont-miss-legs.png" alt="Don't You Miss Your Legs?" />
         <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
         <div class="gallery-tier-label">Patron</div>
         <div class="gallery-overlay"><div class="gallery-overlay-title">Don't You Miss Your Legs?</div></div>
       </div>
-
       <div class="gallery-item locked" id="helping-hand-item" onclick="window.location.href='membership.html'">
         <img loading="lazy" decoding="async" src="images/art-helping-hand.png" alt="A Helping Hand" />
         <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
@@ -186,7 +169,6 @@
         <div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / 2</div>
         <div class="gallery-overlay"><div class="gallery-overlay-title">A Helping Hand</div></div>
       </div>
-
       <div class="gallery-item locked" onclick="window.location.href='membership.html'">
         <img loading="lazy" decoding="async" src="images/art-blue-threads.png" alt="Blue Threads" />
         <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
@@ -209,15 +191,6 @@
   <div class="lightbox-nav next hidden" id="lb-next"><svg viewBox="0 0 14 14"><path d="M5 2l5 5-5 5"/></svg></div>
   <div class="lightbox-page-count" id="lb-pages"></div>
   <div class="lightbox-hint" id="lb-hint">Click image to zoom</div>
-</div>
-
-<!-- Newsletter float box -->
-<div class="newsletter-float">
-  <span class="newsletter-float-label">Stay updated</span>
-  <p class="newsletter-float-text">New art, stories & announcements — straight to your inbox.</p>
-  <input class="newsletter-float-input" id="float-email" type="email" placeholder="Your email" />
-  <button class="newsletter-float-btn" id="float-btn">Notify Me</button>
-  <div class="newsletter-float-msg" id="float-msg"></div>
 </div>
 
 <!-- Socials Sidebar -->
@@ -394,26 +367,6 @@ async function checkHardcodedLocks() {
 <script>
 loadCMSGallery();
 checkHardcodedLocks();
-</script>
-<script>
-  (function() {
-    const btn = document.getElementById('float-btn');
-    const input = document.getElementById('float-email');
-    const msg = document.getElementById('float-msg');
-    async function submit() {
-      const email = input.value.trim();
-      if (!email || !email.includes('@')) { msg.textContent = 'Invalid email.'; msg.className = 'newsletter-float-msg error'; return; }
-      btn.disabled = true; btn.textContent = 'Sending...'; msg.textContent = '';
-      try {
-        const res = await fetch('/.netlify/functions/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
-        const data = await res.json();
-        if (data.success) { msg.textContent = "You're on the list."; msg.className = 'newsletter-float-msg success'; input.value = ''; btn.textContent = 'Done ✓'; }
-        else throw new Error();
-      } catch(e) { msg.textContent = 'Try again.'; msg.className = 'newsletter-float-msg error'; btn.disabled = false; btn.textContent = 'Notify Me'; }
-    }
-    btn.addEventListener('click', submit);
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
-  })();
 </script>
 <script>
 function openFromHash() {
