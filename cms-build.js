@@ -238,11 +238,11 @@ async function maybeSendNewsletter() {
           method: 'POST',
           headers: { 'api-key': apiKey, 'content-type': 'application/json', 'accept': 'application/json' },
           body: JSON.stringify({
-            sender: { name: 'Ludicrous Chronicles', email: 'zanewolfclawedrobo@yahoo.com' },
+            sender: { name: 'Ludicrous Chronicles', email: 'zljr2008@gmail.com' },
             to: [{ email: contact.email }],
             subject,
             htmlContent: emailHtml,
-            replyTo: { email: 'zanewolfclawedrobo@yahoo.com', name: 'Ludicrous Chronicles' }
+            replyTo: { email: 'zljr2008@gmail.com', name: 'Ludicrous Chronicles' }
           })
         });
         if (sendRes.ok) {
