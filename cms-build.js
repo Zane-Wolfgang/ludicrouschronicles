@@ -150,7 +150,7 @@ async function maybeSendNewsletter() {
     character = 'Jackson'; contentType = 'Video';
     link = 'https://ludicrous-chronicles.netlify.app/videos.html';
     subject = `${title} — Ludicrous Chronicles`;
-    quote = `New picture's up. By all means, take it or leave it.`;
+    quote = `New motion picture's up. By all means, take it or leave it.`;
   } else if (/Gallery/i.test(commitMsg)) {
     const latest = gallery[0];
     title = latest ? latest.title : 'New Art';
