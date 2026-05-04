@@ -1,17 +1,12 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-const TIER_MAP = {
-  devoted: 'devoted',
-  bound: 'bound',
-};
-
-// Netlify Identity API helper
+// Netlify Identity API helper — uses the correct GoTrue admin endpoint
 async function netlifyIdentityRequest(method, path, body) {
-  const siteId = process.env.NETLIFY_SITE_ID;
   const token = process.env.NETLIFY_ACCESS_TOKEN;
 
+  // Correct endpoint: the site's own GoTrue instance
   const res = await fetch(
-    `https://api.netlify.com/api/v1/sites/${siteId}/identity/users${path}`,
+    `https://ludicrous-chronicles.netlify.app/.netlify/identity/admin/users${path}`,
     {
       method,
       headers: {
@@ -27,7 +22,6 @@ async function netlifyIdentityRequest(method, path, body) {
     throw new Error(`Netlify Identity error ${res.status}: ${text}`);
   }
 
-  // Safe JSON parse — never crash on unexpected response
   const text = await res.text();
   if (!text || text.trim() === '') return {};
   try {
@@ -41,7 +35,9 @@ async function netlifyIdentityRequest(method, path, body) {
 async function findUserByEmail(email) {
   try {
     const data = await netlifyIdentityRequest('GET', `?email=${encodeURIComponent(email)}`);
-    return data.users && data.users.length > 0 ? data.users[0] : null;
+    // GoTrue returns { users: [...] } or just an array depending on version
+    const users = data.users || (Array.isArray(data) ? data : []);
+    return users.length > 0 ? users[0] : null;
   } catch(e) {
     console.error('findUserByEmail error:', e.message);
     return null;
@@ -58,6 +54,37 @@ async function removeUserRole(userId) {
   await netlifyIdentityRequest('PUT', `/${userId}`, {
     app_metadata: { roles: ['free'] }
   });
+}
+
+async function inviteUser(email) {
+  const token = process.env.NETLIFY_ACCESS_TOKEN;
+  const res = await fetch(
+    `https://ludicrous-chronicles.netlify.app/.netlify/identity/admin/invites`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    }
+  );
+
+  const responseText = await res.text();
+  console.log(`Invite response status: ${res.status}`);
+  console.log(`Invite response body: ${responseText.slice(0, 300)}`);
+
+  if (!res.ok) {
+    console.error(`Invite failed with status ${res.status}: ${responseText}`);
+    return null;
+  }
+
+  try {
+    return JSON.parse(responseText);
+  } catch(e) {
+    console.error('Could not parse invite response:', responseText.slice(0, 200));
+    return null;
+  }
 }
 
 function getTierFromAmount(amount) {
@@ -95,7 +122,6 @@ exports.handler = async (event) => {
 
         console.log(`Processing checkout for ${email}`);
 
-        // Get subscription amount to determine tier
         let tier = 'devoted';
         if (session.subscription) {
           try {
@@ -109,51 +135,18 @@ exports.handler = async (event) => {
 
         console.log(`Tier determined: ${tier}`);
 
-        // Find or invite user in Netlify Identity
         let user = await findUserByEmail(email);
         if (user) {
           await setUserRole(user.id, tier);
           console.log(`Updated ${email} to role: ${tier}`);
         } else {
-          // User doesn't exist — invite them
           console.log(`User not found, inviting ${email}...`);
-          const siteId = process.env.NETLIFY_SITE_ID;
-          const token = process.env.NETLIFY_ACCESS_TOKEN;
-          const res = await fetch(
-            `https://api.netlify.com/api/v1/sites/${siteId}/identity/users/invite`,
-            {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ email }),
-            }
-          );
-
-          // Safe parse — don't crash if response isn't JSON
-          const responseText = await res.text();
-          console.log(`Invite response status: ${res.status}`);
-          console.log(`Invite response body: ${responseText.slice(0, 300)}`);
-
-          if (!res.ok) {
-            console.error(`Invite failed with status ${res.status}: ${responseText}`);
-            break;
-          }
-
-          let invited;
-          try {
-            invited = JSON.parse(responseText);
-          } catch(e) {
-            console.error('Could not parse invite response as JSON:', responseText.slice(0, 200));
-            break;
-          }
-
+          const invited = await inviteUser(email);
           if (invited && invited.id) {
             await setUserRole(invited.id, tier);
             console.log(`Invited ${email} with role: ${tier}`);
           } else {
-            console.error('Invite response missing id:', JSON.stringify(invited));
+            console.error('Invite did not return a valid user ID');
           }
         }
         break;
