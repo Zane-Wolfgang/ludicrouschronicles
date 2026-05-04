@@ -1,12 +1,14 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// Netlify Identity API helper
+// Netlify Identity instance ID — found via API, specific to this site
+const IDENTITY_INSTANCE_ID = '69cd6364b54fbd88a8932fea';
+
 async function netlifyIdentityRequest(method, path, body) {
   const siteId = process.env.NETLIFY_SITE_ID;
   const token = process.env.NETLIFY_ACCESS_TOKEN;
 
   const res = await fetch(
-    `https://api.netlify.com/api/v1/sites/${siteId}/identity/users${path}`,
+    `https://api.netlify.com/api/v1/sites/${siteId}/identity/${IDENTITY_INSTANCE_ID}/users${path}`,
     {
       method,
       headers: {
@@ -60,7 +62,7 @@ async function inviteUser(email) {
   const token = process.env.NETLIFY_ACCESS_TOKEN;
 
   const res = await fetch(
-    `https://api.netlify.com/api/v1/sites/${siteId}/identity/users/invite`,
+    `https://api.netlify.com/api/v1/sites/${siteId}/identity/${IDENTITY_INSTANCE_ID}/users/invite`,
     {
       method: 'POST',
       headers: {
