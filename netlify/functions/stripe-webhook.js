@@ -1,10 +1,8 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// Map Stripe price IDs to site roles
-// These get filled in automatically from the event data
 const TIER_MAP = {
-  devoted: 'devoted',   // $5/mo
-  bound: 'bound',       // $12/mo
+  devoted: 'devoted',
+  bound: 'bound',
 };
 
 // Netlify Identity API helper
@@ -29,38 +27,42 @@ async function netlifyIdentityRequest(method, path, body) {
     throw new Error(`Netlify Identity error ${res.status}: ${text}`);
   }
 
-  return res.json().catch(() => ({}));
+  // Safe JSON parse — never crash on unexpected response
+  const text = await res.text();
+  if (!text || text.trim() === '') return {};
+  try {
+    return JSON.parse(text);
+  } catch(e) {
+    console.error('Could not parse Netlify Identity response:', text.slice(0, 200));
+    return {};
+  }
 }
 
-// Find a Netlify Identity user by email
 async function findUserByEmail(email) {
   try {
     const data = await netlifyIdentityRequest('GET', `?email=${encodeURIComponent(email)}`);
     return data.users && data.users.length > 0 ? data.users[0] : null;
   } catch(e) {
+    console.error('findUserByEmail error:', e.message);
     return null;
   }
 }
 
-// Set a user's role
 async function setUserRole(userId, role) {
   await netlifyIdentityRequest('PUT', `/${userId}`, {
     app_metadata: { roles: [role] }
   });
 }
 
-// Remove a user's paid role (revert to free)
 async function removeUserRole(userId) {
   await netlifyIdentityRequest('PUT', `/${userId}`, {
     app_metadata: { roles: ['free'] }
   });
 }
 
-// Determine tier from Stripe price amount
 function getTierFromAmount(amount) {
-  // amount is in cents
-  if (amount >= 1200) return 'bound';   // $12
-  if (amount >= 500) return 'devoted';  // $5
+  if (amount >= 1200) return 'bound';
+  if (amount >= 500) return 'devoted';
   return 'free';
 }
 
@@ -86,15 +88,26 @@ exports.handler = async (event) => {
       case 'checkout.session.completed': {
         const session = stripeEvent.data.object;
         const email = session.customer_details?.email || session.customer_email;
-        if (!email) break;
-
-        // Get the subscription to find the price/amount
-        let tier = 'devoted'; // default
-        if (session.subscription) {
-          const subscription = await stripe.subscriptions.retrieve(session.subscription);
-          const amount = subscription.items.data[0]?.price?.unit_amount || 500;
-          tier = getTierFromAmount(amount);
+        if (!email) {
+          console.log('No email found in session — skipping');
+          break;
         }
+
+        console.log(`Processing checkout for ${email}`);
+
+        // Get subscription amount to determine tier
+        let tier = 'devoted';
+        if (session.subscription) {
+          try {
+            const subscription = await stripe.subscriptions.retrieve(session.subscription);
+            const amount = subscription.items.data[0]?.price?.unit_amount || 500;
+            tier = getTierFromAmount(amount);
+          } catch(e) {
+            console.error('Could not retrieve subscription:', e.message);
+          }
+        }
+
+        console.log(`Tier determined: ${tier}`);
 
         // Find or invite user in Netlify Identity
         let user = await findUserByEmail(email);
@@ -102,7 +115,8 @@ exports.handler = async (event) => {
           await setUserRole(user.id, tier);
           console.log(`Updated ${email} to role: ${tier}`);
         } else {
-          // User doesn't exist yet — invite them
+          // User doesn't exist — invite them
+          console.log(`User not found, inviting ${email}...`);
           const siteId = process.env.NETLIFY_SITE_ID;
           const token = process.env.NETLIFY_ACCESS_TOKEN;
           const res = await fetch(
@@ -116,17 +130,36 @@ exports.handler = async (event) => {
               body: JSON.stringify({ email }),
             }
           );
-          const invited = await res.json();
-          if (invited.id) {
+
+          // Safe parse — don't crash if response isn't JSON
+          const responseText = await res.text();
+          console.log(`Invite response status: ${res.status}`);
+          console.log(`Invite response body: ${responseText.slice(0, 300)}`);
+
+          if (!res.ok) {
+            console.error(`Invite failed with status ${res.status}: ${responseText}`);
+            break;
+          }
+
+          let invited;
+          try {
+            invited = JSON.parse(responseText);
+          } catch(e) {
+            console.error('Could not parse invite response as JSON:', responseText.slice(0, 200));
+            break;
+          }
+
+          if (invited && invited.id) {
             await setUserRole(invited.id, tier);
             console.log(`Invited ${email} with role: ${tier}`);
+          } else {
+            console.error('Invite response missing id:', JSON.stringify(invited));
           }
         }
         break;
       }
 
       case 'customer.subscription.deleted': {
-        // Member cancelled — revert to free
         const subscription = stripeEvent.data.object;
         const customerId = subscription.customer;
         const customer = await stripe.customers.retrieve(customerId);
@@ -148,7 +181,8 @@ exports.handler = async (event) => {
     return { statusCode: 200, body: JSON.stringify({ received: true }) };
 
   } catch(err) {
-    console.error('Webhook handler error:', err);
+    console.error('Webhook handler error:', err.message);
+    console.error(err.stack);
     return { statusCode: 500, body: `Server error: ${err.message}` };
   }
 };
