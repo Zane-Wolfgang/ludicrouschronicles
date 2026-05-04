@@ -1,12 +1,12 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// Netlify Identity API helper — uses the correct GoTrue admin endpoint
+// Netlify Identity API helper
 async function netlifyIdentityRequest(method, path, body) {
+  const siteId = process.env.NETLIFY_SITE_ID;
   const token = process.env.NETLIFY_ACCESS_TOKEN;
 
-  // Correct endpoint: the site's own GoTrue instance
   const res = await fetch(
-    `https://ludicrous-chronicles.netlify.app/.netlify/identity/admin/users${path}`,
+    `https://api.netlify.com/api/v1/sites/${siteId}/identity/users${path}`,
     {
       method,
       headers: {
@@ -35,7 +35,6 @@ async function netlifyIdentityRequest(method, path, body) {
 async function findUserByEmail(email) {
   try {
     const data = await netlifyIdentityRequest('GET', `?email=${encodeURIComponent(email)}`);
-    // GoTrue returns { users: [...] } or just an array depending on version
     const users = data.users || (Array.isArray(data) ? data : []);
     return users.length > 0 ? users[0] : null;
   } catch(e) {
@@ -57,9 +56,11 @@ async function removeUserRole(userId) {
 }
 
 async function inviteUser(email) {
+  const siteId = process.env.NETLIFY_SITE_ID;
   const token = process.env.NETLIFY_ACCESS_TOKEN;
+
   const res = await fetch(
-    `https://ludicrous-chronicles.netlify.app/.netlify/identity/admin/invites`,
+    `https://api.netlify.com/api/v1/sites/${siteId}/identity/users/invite`,
     {
       method: 'POST',
       headers: {
@@ -128,6 +129,7 @@ exports.handler = async (event) => {
             const subscription = await stripe.subscriptions.retrieve(session.subscription);
             const amount = subscription.items.data[0]?.price?.unit_amount || 500;
             tier = getTierFromAmount(amount);
+            console.log(`Subscription amount: ${amount} cents → tier: ${tier}`);
           } catch(e) {
             console.error('Could not retrieve subscription:', e.message);
           }
