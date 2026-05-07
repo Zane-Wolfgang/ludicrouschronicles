@@ -1,5 +1,5 @@
 ---
-title: Story 3
+title: Third Story
 date: 2026-05-07T16:43:11.189Z
 description: Zane takes his Master to a pancake house.
 tier: bound
