@@ -45,8 +45,6 @@ Silvester: Let's just say...word *gets around.*
 \
 -﻿
 
-
-
 \[3 Footsteps march in a line, walking through a chasm of pipes and wiring surrounding the walls, hallways leading to more hallways. Forever ongoing.]
 
 \[Zane flashes his lantern over everything he could discover, he, Lizzie and Jackson occasionally peering into rooms that veered off from their original path.]
@@ -155,9 +153,7 @@ Jackson: . . .
 
 Lizzie & Jackson: \*Looking at eachother worryingly.\*
 
--﻿
-
-
+\-﻿
 
 Silvester: Dispose of the bodies swiftly. Musn't attract *vermin*.
 
@@ -192,8 +188,6 @@ Mr. Vasily Ragovski: Pre*cisely.*
 \
 -﻿
 
-
-
 <﻿Scene includes Zane and Rachel merged>
 
 Zane/Rachel: oh you SON OF A #$\*%%& @@\*#—
@@ -204,11 +198,7 @@ Jackson: Relax, Rachel, reel yourselves both back.
 
 Zane/Rachel: *grumbling*
 
-
-
 \-
-
-
 
 Vasily: *He slyly smiles at his captor, his expression rather charming to say the least*.
 
@@ -274,8 +264,6 @@ Zane: *Breathing heavy*
 
 Silvester: We meet at last.
 
-
-
 \-﻿
 
 Silvester: And I can recover with the imbued energy of my staff. But last I recall.. you've been sorely weakened from that wound I embedded in your shoulder.
@@ -284,8 +272,6 @@ Vasily: *Smiles devilishly, electrocute/burns his wound until it closes*. What w
 
 \
 -﻿
-
-
 
 Silvester: *Legs crossed, slowly sipping an espresso by a window in a cafe*
 
@@ -301,11 +287,10 @@ Jackson: *Looks over to him, horrified*
 
 Silvester: *Rests arm on chair armrest, smiling charismatically down at him*
 
-
+\
+<﻿**Inspired by this song*:*  https://www.youtube.com/watch?v=ST3pYx0q_Ow**>
 
 \-﻿
-
-
 
 Jackson: What are you doing?
 
@@ -323,13 +308,7 @@ Rachel: zzzz..
 
 Jackson: Excuse me?
 
-
-
 \-﻿
-
-
-
-
 
 Rachel: *Scowls and spits to the side reacting to Silvester*
 
@@ -381,15 +360,9 @@ John: .. I.. I sarcastically.. in-informed her.. it was.. a form of endearment..
 
 Silvester: Ah.. I see.
 
-
-
 \[Crickets chirp in the background as a sleezy, good-for-nothing man loses his life in the din of the soothing night, the shot that announced his soul aborting this plane ringing loud among the buildings.]
 
-
-
 \-
-
-
 
 Some lady: Just show those lads a bit of ankle and they'll swoon~
 
@@ -414,8 +387,6 @@ Rachel: :D
 \
 -﻿
 
-
-
 Basically: Put a finger down if you've eaten a human part
 
 Vasily: *1 down*
@@ -430,5 +401,4 @@ Everyone: ....
 
 Jackson: .....
 
-\
--
+## \
