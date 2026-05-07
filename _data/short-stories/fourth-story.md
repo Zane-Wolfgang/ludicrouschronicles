@@ -288,7 +288,9 @@ Jackson: *Looks over to him, horrified*
 Silvester: *Rests arm on chair armrest, smiling charismatically down at him*
 
 \
-<﻿**Inspired by this song*:*  https://www.youtube.com/watch?v=ST3pYx0q_Ow**>
+<﻿**Inspired by this song*: { Nine Inch Nails - Closer <Instrumental> }*** https://www.youtube.com/watch?v=ST3pYx0q_Ow >
+
+
 
 \-﻿
 
@@ -400,5 +402,3 @@ Jackson: *Sweating profusely and shakily puts a finger down*
 Everyone: ....
 
 Jackson: .....
-
-## \
