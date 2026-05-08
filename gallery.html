@@ -49,6 +49,28 @@
   .lightbox-nav.next { right: 0.75rem; }
   .lightbox-nav.hidden { display: none; }
   .lightbox-page-count { position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%); font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; color: var(--text-muted); z-index: 20; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    .gallery-grid { margin-top: 1.5rem; }
+
+    /* No hover on mobile — always show the title overlay */
+    .gallery-item:not(.locked) .gallery-overlay { opacity: 1; bottom: 0; }
+
+    /* Bigger tap targets in lightbox */
+    .lightbox-close {
+      top: 0.75rem; right: 0.75rem;
+      padding: 0.75rem;
+      min-width: 44px; min-height: 44px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-nav { width: 52px; height: 52px; }
+    .lightbox-nav.prev { left: 0.25rem; }
+    .lightbox-nav.next { right: 0.25rem; }
+    .lightbox-img { max-width: 96vw; max-height: 78vh; }
+    .lightbox-hint { bottom: 0.75rem; font-size: 8px; }
+    .lightbox-page-count { bottom: 2.25rem; }
+  }
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
@@ -271,6 +293,12 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
   document.addEventListener('contextmenu', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
   document.querySelectorAll('img').forEach(img => { img.setAttribute('draggable', 'false'); img.style.userSelect = 'none'; img.style.webkitUserDrag = 'none'; });
+
+  // Touch devices: update hint text
+  if ('ontouchstart' in window) {
+    const hint = document.getElementById('lb-hint');
+    if (hint) hint.textContent = 'Tap image to zoom';
+  }
 </script>
 
 <script>
