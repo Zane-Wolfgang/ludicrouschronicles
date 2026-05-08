@@ -507,8 +507,13 @@
     const desc = btn.dataset.description || '';
     const descEl = document.getElementById('video-description');
     if (desc && desc.trim()) {
-      const descHtml = desc.replace(/\[([^\]]+)\]\(([^)]+)\)/g,
-        '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>');
+      const descHtml = desc
+        .replace(/\\/g, '')
+        .split(/\n\n+/)
+        .map(p => p.trim().replace(/\n/g, '<br>'))
+        .filter(p => p.length > 0)
+        .map(p => `<p>${p.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>')}</p>`)
+        .join('');
       descEl.innerHTML = descHtml;
       descEl.classList.add('visible');
     } else {
