@@ -217,9 +217,38 @@
     animation: tooltipPop 0.15s ease;
   }
 
+  .easter-egg.touched .easter-tooltip { display: block; }
+
   @keyframes tooltipPop {
     from { opacity: 0; transform: translateX(-50%) translateY(4px); }
     to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    .about-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .about-portrait {
+      max-width: 220px;
+      margin: 0 auto;
+    }
+
+    .about-text p { font-size: 1rem; }
+
+    .craft-tags { gap: 0.5rem; margin-top: 1.5rem; padding-top: 1.5rem; }
+    .craft-tag { padding: 0.45em 0.9em; font-size: 9px; }
+
+    .divider-line { margin: 2.5rem 0; }
+
+    .influences-grid { grid-template-columns: 1fr; margin-top: 1.5rem; }
+    .influence-card { padding: 1.4rem 1.1rem; }
+
+    .team-grid { grid-template-columns: 1fr; }
+    .team-card { padding: 1.4rem 1.1rem; }
   }
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
@@ -277,14 +306,14 @@
     <div class="about-grid">
       <div class="about-portrait fade-up fade-up-1">
         <img src="images/portrait.png" alt="Mistress Spite" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-    <div class="about-portrait-placeholder" style="display:none;">Your portrait<br>or character art<br>goes here</div>
+        <div class="about-portrait-placeholder" style="display:none;">Your portrait<br>or character art<br>goes here</div>
       </div>
       <div class="about-text fade-up fade-up-2">
-             <p><span style="font-family:'Cinzel',serif;color:#c9a84c;font-weight:700;font-style:normal;">Mistress Spite</span> — a writer, voice actor, and illustrator. I'm an enigma, if you will.</p>
+        <p><span style="font-family:'Cinzel',serif;color:#c9a84c;font-weight:700;font-style:normal;">Mistress Spite</span> — a writer, voice actor, and illustrator. I'm an enigma, if you will.</p>
         <p><span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#c9a84c;display:block;margin-bottom:0.5rem;">"Be well aware... The trek I take is none for the weak, for I reside in the land of the free — follow my project at your own peril."</span> </p>
         <p><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#8a6e2f;display:block;margin-bottom:0.5rem;">The Work</span>The project is a <strong>mixed-genre illustrated audiobook</strong>: a single ongoing story, written as often as I can manage, drawn chapter by chapter, and narrated by.. me, <span style="font-family:'Cinzel',serif;color:#c9a84c;font-style:normal;">Mistress Spite</span>! Every chapter contains a drawing — Lest I'm dead. But then you don't get more writing either, so let's hope for the best.</p>
         <p><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#8a6e2f;display:block;margin-bottom:0.5rem;">The World</span>The story is set in the <strong>1920's</strong> with a shadow of <strong>Victorian architecture</strong>. Gas lamps flicker over cobblestones and jazz plays somewhere in a cozy establishment. Strange things are common here. Perfectly expected, frankly.</p>
-        <p><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#8a6e2f;display:block;margin-bottom:0.5rem;">The Reality</span>A YouTube channel, a membership, and an ongoing project <span class="easter-egg">I genuinely can't stop working on<span class="easter-tooltip"><img src="images/help-me.gif" alt="help me" /></span></span>.</p>
+        <p><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#8a6e2f;display:block;margin-bottom:0.5rem;">The Reality</span>A YouTube channel, a membership, and an ongoing project <span class="easter-egg" id="easter-egg">I genuinely can't stop working on<span class="easter-tooltip"><img src="images/help-me.gif" alt="help me" /></span></span>.</p>
         <div class="craft-tags">
           <span class="craft-tag">Writing</span>
           <span class="craft-tag">Voice Acting</span>
@@ -326,7 +355,6 @@
   </div>
 </section>
 
-
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
   <div class="socials-panel" id="socials-panel">
@@ -367,6 +395,18 @@
   <p class="footer-copy" style="margin-top:0.4rem;">Story, Art &amp; Voice by Mistress Spite &nbsp;·&nbsp; Animation by Pineapple Taco</p>
 </footer>
 
+<script>
+  // Easter egg — tap to toggle on mobile
+  (function() {
+    const egg = document.getElementById('easter-egg');
+    if (!egg) return;
+    egg.addEventListener('click', e => {
+      e.stopPropagation();
+      egg.classList.toggle('touched');
+    });
+    document.addEventListener('click', () => egg.classList.remove('touched'));
+  })();
+</script>
 <script>
   if (window.netlifyIdentity) {
     window.netlifyIdentity.on("init", user => {
