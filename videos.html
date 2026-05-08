@@ -303,6 +303,41 @@
   .video-description a { color: var(--gold); }
   .video-description p { margin: 0 0 0.5em; }
   .video-description p:last-child { margin: 0; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    .videos-page {
+      flex-direction: column;
+      padding: 4.5rem 1rem 3rem;
+      gap: 1.25rem;
+      align-items: stretch;
+    }
+
+    /* Player sits above the list on mobile */
+    .videos-right {
+      order: 1;
+      max-width: 100%;
+      width: 100%;
+    }
+
+    .videos-left {
+      order: 2;
+      width: 100%;
+    }
+
+    .videos-title { font-size: 1.2rem; }
+    .videos-header { margin-bottom: 1rem; }
+
+    /* Always show close button — no hover on mobile */
+    .video-close { opacity: 0.6 !important; width: 40px; height: 40px; }
+    .video-close:active { opacity: 1 !important; }
+
+    /* Slightly taller list items for easier tapping */
+    .video-thumb { width: 90px; height: 60px; }
+    .video-info { padding: 0.6rem 0.75rem; }
+    .video-item-title { font-size: 0.78rem; }
+  }
+}
 </style>
 </head>
 <body>
@@ -347,6 +382,7 @@
     }
   })();
 </script>
+
 <!-- Full page fireplace background -->
 <div class="fireplace-bg">
   <video id="fireplace-vid" autoplay loop muted playsinline oncontextmenu="return false;">
@@ -364,7 +400,6 @@
     </div>
 
     <div class="video-list" id="video-list">
-      <!-- Hardcoded entries — also populated by CMS loader -->
       <button class="video-item active" onclick="loadVideo('images/video-pants.mp4', this)"
         data-thumbnail="" data-duration="" data-description="">
         <div class="video-thumb">
@@ -450,11 +485,9 @@
   const video = document.getElementById('main-video');
   const filter = document.getElementById('tv-filter');
   const nowPlaying = document.getElementById('now-playing');
-
   const videosRight = document.querySelector('.videos-right');
 
   function loadVideo(src, btn) {
-    // If clicking the already active video — toggle it off
     if (btn.classList.contains('active') && videosRight.classList.contains('visible')) {
       video.pause();
       videosRight.classList.remove('visible');
@@ -471,11 +504,9 @@
     btn.classList.add('active');
     const title = btn.querySelector('.video-item-title').textContent;
     nowPlaying.textContent = 'Now Playing: ' + title;
-    // Show description if available
     const desc = btn.dataset.description || '';
     const descEl = document.getElementById('video-description');
     if (desc && desc.trim()) {
-      // Convert markdown links [text](url) to clickable links
       const descHtml = desc.replace(/\[([^\]]+)\]\(([^)]+)\)/g,
         '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>');
       descEl.innerHTML = descHtml;
@@ -485,6 +516,10 @@
       descEl.classList.remove('visible');
     }
     videosRight.classList.add('visible');
+    // On mobile, scroll the player into view
+    if (window.innerWidth <= 768) {
+      videosRight.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
     video.play();
   }
 
@@ -502,19 +537,13 @@
   });
   video.addEventListener('ended', () => { filter.classList.remove('gone'); });
 
-  // ── Auto-load duration for each video item ──
+  // ── Duration loader ──
   document.querySelectorAll('.video-item').forEach(btn => {
     const src = btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
     if (!src) return;
     const thumb = btn.dataset.thumbnail;
     const thumbEl = btn.querySelector('.video-thumb');
-
-    // Set thumbnail if provided
-    if (thumb) {
-      thumbEl.innerHTML = `<img src="${thumb}" alt="thumbnail">`;
-    }
-
-    // Get duration via hidden video element
+    if (thumb) { thumbEl.innerHTML = `<img src="${thumb}" alt="thumbnail">`; }
     const tmp = document.createElement('video');
     tmp.preload = 'metadata';
     tmp.src = src;
@@ -561,8 +590,6 @@
     const params = new URLSearchParams(window.location.search);
     const play = params.get('play');
     if (!play) return;
-
-    // Wait a moment for CMS loader to finish
     setTimeout(() => {
       const buttons = document.querySelectorAll('.video-item');
       for (const btn of buttons) {
@@ -619,28 +646,22 @@
 <script src="socials.js"></script>
 
 <script>
-// Dynamic CMS Video Loader with real tier checking
 async function loadCMSVideos() {
   const list = document.getElementById('video-list');
   if (!list) return;
   list.innerHTML = '';
-
-  // Get real user tier from Netlify Identity
   const userTier = window.getUserTier ? await window.getUserTier() : 'free';
   const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-
   try {
     const res = await fetch('/_data/content-index.json');
     if (!res.ok) throw new Error();
     const items = await res.json();
     const videos = items.filter(i => i.type === 'Video');
     if (!videos || videos.length === 0) throw new Error();
-
     videos.forEach((item, idx) => {
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
       const btn = document.createElement('button');
       btn.className = 'video-item' + (idx === 0 && !isLocked ? ' active' : '');
-
       if (isLocked) {
         btn.setAttribute('onclick', "window.location.href='membership.html'");
         btn.dataset.description = '';
@@ -648,29 +669,20 @@ async function loadCMSVideos() {
         btn.setAttribute('onclick', `loadVideo('${item.video || ''}', this)`);
         btn.dataset.description = item.description || '';
       }
-
       const thumbHtml = item.thumbnail
         ? `<img src="${item.thumbnail}" alt="${item.title}">`
         : `<div class="video-thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`;
-
       const lockBadge = isLocked
         ? `<div style="position:absolute;top:3px;right:4px;font-family:'Cinzel',serif;font-size:8px;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:1px 5px;border:1px solid var(--border);">${item.tier === 'devoted' ? '$5' : '$12'}</div>`
         : '';
-
       btn.innerHTML = `
-        <div class="video-thumb" style="position:relative;">
-          ${thumbHtml}
-          ${lockBadge}
-        </div>
+        <div class="video-thumb" style="position:relative;">${thumbHtml}${lockBadge}</div>
         <div class="video-info">
           <div class="video-item-type">${item.label || 'Video'}</div>
           <div class="video-item-title">${item.title}${isLocked ? ' 🔒' : ''}</div>
         </div>`;
-
       list.appendChild(btn);
     });
-
-    // Auto-load first unlocked video
     const firstUnlocked = list.querySelector('.video-item.active');
     if (firstUnlocked) {
       const src = firstUnlocked.getAttribute('onclick').match(/'([^']+)'/)?.[1];
@@ -680,8 +692,6 @@ async function loadCMSVideos() {
         document.getElementById('now-playing').textContent = 'Now Playing: ' + title;
       }
     }
-
-    // Duration loader for unlocked videos
     list.querySelectorAll('.video-item').forEach(btn => {
       const onclick = btn.getAttribute('onclick') || '';
       const src = onclick.match(/'([^']+)'/)?.[1];
@@ -700,12 +710,10 @@ async function loadCMSVideos() {
         thumbEl.appendChild(dur);
       });
     });
-
   } catch(e) {
     list.innerHTML = '<p style="padding:1rem;font-family:\'Cinzel\',serif;font-size:10px;color:var(--gold-dim);letter-spacing:0.2em;">No videos found.</p>';
   }
 }
-
 loadCMSVideos();
 </script>
 </body>
