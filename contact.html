@@ -89,6 +89,7 @@
     resize: none;
     transition: background 0.2s;
     appearance: none;
+    box-sizing: border-box;
   }
 
   .contact-form input::placeholder,
@@ -114,9 +115,25 @@
     cursor: pointer;
     transition: background 0.2s;
     width: 100%;
+    min-height: 44px;
   }
 
   .contact-submit:hover { background: var(--gold-bright); }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    .contact-layout {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+      margin-top: 2rem;
+    }
+
+    .contact-aside p { margin-bottom: 1.25rem; }
+    .contact-reason { padding: 0.9rem 1.1rem; font-size: 9px; }
+    .contact-form input,
+    .contact-form textarea,
+    .contact-form select { padding: 0.85rem 1rem; font-size: 0.95rem; }
+  }
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
@@ -162,6 +179,7 @@
     }
   })();
 </script>
+
 <div class="page-header">
   <div class="section-label fade-up fade-up-1">Reach Out</div>
   <h1 class="section-title fade-up fade-up-2">Get in Touch</h1>
@@ -187,7 +205,7 @@
         <form class="contact-form" action="https://formspree.io/f/mdapkdzl" method="POST">
           <input type="text" name="name" placeholder="Your name" required />
           <input type="email" name="email" placeholder="Your email" required />
-          <select>
+          <select name="reason">
             <option value="" disabled selected>Reason for writing...</option>
             <option>Commission inquiry</option>
             <option>Membership question</option>
@@ -196,13 +214,12 @@
             <option>Other</option>
           </select>
           <textarea name="message" placeholder="Your message..." required></textarea>
-          <button class="contact-submit">Send Word</button>
-        </div>
+          <button type="submit" class="contact-submit">Send Word</button>
+        </form>
       </div>
     </div>
   </div>
 </section>
-
 
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
