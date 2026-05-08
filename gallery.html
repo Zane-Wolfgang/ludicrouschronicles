@@ -394,8 +394,9 @@ async function checkHardcodedLocks() {
 <script src="auth.js"></script>
 <script src="socials.js"></script>
 <script>
-loadCMSGallery();
-checkHardcodedLocks();
+loadCMSGallery().then(() => checkHardcodedLocks()).then(() => {
+  if (window.location.hash) openFromHash();
+});
 </script>
 <script>
 function openFromHash() {
