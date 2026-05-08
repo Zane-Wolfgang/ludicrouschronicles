@@ -153,26 +153,26 @@
       <div class="gallery-item locked" onclick="window.location.href='membership.html'">
         <img loading="lazy" decoding="async" src="images/art-birthday.png" alt="Happy Birthday" />
         <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Patron</div>
+        <div class="gallery-tier-label">Devoted</div>
         <div class="gallery-overlay"><div class="gallery-overlay-title">Happy Birthday</div></div>
       </div>
       <div class="gallery-item locked" onclick="window.location.href='membership.html'">
         <img loading="lazy" decoding="async" src="images/art-dont-miss-legs.png" alt="Don't You Miss Your Legs?" />
         <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Patron</div>
+        <div class="gallery-tier-label">Devoted</div>
         <div class="gallery-overlay"><div class="gallery-overlay-title">Don't You Miss Your Legs?</div></div>
       </div>
       <div class="gallery-item locked" id="helping-hand-item" onclick="window.location.href='membership.html'">
         <img loading="lazy" decoding="async" src="images/art-helping-hand.png" alt="A Helping Hand" />
         <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Patron</div>
+        <div class="gallery-tier-label">Devoted</div>
         <div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / 2</div>
         <div class="gallery-overlay"><div class="gallery-overlay-title">A Helping Hand</div></div>
       </div>
       <div class="gallery-item locked" onclick="window.location.href='membership.html'">
         <img loading="lazy" decoding="async" src="images/art-blue-threads.png" alt="Blue Threads" />
         <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Patron</div>
+        <div class="gallery-tier-label">Devoted</div>
         <div class="gallery-overlay"><div class="gallery-overlay-title">Blue Threads</div></div>
       </div>
 
@@ -274,21 +274,6 @@
 </script>
 
 <script>
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => { if (!user) { window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; }); } });
-  }
-</script>
-<script>
-  (function() {
-    const cord = document.getElementById('cord-wrap');
-    const dot = document.getElementById('news-dot');
-    const dismissed = localStorage.getItem('news-dismissed');
-    if (dismissed) { if (cord) cord.classList.add('pulled'); if (dot) dot.classList.add('off'); }
-    if (cord) { cord.addEventListener('click', () => { cord.classList.add('pulled'); if (dot) dot.classList.add('off'); localStorage.setItem('news-dismissed', '1'); }); }
-  })();
-</script>
-
-<script>
 const HARDCODED_SLIDESHOWS = {
   'A Helping Hand': {
     images: ['images/art-helping-hand.png', 'images/art-nobody-special.png'],
@@ -326,7 +311,7 @@ function makeCMSGalleryItem(item, userTier, tRank) {
   if (isLocked) {
     div.className = 'gallery-item locked';
     div.setAttribute('onclick', "window.location.href='membership.html'");
-    div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div><div class="gallery-tier-label">${item.tier === 'devoted' ? 'Patron' : 'Bound'}</div>${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div></div>`;
+    div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div><div class="gallery-tier-label">${item.tier === 'devoted' ? 'Devoted' : 'Bound'}</div>${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div></div>`;
   } else {
     div.className = 'gallery-item';
     div.setAttribute('onclick', isSlideshow ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, '${item.type}')` : `openLightbox('${images[0]}', '${item.title}', '${item.type}')`);
@@ -342,7 +327,7 @@ async function checkHardcodedLocks() {
   document.querySelectorAll('.gallery-item.locked').forEach(item => {
     const tierLabel = item.querySelector('.gallery-tier-label');
     if (!tierLabel) return;
-    const itemTier = tierLabel.textContent.trim() === 'Patron' ? 'devoted' : 'bound';
+    const itemTier = tierLabel.textContent.trim() === 'Devoted' ? 'devoted' : 'bound';
     if (tRank[userTier] >= tRank[itemTier]) {
       item.classList.remove('locked');
       const img = item.querySelector('img');
