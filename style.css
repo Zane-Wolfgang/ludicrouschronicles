@@ -418,39 +418,34 @@ footer {
 /* ── MOBILE RESPONSIVE ── */
 @media (max-width: 768px) {
 
-  nav {
-    padding: 0 1.25rem;
-    height: 56px;
-  }
-
+  /* Nav */
+  nav { padding: 0 1.25rem; height: 56px; }
   .nav-brand { font-size: 12px; }
-
   .nav-links {
     display: none;
     position: fixed;
-    top: 56px;
-    left: 0;
-    right: 0;
+    top: 56px; left: 0; right: 0;
     background: rgba(10,8,6,0.98);
     border-bottom: 1px solid var(--border);
     flex-direction: column;
     gap: 0;
     padding: 0.5rem 0;
     z-index: 99;
+    max-height: calc(100vh - 56px);
+    overflow-y: auto;
   }
-
   .nav-links.open { display: flex; }
   .nav-links li { width: 100%; }
-
   .nav-links a {
     display: block;
     padding: 0.9rem 1.5rem;
     font-size: 10px;
     border-bottom: 1px solid var(--border);
+    min-height: 44px;
+    display: flex;
+    align-items: center;
   }
-
   .nav-links li:last-child a { border-bottom: none; }
-
   .nav-hamburger {
     display: flex;
     flex-direction: column;
@@ -459,8 +454,11 @@ footer {
     padding: 8px;
     background: none;
     border: none;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
   }
-
   .nav-hamburger span {
     display: block;
     width: 22px;
@@ -468,21 +466,36 @@ footer {
     background: var(--gold);
     transition: all 0.3s;
   }
-
   .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
   .nav-hamburger.open span:nth-child(2) { opacity: 0; }
   .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
   .nav-cord-wrap { display: none; }
 
+  /* Layout */
   .page-header { padding: 7rem 1.25rem 3rem; }
-
   section { padding: 3rem 1.25rem; }
+  .section-inner { padding: 0; }
+  .section-body { max-width: 100%; }
 
+  /* Typography */
+  .section-title { font-size: clamp(1.3rem, 5vw, 1.8rem); }
+  .page-header .section-title { font-size: clamp(1.6rem, 6vw, 2.4rem); }
+
+  /* Buttons */
+  .btn-primary, .btn-ghost {
+    padding: 0.85em 2em;
+    font-size: 10px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Grids */
   .content-grid { grid-template-columns: 1fr !important; }
-
   .gallery-grid { columns: 1 !important; }
 
+  /* Filter bar — horizontal scroll */
   .filter-bar {
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -492,49 +505,48 @@ footer {
   }
   .filter-bar::-webkit-scrollbar { display: none; }
 
-  /* Socials: keep the tab visible but nudge it down slightly from center
-     so it doesn't clash with content — panel still slides in normally */
-  .socials-trigger { top: 60%; }
-  .socials-panel { top: 60%; }
-  .socials-arrow { top: 60%; }
+  /* Socials — keep tab visible, nudge below nav area */
+  .socials-trigger { top: 65%; }
+  .socials-panel {
+    top: 65%;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .socials-arrow { top: 65%; }
 
+  /* Misc */
   .members-cta { padding: 2rem 1rem; }
   footer { padding: 2rem 1.25rem; }
+  footer .footer-copy { font-size: 0.75rem; }
 }
 
 /* ── LANDSCAPE PHONES ── */
 @media (max-width: 900px) and (orientation: landscape) {
-  nav {
-    height: 52px;
-    padding: 0 1rem;
-  }
-
+  nav { height: 52px; padding: 0 1rem; }
   .nav-brand { font-size: 12px; }
-
   .nav-links {
     display: none;
     position: fixed;
-    top: 52px;
-    left: 0;
-    right: 0;
+    top: 52px; left: 0; right: 0;
     background: rgba(10,8,6,0.98);
     border-bottom: 1px solid var(--border);
     flex-direction: column;
     gap: 0;
     padding: 0.5rem 0;
     z-index: 99;
+    max-height: calc(100vh - 52px);
+    overflow-y: auto;
   }
-
   .nav-links.open { display: flex; }
   .nav-links li { width: 100%; }
-
   .nav-links a {
-    display: block;
-    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    padding: 0.65rem 1.5rem;
     font-size: 10px;
     border-bottom: 1px solid var(--border);
+    min-height: 44px;
   }
-
   .nav-hamburger {
     display: flex;
     flex-direction: column;
@@ -543,8 +555,11 @@ footer {
     padding: 8px;
     background: none;
     border: none;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
   }
-
   .nav-hamburger span {
     display: block;
     width: 22px;
@@ -552,7 +567,6 @@ footer {
     background: var(--gold);
     transition: all 0.3s;
   }
-
   .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
   .nav-hamburger.open span:nth-child(2) { opacity: 0; }
   .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
@@ -560,5 +574,4 @@ footer {
 
 @media (max-width: 480px) {
   .nav-brand { font-size: 11px; }
-  .page-header .section-title { font-size: 1.8rem; }
 }
