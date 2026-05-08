@@ -279,6 +279,7 @@ async function loadAllContent() {
     addEntry(oldestDate - (i * 86400000), makeCard(isLocked ? 'membership.html' : `gallery.html#${encodeURIComponent(item.title)}`, item.img, item.title, 'Illustration', isLocked ? 'Art · Devoted' : 'Art', isLocked, 'art', false), item.title);
   });
 
+  grid.innerHTML = '';
   allCards.sort((a, b) => b.date - a.date);
   allCards.forEach(c => grid.appendChild(c.card));
 }
