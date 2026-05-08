@@ -260,6 +260,72 @@
   }
 
   .teaser-card:hover .teaser-arrow { color: var(--gold); }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    /* Fix hero image — background-attachment:fixed is broken on mobile browsers */
+    .hero-parallax-bg {
+      background-attachment: scroll;
+      background-position: center 15%;
+      background-size: cover;
+    }
+
+    /* Shorter hero so it doesn't feel endless on a phone */
+    .hero {
+      height: 110vh;
+      padding: 0 1.25rem 4rem;
+    }
+
+    .hero-content, .hero-text-section {
+      bottom: 3rem;
+    }
+
+    .hero-ornament {
+      font-size: 9px;
+      gap: 0.75rem;
+    }
+
+    .hero-ornament::before, .hero-ornament::after {
+      width: 30px;
+    }
+
+    .hero-divider { margin: 0 auto 2rem; }
+
+    .hero-ctas {
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Collapse teaser grid to single column — this kills the black strip */
+    .teaser-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .teaser-strip {
+      padding: 3rem 1.25rem;
+    }
+
+    .teaser-card {
+      padding: 1.75rem 1.25rem;
+    }
+  }
+
+  /* Landscape phones — keep hamburger visible, don't let nav spill */
+  @media (max-width: 900px) and (orientation: landscape) {
+    .nav-hamburger {
+      display: flex !important;
+    }
+    .nav-links:not(.open) {
+      display: none !important;
+    }
+    .hero {
+      height: 160vh;
+    }
+    .hero-parallax-bg {
+      background-attachment: scroll;
+    }
+  }
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
