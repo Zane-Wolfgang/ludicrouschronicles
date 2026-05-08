@@ -311,14 +311,8 @@
     }
   }
 
-  /* Landscape phones — keep hamburger visible, don't let nav spill */
+  /* Landscape phones — hero adjustments only, nav handled by style.css */
   @media (max-width: 900px) and (orientation: landscape) {
-    .nav-hamburger {
-      display: flex !important;
-    }
-    .nav-links:not(.open) {
-      display: none !important;
-    }
     .hero {
       height: 160vh;
     }
