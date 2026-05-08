@@ -428,7 +428,7 @@ const langNames = { ru: 'Russian' };
 // Desktop: hover
 document.addEventListener('mouseover', async e => {
   const word = e.target.closest('.foreign-word');
-  if (!word) return;
+  if (!word) { tooltip.classList.remove('visible'); return; }
   const lang = word.dataset.lang || 'ru';
   ttLang.textContent = langNames[lang] || lang;
   ttText.textContent = '…';
@@ -440,10 +440,6 @@ document.addEventListener('mousemove', e => {
   if (!tooltip.classList.contains('visible')) return;
   tooltip.style.left = Math.min(e.clientX + 14, window.innerWidth - 260) + 'px';
   tooltip.style.top = (e.clientY - 56) + 'px';
-});
-
-document.addEventListener('mouseout', e => {
-  if (!e.target.closest('.foreign-word')) tooltip.classList.remove('visible');
 });
 
 // Mobile: tap to toggle
