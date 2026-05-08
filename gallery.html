@@ -25,7 +25,7 @@
   .lightbox.open { display: flex; align-items: center; justify-content: center; }
   .lightbox-inner { position: relative; display: inline-block; max-width: 90vw; max-height: 88vh; overflow: auto; }
   .lightbox.zoomed .lightbox-img { cursor: zoom-out; }
-  .lightbox-img { display: block; max-width: 88vw; max-height: 85vh; object-fit: contain; border: 1px solid var(--border); -webkit-user-drag: none; user-select: none; cursor: zoom-in; }
+  .lightbox-img { display: block; max-width: 88vw; max-height: 85vh; object-fit: contain; border: 1px solid var(--border); -webkit-user-drag: none; user-select: none; cursor: zoom-in; transition: opacity 0.2s ease; }
   .lightbox.zoomed .lightbox-inner { max-width: 95vw; max-height: 92vh; overflow: auto; transition: none; }
   .lightbox.zoomed .lightbox-img { max-width: none; max-height: none; width: 160vw; }
   .lightbox-close { position: fixed; top: 1.5rem; right: 2rem; font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); background: none; border: none; cursor: pointer; z-index: 202; transition: color 0.2s; }
@@ -239,19 +239,35 @@
 </footer>
 
 <script>
-  let slideImages = [], slideTitles = [], slideType = '', slideIndex = 0;
   function openSlideshow(images, titles, type) {
     slideImages = images; slideTitles = titles; slideType = type; slideIndex = 0;
-    showSlide(0); lb.classList.add('open'); lb.classList.remove('zoomed');
+    lbImg.style.opacity = '0';
+    lb.classList.add('open'); lb.classList.remove('zoomed');
     document.body.style.overflow = 'hidden'; zoomed = false;
+    showSlide(0);
   }
+
+  function preloadAdjacent(index) {
+    [index - 1, index + 1].forEach(i => {
+      if (i >= 0 && i < slideImages.length) new Image().src = slideImages[i];
+    });
+  }
+
   function showSlide(index) {
-    lbImg.src = slideImages[index];
+    lbImg.style.opacity = '0.15';
+    const incoming = new Image();
+    incoming.onload = () => {
+      lbImg.src = slideImages[index];
+      lbImg.style.opacity = '1';
+    };
+    incoming.onerror = () => { lbImg.style.opacity = '1'; };
+    incoming.src = slideImages[index];
     lbCaption.textContent = slideTitles[index] + ' — ' + slideType;
     document.getElementById('lb-pages').textContent = slideImages.length > 1 ? (index + 1) + ' / ' + slideImages.length : '';
     document.getElementById('lb-prev').classList.toggle('hidden', index === 0);
     document.getElementById('lb-next').classList.toggle('hidden', index === slideImages.length - 1);
     lbHint.textContent = 'Click image to zoom'; lbHint.style.opacity = '0.6';
+    preloadAdjacent(index);
   }
   document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); if (slideIndex > 0) { slideIndex--; showSlide(slideIndex); } });
   document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); if (slideIndex < slideImages.length - 1) { slideIndex++; showSlide(slideIndex); } });
