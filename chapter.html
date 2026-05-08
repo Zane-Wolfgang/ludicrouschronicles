@@ -78,6 +78,28 @@
   #comment-submit { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.8em 2em; cursor: pointer; transition: background 0.2s; }
   #comment-submit:hover { background: var(--gold-bright); }
   #comment-submit:disabled { opacity: 0.5; cursor: default; }
+
+  /* ── Foreign word translation ── */
+  .foreign-word {
+    color: #a8c4d8;
+    border-bottom: 1px dotted rgba(168, 196, 216, 0.6);
+    cursor: help;
+  }
+  .translation-tooltip {
+    position: fixed;
+    background: rgba(10,8,6,0.97);
+    border: 1px solid var(--gold-dim);
+    border-left: 2px solid var(--gold);
+    padding: 0.45rem 0.85rem;
+    z-index: 2000;
+    pointer-events: none;
+    display: none;
+    max-width: 240px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+  }
+  .translation-tooltip.visible { display: block; }
+  .tt-lang { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-dim); display: block; margin-bottom: 0.2rem; }
+  .tt-text { font-family: 'EB Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
 </style>
 </head>
 <body>
@@ -233,6 +255,12 @@
   </div>
 </div>
 
+<!-- Translation tooltip -->
+<div class="translation-tooltip" id="translation-tooltip">
+  <span class="tt-lang" id="tt-lang"></span>
+  <span class="tt-text" id="tt-text"></span>
+</div>
+
 <footer>
   <span class="footer-brand">Ludicrous Chronicles</span>
   <p class="footer-copy">© 2026 Ludicrous Chronicles. All rights reserved.</p>
@@ -254,7 +282,6 @@ async function loadChapter() {
 
     if (!chapter) { window.location.href = 'content.html'; return; }
 
-    // Tier check — redirect if locked
     const userTier = window.getUserTier ? await window.getUserTier() : 'free';
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
     if (tRank[chapter.tier || 'free'] > tRank[userTier]) {
@@ -275,9 +302,8 @@ async function loadChapter() {
     }
 
     const body = (chapter.body || '').replace(/\\/g, '');
-    const html = markdownToHtml(body);
     const bodyEl = document.getElementById('ch-body');
-    bodyEl.innerHTML = html;
+    bodyEl.innerHTML = markdownToHtml(body);
 
     const firstP = bodyEl.querySelector('p');
     if (firstP) firstP.classList.add('dropcap');
@@ -287,6 +313,8 @@ async function loadChapter() {
         p.classList.add('beat');
       }
     });
+
+    wrapForeignText(bodyEl);
 
     const prevNum = parseInt(chapter.number) - 1;
     if (prevNum >= 1) {
@@ -347,6 +375,91 @@ function markdownToHtml(md) {
     .map(p => p.startsWith('<') ? inlineConvert(p) : `<p>${inlineConvert(p).replace(/\n/g, '<br>')}</p>`)
     .join('\n');
 }
+
+// ── Foreign language detection & translation ──
+
+const translationCache = new Map();
+
+function wrapForeignText(el) {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+  const nodes = [];
+  let node;
+  while (node = walker.nextNode()) nodes.push(node);
+
+  nodes.forEach(textNode => {
+    if (!/[\u0400-\u04FF]/.test(textNode.nodeValue)) return;
+    const frag = document.createDocumentFragment();
+    textNode.nodeValue.split(/([\u0400-\u04FF]+)/g).forEach(part => {
+      if (/[\u0400-\u04FF]/.test(part)) {
+        const span = document.createElement('span');
+        span.className = 'foreign-word';
+        span.dataset.lang = 'ru';
+        span.textContent = part;
+        frag.appendChild(span);
+      } else {
+        frag.appendChild(document.createTextNode(part));
+      }
+    });
+    textNode.parentNode.replaceChild(frag, textNode);
+  });
+}
+
+async function fetchTranslation(text, lang) {
+  const key = `${lang}:${text}`;
+  if (translationCache.has(key)) return translationCache.get(key);
+  translationCache.set(key, '…');
+  try {
+    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${lang}|en`);
+    const data = await res.json();
+    const t = data.responseData?.translatedText || '—';
+    translationCache.set(key, t);
+    return t;
+  } catch {
+    translationCache.set(key, '—');
+    return '—';
+  }
+}
+
+const tooltip = document.getElementById('translation-tooltip');
+const ttLang = document.getElementById('tt-lang');
+const ttText = document.getElementById('tt-text');
+const langNames = { ru: 'Russian' };
+
+// Desktop: hover
+document.addEventListener('mouseover', async e => {
+  const word = e.target.closest('.foreign-word');
+  if (!word) return;
+  const lang = word.dataset.lang || 'ru';
+  ttLang.textContent = langNames[lang] || lang;
+  ttText.textContent = '…';
+  tooltip.classList.add('visible');
+  ttText.textContent = await fetchTranslation(word.textContent.trim(), lang);
+});
+
+document.addEventListener('mousemove', e => {
+  if (!tooltip.classList.contains('visible')) return;
+  tooltip.style.left = Math.min(e.clientX + 14, window.innerWidth - 260) + 'px';
+  tooltip.style.top = (e.clientY - 56) + 'px';
+});
+
+document.addEventListener('mouseout', e => {
+  if (!e.target.closest('.foreign-word')) tooltip.classList.remove('visible');
+});
+
+// Mobile: tap to toggle
+document.addEventListener('touchend', async e => {
+  const word = e.target.closest('.foreign-word');
+  if (!word) { tooltip.classList.remove('visible'); return; }
+  e.preventDefault();
+  const lang = word.dataset.lang || 'ru';
+  const rect = word.getBoundingClientRect();
+  ttLang.textContent = langNames[lang] || lang;
+  ttText.textContent = '…';
+  tooltip.style.left = Math.min(rect.left, window.innerWidth - 260) + 'px';
+  tooltip.style.top = Math.max(rect.top - 64, 8) + 'px';
+  tooltip.classList.add('visible');
+  ttText.textContent = await fetchTranslation(word.textContent.trim(), lang);
+}, { passive: false });
 </script>
 
 <script src="auth.js"></script>
