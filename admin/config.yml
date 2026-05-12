@@ -28,6 +28,7 @@ collections:
       - { label: "Date", name: "date", widget: "datetime" }
       - { label: "Chapter Art", name: "art", widget: "image", required: false }
       - { label: "Body", name: "body", widget: "markdown" }
+      - { label: "Audio (optional)", name: "audio", widget: "file", required: false, hint: "Upload MP3 narration for this chapter. Enables the audio player with auto paragraph sync." }
       - { label: "Include in Voice tab", name: "is_voice", widget: "boolean", default: false, required: false, hint: "Check this if the chapter has a voice/narration recording. It will appear in both Story and Voice tabs." }
       - label: "Access Tier"
         name: "tier"
@@ -106,6 +107,7 @@ collections:
       - { label: "Date", name: "date", widget: "datetime" }
       - { label: "Description", name: "description", widget: "string", hint: "One line teaser shown on content page" }
       - { label: "Body", name: "body", widget: "markdown" }
+      - { label: "Audio (optional)", name: "audio", widget: "file", required: false, hint: "Upload MP3 narration for this story. Enables the audio player with auto paragraph sync." }
       - label: "Access Tier"
         name: "tier"
         widget: "select"
