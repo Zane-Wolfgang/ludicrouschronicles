@@ -80,26 +80,26 @@
   #comment-submit:disabled { opacity: 0.5; cursor: default; }
 
   /* ── Foreign word translation ── */
-  .foreign-word {
-    color: #a8c4d8;
-    border-bottom: 1px dotted rgba(168, 196, 216, 0.6);
-    cursor: help;
-  }
-  .translation-tooltip {
-    position: fixed;
-    background: rgba(10,8,6,0.97);
-    border: 1px solid var(--gold-dim);
-    border-left: 2px solid var(--gold);
-    padding: 0.45rem 0.85rem;
-    z-index: 2000;
-    pointer-events: none;
-    display: none;
-    max-width: 240px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-  }
+  .foreign-word { color: #a8c4d8; border-bottom: 1px dotted rgba(168,196,216,0.6); cursor: help; }
+  .translation-tooltip { position: fixed; background: rgba(10,8,6,0.97); border: 1px solid var(--gold-dim); border-left: 2px solid var(--gold); padding: 0.45rem 0.85rem; z-index: 2000; pointer-events: none; display: none; max-width: 240px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
   .translation-tooltip.visible { display: block; }
   .tt-lang { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-dim); display: block; margin-bottom: 0.2rem; }
   .tt-text { font-family: 'EB Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
+
+  /* ── Audio Player ── */
+  .audio-player { position: fixed; bottom: 0; left: 0; right: 0; z-index: 150; background: rgba(10,8,6,0.98); border-top: 1px solid var(--gold-dim); padding: 0.6rem 2rem; display: none; align-items: center; gap: 1rem; box-shadow: 0 -4px 20px rgba(0,0,0,0.6); }
+  .audio-player.active { display: flex; }
+  .ap-btn { background: none; border: 1px solid var(--border); width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s; flex-shrink: 0; padding: 0; }
+  .ap-btn:hover { border-color: var(--gold-dim); }
+  .ap-btn svg { width: 12px; height: 12px; }
+  .ap-time, .ap-duration { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.1em; color: var(--text-muted); flex-shrink: 0; min-width: 30px; text-align: center; }
+  .ap-scrub { flex: 1; min-width: 60px; height: 3px; -webkit-appearance: none; appearance: none; background: linear-gradient(90deg, var(--gold-dim) var(--pct,0%), rgba(201,168,76,0.2) var(--pct,0%)); outline: none; cursor: pointer; }
+  .ap-scrub::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: var(--gold); border-radius: 50%; cursor: pointer; }
+  .ap-scrub::-moz-range-thumb { width: 12px; height: 12px; background: var(--gold); border: none; border-radius: 50%; cursor: pointer; }
+  .ap-para { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-dim); flex-shrink: 0; white-space: nowrap; }
+  .audio-highlight { background: rgba(201,168,76,0.14) !important; border-left: 3px solid var(--gold) !important; padding-left: 0.5rem; margin-left: -0.6rem; transition: background 0.3s; }
+  body.has-audio .chapter-engagement { padding-bottom: 5rem; }
+  @media (max-width: 768px) { .audio-player { padding: 0.5rem 0.75rem; gap: 0.5rem; } .ap-btn { width: 36px; height: 36px; } .ap-para { display: none; } }
 </style>
 </head>
 <body>
@@ -131,22 +131,13 @@
     const btn = document.getElementById('nav-hamburger');
     const links = document.querySelector('.nav-links');
     if (btn && links) {
-      btn.addEventListener('click', () => {
-        btn.classList.toggle('open');
-        links.classList.toggle('open');
-      });
-      links.querySelectorAll('a').forEach(a => {
-        a.addEventListener('click', () => {
-          btn.classList.remove('open');
-          links.classList.remove('open');
-        });
-      });
+      btn.addEventListener('click', () => { btn.classList.toggle('open'); links.classList.toggle('open'); });
+      links.querySelectorAll('a').forEach(a => { a.addEventListener('click', () => { btn.classList.remove('open'); links.classList.remove('open'); }); });
     }
   })();
 </script>
 
 <div class="chapter-wrap">
-
   <div class="bookmark-banner" id="bookmark-banner">
     <span class="bookmark-banner-text" id="bookmark-banner-text">You have a saved bookmark</span>
     <div style="display:flex;gap:0.75rem;align-items:center;">
@@ -172,26 +163,19 @@
 
   <div id="chapter-loading">Loading chapter...</div>
   <div id="chapter-content" style="display:none;">
-
     <div class="chapter-header">
       <span class="chapter-label" id="ch-label">Ghost in Me — by Mistress Spite</span>
       <h1 class="chapter-title" id="ch-title"></h1>
     </div>
-
     <img class="chapter-art" id="ch-art" src="" alt="Chapter Art" style="display:none;" />
-
     <div class="chapter-divider"></div>
-
     <div class="chapter-body" id="ch-body"></div>
-
     <div class="chapter-divider"></div>
-
     <div class="chapter-nav">
       <a href="content.html">← Back to Content</a>
       <span id="ch-end" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);"></span>
       <a href="content.html" id="ch-next">More Coming Soon →</a>
     </div>
-
   </div>
 </div>
 
@@ -229,6 +213,31 @@
   </div>
 </div>
 
+<!-- Audio Player (shown only when chapter has audio uploaded in admin) -->
+<div class="audio-player" id="audio-player">
+  <button class="ap-btn" id="ap-prev" title="Previous paragraph">
+    <svg viewBox="0 0 12 12"><path d="M2 2h2v8H2zM10 2L4 6l6 4z" fill="var(--gold)"/></svg>
+  </button>
+  <button class="ap-btn" id="ap-play" title="Play / Pause">
+    <svg id="ap-icon-play" viewBox="0 0 12 12"><path d="M3 2l6 4-6 4z" fill="var(--gold)"/></svg>
+    <svg id="ap-icon-pause" viewBox="0 0 12 12" style="display:none"><path d="M3 3h2v6H3zm4 0h2v6H7z" fill="var(--gold)"/></svg>
+  </button>
+  <button class="ap-btn" id="ap-next" title="Next paragraph">
+    <svg viewBox="0 0 12 12"><path d="M10 2H8v8h2zM2 2l6 4-6 4z" fill="var(--gold)"/></svg>
+  </button>
+  <span class="ap-time" id="ap-time">0:00</span>
+  <input type="range" class="ap-scrub" id="ap-scrub" min="0" max="1000" value="0" step="1">
+  <span class="ap-duration" id="ap-duration">—:——</span>
+  <span class="ap-para" id="ap-para">¶ 1</span>
+  <audio id="chapter-audio" preload="none"></audio>
+</div>
+
+<!-- Translation tooltip -->
+<div class="translation-tooltip" id="translation-tooltip">
+  <span class="tt-lang" id="tt-lang"></span>
+  <span class="tt-text" id="tt-text"></span>
+</div>
+
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
   <div class="socials-panel" id="socials-panel">
@@ -253,12 +262,6 @@
   <div class="socials-arrow" id="socials-arrow">
     <svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg>
   </div>
-</div>
-
-<!-- Translation tooltip -->
-<div class="translation-tooltip" id="translation-tooltip">
-  <span class="tt-lang" id="tt-lang"></span>
-  <span class="tt-text" id="tt-text"></span>
 </div>
 
 <footer>
@@ -320,13 +323,8 @@ async function loadChapter() {
     if (prevNum >= 1) {
       const prevLink = document.createElement('a');
       prevLink.style.cssText = 'font-family:Cinzel,serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-dim);text-decoration:none;';
-      if (prevNum === 1) {
-        prevLink.href = 'chapter-1.html';
-        prevLink.textContent = '← Chapter I';
-      } else {
-        prevLink.href = `chapter.html?chapter=${prevNum}`;
-        prevLink.textContent = `← Chapter ${prevNum}`;
-      }
+      if (prevNum === 1) { prevLink.href = 'chapter-1.html'; prevLink.textContent = '← Chapter I'; }
+      else { prevLink.href = `chapter.html?chapter=${prevNum}`; prevLink.textContent = `← Chapter ${prevNum}`; }
       document.querySelector('.chapter-nav').insertBefore(prevLink, document.querySelector('.chapter-nav').firstChild);
     }
 
@@ -336,15 +334,18 @@ async function loadChapter() {
       nextLink.textContent = `Chapter ${nextChapter.number} →`;
       nextLink.href = `chapter.html?chapter=${nextChapter.number}`;
     } else {
-      document.getElementById('ch-next').textContent = 'More Coming Soon';
-      document.getElementById('ch-next').removeAttribute('href');
-      document.getElementById('ch-next').style.opacity = '0.4';
-      document.getElementById('ch-next').style.cursor = 'default';
+      const n = document.getElementById('ch-next');
+      n.textContent = 'More Coming Soon';
+      n.removeAttribute('href');
+      n.style.opacity = '0.4';
+      n.style.cursor = 'default';
     }
 
     document.getElementById('chapter-loading').style.display = 'none';
     document.getElementById('chapter-content').style.display = 'block';
     document.getElementById('chapter-engagement-wrap').style.display = 'block';
+
+    if (chapter.audio) initAudioPlayer(chapter.audio);
     if (typeof initEngagement === 'function') initEngagement('chapter-' + chapter.number);
     if (typeof initBookmark === 'function') initBookmark();
 
@@ -377,7 +378,6 @@ function markdownToHtml(md) {
 }
 
 // ── Foreign language detection & translation ──
-
 const translationCache = new Map();
 
 function wrapForeignText(el) {
@@ -385,7 +385,6 @@ function wrapForeignText(el) {
   const nodes = [];
   let node;
   while (node = walker.nextNode()) nodes.push(node);
-
   nodes.forEach(textNode => {
     if (!/[\u0400-\u04FF]/.test(textNode.nodeValue)) return;
     const frag = document.createDocumentFragment();
@@ -414,55 +413,184 @@ async function fetchTranslation(text, lang) {
     const t = data.responseData?.translatedText || '—';
     translationCache.set(key, t);
     return t;
-  } catch {
-    translationCache.set(key, '—');
-    return '—';
-  }
+  } catch { translationCache.set(key, '—'); return '—'; }
 }
 
 const tooltip = document.getElementById('translation-tooltip');
-const ttLang = document.getElementById('tt-lang');
-const ttText = document.getElementById('tt-text');
+const ttLang  = document.getElementById('tt-lang');
+const ttText  = document.getElementById('tt-text');
 const langNames = { ru: 'Russian' };
 
-// Desktop: hover
 document.addEventListener('mouseover', async e => {
   const word = e.target.closest('.foreign-word');
   if (!word) { tooltip.classList.remove('visible'); return; }
-  const lang = word.dataset.lang || 'ru';
-  ttLang.textContent = langNames[lang] || lang;
+  ttLang.textContent = langNames[word.dataset.lang] || word.dataset.lang;
   ttText.textContent = '…';
   tooltip.classList.add('visible');
-  ttText.textContent = await fetchTranslation(word.textContent.trim(), lang);
+  ttText.textContent = await fetchTranslation(word.textContent.trim(), word.dataset.lang || 'ru');
 });
 
 document.addEventListener('mousemove', e => {
   if (!tooltip.classList.contains('visible')) return;
   tooltip.style.left = Math.min(e.clientX + 14, window.innerWidth - 260) + 'px';
-  tooltip.style.top = (e.clientY - 56) + 'px';
+  tooltip.style.top  = (e.clientY - 56) + 'px';
 });
 
-// Mobile: tap to toggle
 document.addEventListener('touchend', async e => {
   const word = e.target.closest('.foreign-word');
   if (!word) { tooltip.classList.remove('visible'); return; }
   e.preventDefault();
-  const lang = word.dataset.lang || 'ru';
   const rect = word.getBoundingClientRect();
-  ttLang.textContent = langNames[lang] || lang;
+  ttLang.textContent = langNames[word.dataset.lang] || word.dataset.lang;
   ttText.textContent = '…';
   tooltip.style.left = Math.min(rect.left, window.innerWidth - 260) + 'px';
-  tooltip.style.top = Math.max(rect.top - 64, 8) + 'px';
+  tooltip.style.top  = Math.max(rect.top - 64, 8) + 'px';
   tooltip.classList.add('visible');
-  ttText.textContent = await fetchTranslation(word.textContent.trim(), lang);
+  ttText.textContent = await fetchTranslation(word.textContent.trim(), word.dataset.lang || 'ru');
 }, { passive: false });
+
+// ── Audio Player ──
+function getAudioTime() {
+  const el = document.getElementById('chapter-audio');
+  return (el && el.src && !isNaN(el.currentTime) && el.currentTime > 0) ? el.currentTime : undefined;
+}
+
+function initAudioPlayer(src) {
+  const audioEl   = document.getElementById('chapter-audio');
+  const player    = document.getElementById('audio-player');
+  const playBtn   = document.getElementById('ap-play');
+  const prevBtn   = document.getElementById('ap-prev');
+  const nextBtn   = document.getElementById('ap-next');
+  const scrub     = document.getElementById('ap-scrub');
+  const timeEl    = document.getElementById('ap-time');
+  const durEl     = document.getElementById('ap-duration');
+  const paraEl    = document.getElementById('ap-para');
+  const iconPlay  = document.getElementById('ap-icon-play');
+  const iconPause = document.getElementById('ap-icon-pause');
+
+  audioEl.src = src;
+  player.classList.add('active');
+  document.body.classList.add('has-audio');
+
+  const paras = Array.from(document.querySelectorAll('.chapter-body p'));
+  const chapterKey = 'bookmark_' + window.location.pathname + window.location.search;
+  let idx = 0;
+  let audioCtx, analyser, dataArray;
+  let detecting = false, tickRunning = false, inSilence = false, silenceStart = null;
+  const VOL_THRESHOLD = 8, SILENCE_MS = 600;
+
+  function fmt(s) { return Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0'); }
+
+  function goTo(i) {
+    if (paras[idx]) paras[idx].classList.remove('audio-highlight');
+    idx = Math.max(0, Math.min(i, paras.length - 1));
+    if (paras[idx]) {
+      paras[idx].classList.add('audio-highlight');
+      const r = paras[idx].getBoundingClientRect();
+      if (r.top < 100 || r.bottom > window.innerHeight - 70)
+        paras[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    paraEl.textContent = '¶ ' + (idx + 1) + ' / ' + paras.length;
+  }
+
+  // Expose globally so bookmark jump can sync highlight
+  window.audioGoTo = goTo;
+
+  async function ensureCtx() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      audioCtx.createMediaElementSource(audioEl).connect(analyser);
+      analyser.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+  }
+
+  function tick() {
+    if (!detecting) { tickRunning = false; return; }
+    requestAnimationFrame(tick);
+    analyser.getByteFrequencyData(dataArray);
+    const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+    if (avg < VOL_THRESHOLD) {
+      if (!inSilence) { inSilence = true; silenceStart = Date.now(); }
+    } else {
+      if (inSilence && Date.now() - silenceStart >= SILENCE_MS) goTo(idx + 1);
+      inSilence = false; silenceStart = null;
+    }
+  }
+
+  function setPlaying(p) {
+    iconPlay.style.display  = p ? 'none' : '';
+    iconPause.style.display = p ? '' : 'none';
+  }
+
+  playBtn.addEventListener('click', async () => {
+    await ensureCtx();
+    audioEl.paused ? audioEl.play().catch(() => {}) : audioEl.pause();
+  });
+
+  audioEl.addEventListener('play',  () => { detecting = true;  setPlaying(true);  if (!tickRunning) { tickRunning = true; tick(); } });
+  audioEl.addEventListener('pause', () => { detecting = false; setPlaying(false); });
+  audioEl.addEventListener('ended', () => { detecting = false; setPlaying(false); });
+
+  audioEl.addEventListener('timeupdate', () => {
+    if (!audioEl.duration) return;
+    const pct = (audioEl.currentTime / audioEl.duration) * 100;
+    scrub.value = pct * 10;
+    scrub.style.setProperty('--pct', pct + '%');
+    timeEl.textContent = fmt(audioEl.currentTime);
+  });
+
+  audioEl.addEventListener('loadedmetadata', () => { durEl.textContent = fmt(audioEl.duration); });
+
+  scrub.addEventListener('input', () => {
+    if (!audioEl.duration) return;
+    audioEl.currentTime = (scrub.value / 1000) * audioEl.duration;
+    scrub.style.setProperty('--pct', scrub.value / 10 + '%');
+  });
+
+  audioEl.addEventListener('seeked', () => {
+    if (!audioEl.duration) return;
+    inSilence = false; silenceStart = null;
+    goTo(Math.floor((audioEl.currentTime / audioEl.duration) * paras.length));
+  });
+
+  prevBtn.addEventListener('click', () => {
+    goTo(idx - 1);
+    if (audioEl.duration) { audioEl.currentTime = (idx / paras.length) * audioEl.duration; inSilence = false; silenceStart = null; }
+  });
+  nextBtn.addEventListener('click', () => {
+    goTo(idx + 1);
+    if (audioEl.duration) { audioEl.currentTime = (idx / paras.length) * audioEl.duration; inSilence = false; silenceStart = null; }
+  });
+
+  // Restore audio position from bookmark if one exists
+  const savedBm = localStorage.getItem(chapterKey);
+  if (savedBm) {
+    try {
+      const bmData = JSON.parse(savedBm);
+      if (bmData.audioTime && bmData.index !== undefined) {
+        goTo(bmData.index);
+        audioEl.addEventListener('loadedmetadata', () => {
+          audioEl.currentTime = bmData.audioTime;
+        }, { once: true });
+      } else {
+        goTo(0);
+      }
+    } catch(e) { goTo(0); }
+  } else {
+    goTo(0);
+  }
+}
 </script>
 
 <script src="auth.js"></script>
 <script src="socials.js"></script>
 <script>
   const trigger = document.getElementById('socials-trigger');
-  const panel = document.getElementById('socials-panel');
+  const panel   = document.getElementById('socials-panel');
   document.getElementById('socials-arrow').addEventListener('click', () => {
     trigger.classList.toggle('open');
     panel.classList.toggle('open');
@@ -471,19 +599,25 @@ document.addEventListener('touchend', async e => {
 <script>
   if (window.netlifyIdentity) {
     window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; });
-      }
+      if (!user) { window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; }); }
     });
   }
+</script>
+<script>
+  (function() {
+    const cord = document.getElementById('cord-wrap');
+    const dot  = document.getElementById('news-dot');
+    const dismissed = localStorage.getItem('news-dismissed');
+    if (dismissed) { if (cord) cord.classList.add('pulled'); if (dot) dot.classList.add('off'); }
+    if (cord) { cord.addEventListener('click', () => { cord.classList.add('pulled'); if (dot) dot.classList.add('off'); localStorage.setItem('news-dismissed', '1'); }); }
+  })();
 </script>
 
 <script>
 document.addEventListener('keydown', (e) => {
   if (e.ctrlKey && ['c','a','x','u'].includes(e.key.toLowerCase())) {
     const sel = window.getSelection();
-    if (sel && sel.anchorNode && sel.anchorNode.closest &&
-        sel.anchorNode.closest && document.querySelector('.chapter-body') &&
+    if (sel && sel.anchorNode && document.querySelector('.chapter-body') &&
         document.querySelector('.chapter-body').contains(sel.anchorNode)) {
       e.preventDefault();
     }
@@ -501,8 +635,7 @@ function initBookmark() {
   function applyHighlight(idx) {
     document.querySelectorAll('.chapter-body p.paragraph-highlight').forEach(p => p.classList.remove('paragraph-highlight'));
     const paras = document.querySelectorAll('.chapter-body p');
-    const target = paras[idx];
-    if (target) target.classList.add('paragraph-highlight');
+    if (paras[idx]) paras[idx].classList.add('paragraph-highlight');
   }
 
   function clearHighlights() {
@@ -510,9 +643,9 @@ function initBookmark() {
   }
 
   const saved = localStorage.getItem(chapterKey);
-  const banner = document.getElementById('bookmark-banner');
+  const banner     = document.getElementById('bookmark-banner');
   const bannerText = document.getElementById('bookmark-banner-text');
-  const jumpBtn = document.getElementById('bookmark-jump');
+  const jumpBtn    = document.getElementById('bookmark-jump');
   const dismissBtn = document.getElementById('bookmark-dismiss');
   const bookmarkBtn = document.getElementById('bookmark-btn');
 
@@ -531,10 +664,16 @@ function initBookmark() {
     const data = JSON.parse(localStorage.getItem(chapterKey) || '{}');
     if (data.index !== undefined) {
       const paras = document.querySelectorAll('.chapter-body p');
-      const target = paras[data.index];
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (paras[data.index]) {
+        paras[data.index].scrollIntoView({ behavior: 'smooth', block: 'center' });
         applyHighlight(data.index);
+      }
+    }
+    if (data.audioTime !== undefined) {
+      const audioEl = document.getElementById('chapter-audio');
+      if (audioEl && audioEl.src) {
+        audioEl.currentTime = data.audioTime;
+        if (window.audioGoTo) window.audioGoTo(data.index || 0);
       }
     }
     banner.classList.remove('visible');
@@ -556,12 +695,12 @@ function initBookmark() {
     const paras = document.querySelectorAll('.chapter-body p');
     let closest = null, closestDist = Infinity, closestIdx = 0;
     paras.forEach((p, i) => {
-      const rect = p.getBoundingClientRect();
-      const dist = Math.abs(rect.top - window.innerHeight / 2);
+      const dist = Math.abs(p.getBoundingClientRect().top - window.innerHeight / 2);
       if (dist < closestDist) { closestDist = dist; closest = p; closestIdx = i; }
     });
     const text = closest ? closest.textContent.trim() : '';
-    localStorage.setItem(chapterKey, JSON.stringify({ index: closestIdx, paragraphText: text }));
+    const audioTime = getAudioTime();
+    localStorage.setItem(chapterKey, JSON.stringify({ index: closestIdx, paragraphText: text, ...(audioTime !== undefined ? { audioTime } : {}) }));
     applyHighlight(closestIdx);
     bookmarkBtn.classList.add('saved');
     bookmarkBtn.querySelector('path').setAttribute('fill', 'var(--gold)');
@@ -569,7 +708,7 @@ function initBookmark() {
     setTimeout(() => { bookmarkBtn.style.transform = ''; }, 300);
   });
 
-  const context = document.getElementById('bookmark-context');
+  const context     = document.getElementById('bookmark-context');
   const contextItem = document.getElementById('context-bookmark');
 
   document.addEventListener('contextmenu', (e) => {
@@ -581,11 +720,11 @@ function initBookmark() {
     const tn = Array.from(contextItem.childNodes).find(n => n.nodeType === 3 && n.nodeValue.trim().length > 0);
     if (tn) tn.nodeValue = isBookmarked ? ' Remove bookmark' : ' Bookmark this paragraph';
     context.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
-    context.style.top = Math.min(e.clientY, window.innerHeight - 80) + 'px';
+    context.style.top  = Math.min(e.clientY, window.innerHeight - 80) + 'px';
     context.classList.add('visible');
   });
 
-  document.addEventListener('click', () => context.classList.remove('visible'));
+  document.addEventListener('click',  () => context.classList.remove('visible'));
   document.addEventListener('scroll', () => context.classList.remove('visible'));
 
   contextItem && contextItem.addEventListener('click', () => {
@@ -601,7 +740,8 @@ function initBookmark() {
       const paras = Array.from(document.querySelectorAll('.chapter-body p'));
       const idx = paras.indexOf(targetParagraph);
       const text = targetParagraph.textContent.trim();
-      localStorage.setItem(chapterKey, JSON.stringify({ index: idx, paragraphText: text }));
+      const audioTime = getAudioTime();
+      localStorage.setItem(chapterKey, JSON.stringify({ index: idx, paragraphText: text, ...(audioTime !== undefined ? { audioTime } : {}) }));
       applyHighlight(idx);
       bookmarkBtn.classList.add('saved');
       bookmarkBtn.querySelector('path').setAttribute('fill', 'var(--gold)');
