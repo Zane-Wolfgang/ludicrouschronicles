@@ -77,6 +77,22 @@
   #comment-submit { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.8em 2em; cursor: pointer; transition: background 0.2s; }
   #comment-submit:hover { background: var(--gold-bright); }
   #comment-submit:disabled { opacity: 0.5; cursor: default; }
+
+  /* ── Audio Player ── */
+  .audio-player { position: fixed; bottom: 0; left: 0; right: 0; z-index: 150; background: rgba(10,8,6,0.98); border-top: 1px solid var(--gold-dim); padding: 0.6rem 2rem; display: none; align-items: center; gap: 1rem; box-shadow: 0 -4px 20px rgba(0,0,0,0.6); }
+  .audio-player.active { display: flex; }
+  .ap-btn { background: none; border: 1px solid var(--border); width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s; flex-shrink: 0; padding: 0; }
+  .ap-btn:hover { border-color: var(--gold-dim); }
+  .ap-btn svg { width: 12px; height: 12px; }
+  .ap-time, .ap-duration { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.1em; color: var(--text-muted); flex-shrink: 0; min-width: 30px; text-align: center; }
+  .ap-scrub { flex: 1; min-width: 60px; height: 3px; -webkit-appearance: none; appearance: none; background: linear-gradient(90deg, var(--gold-dim) var(--pct,0%), rgba(201,168,76,0.2) var(--pct,0%)); outline: none; cursor: pointer; }
+  .ap-scrub::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: var(--gold); border-radius: 50%; cursor: pointer; }
+  .ap-scrub::-moz-range-thumb { width: 12px; height: 12px; background: var(--gold); border: none; border-radius: 50%; cursor: pointer; }
+  .ap-para { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-dim); flex-shrink: 0; white-space: nowrap; }
+  /* Audio paragraph highlight — brighter than bookmark highlight */
+  .audio-highlight { background: rgba(201,168,76,0.14) !important; border-left: 3px solid var(--gold) !important; padding-left: 0.5rem; margin-left: -0.6rem; transition: background 0.3s; }
+  body.has-audio .chapter-engagement { padding-bottom: 5rem; }
+  @media (max-width: 768px) { .audio-player { padding: 0.5rem 0.75rem; gap: 0.5rem; } .ap-btn { width: 36px; height: 36px; } .ap-para { display: none; } }
 </style>
 </head>
 <body>
@@ -108,16 +124,8 @@
     const btn = document.getElementById('nav-hamburger');
     const links = document.querySelector('.nav-links');
     if (btn && links) {
-      btn.addEventListener('click', () => {
-        btn.classList.toggle('open');
-        links.classList.toggle('open');
-      });
-      links.querySelectorAll('a').forEach(a => {
-        a.addEventListener('click', () => {
-          btn.classList.remove('open');
-          links.classList.remove('open');
-        });
-      });
+      btn.addEventListener('click', () => { btn.classList.toggle('open'); links.classList.toggle('open'); });
+      links.querySelectorAll('a').forEach(a => { a.addEventListener('click', () => { btn.classList.remove('open'); links.classList.remove('open'); }); });
     }
   })();
 </script>
@@ -128,7 +136,7 @@
     <h1 class="chapter-title">Chapter I</h1>
   </div>
 
-  <img class="chapter-art" src="images/art-04-train.png" alt="The Beginning — Chapter Art" />
+  <img class="chapter-art" id="ch-art" src="images/art-04-train.png" alt="The Beginning — Chapter Art" />
 
   <div class="chapter-divider"></div>
 
@@ -493,7 +501,7 @@
   </div>
 </div>
 
-<div class="chapter-engagement">
+<div class="chapter-engagement" id="chapter-engagement">
   <div class="engagement-stats">
     <div class="stat-item">
       <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5C21.3 7.6 17 4.5 12 4.5zm0 12.5c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z"/></svg>
@@ -525,6 +533,25 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- Audio Player (shown only when chapter has audio uploaded in admin) -->
+<div class="audio-player" id="audio-player">
+  <button class="ap-btn" id="ap-prev" title="Previous paragraph">
+    <svg viewBox="0 0 12 12"><path d="M2 2h2v8H2zM10 2L4 6l6 4z" fill="var(--gold)"/></svg>
+  </button>
+  <button class="ap-btn" id="ap-play" title="Play / Pause">
+    <svg id="ap-icon-play" viewBox="0 0 12 12"><path d="M3 2l6 4-6 4z" fill="var(--gold)"/></svg>
+    <svg id="ap-icon-pause" viewBox="0 0 12 12" style="display:none"><path d="M3 3h2v6H3zm4 0h2v6H7z" fill="var(--gold)"/></svg>
+  </button>
+  <button class="ap-btn" id="ap-next" title="Next paragraph">
+    <svg viewBox="0 0 12 12"><path d="M10 2H8v8h2zM2 2l6 4-6 4z" fill="var(--gold)"/></svg>
+  </button>
+  <span class="ap-time" id="ap-time">0:00</span>
+  <input type="range" class="ap-scrub" id="ap-scrub" min="0" max="1000" value="0" step="1">
+  <span class="ap-duration" id="ap-duration">—:——</span>
+  <span class="ap-para" id="ap-para">¶ 1</span>
+  <audio id="chapter-audio" preload="none"></audio>
 </div>
 
 <!-- Socials Sidebar -->
@@ -575,7 +602,7 @@ document.addEventListener('keydown', (e) => {
   if (e.ctrlKey && ['c','a','x','u'].includes(e.key.toLowerCase())) {
     const sel = window.getSelection();
     if (sel && sel.anchorNode && sel.anchorNode.closest &&
-        sel.anchorNode.closest && document.querySelector('.chapter-body') &&
+        document.querySelector('.chapter-body') &&
         document.querySelector('.chapter-body').contains(sel.anchorNode)) {
       e.preventDefault();
     }
@@ -593,8 +620,7 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
   function applyHighlight(idx) {
     document.querySelectorAll('.chapter-body p.paragraph-highlight').forEach(p => p.classList.remove('paragraph-highlight'));
     const paras = document.querySelectorAll('.chapter-body p');
-    const target = paras[idx];
-    if (target) target.classList.add('paragraph-highlight');
+    if (paras[idx]) paras[idx].classList.add('paragraph-highlight');
   }
 
   function clearHighlights() {
@@ -623,10 +649,16 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
     const data = JSON.parse(localStorage.getItem(chapterKey) || '{}');
     if (data.index !== undefined) {
       const paras = document.querySelectorAll('.chapter-body p');
-      const target = paras[data.index];
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (paras[data.index]) {
+        paras[data.index].scrollIntoView({ behavior: 'smooth', block: 'center' });
         applyHighlight(data.index);
+      }
+    }
+    if (data.audioTime !== undefined) {
+      const audioEl = document.getElementById('chapter-audio');
+      if (audioEl && audioEl.src) {
+        audioEl.currentTime = data.audioTime;
+        if (window.audioGoTo) window.audioGoTo(data.index || 0);
       }
     }
     banner.classList.remove('visible');
@@ -648,12 +680,13 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
     const paras = document.querySelectorAll('.chapter-body p');
     let closest = null, closestDist = Infinity, closestIdx = 0;
     paras.forEach((p, i) => {
-      const rect = p.getBoundingClientRect();
-      const dist = Math.abs(rect.top - window.innerHeight / 2);
+      const dist = Math.abs(p.getBoundingClientRect().top - window.innerHeight / 2);
       if (dist < closestDist) { closestDist = dist; closest = p; closestIdx = i; }
     });
     const text = closest ? closest.textContent.trim() : '';
-    localStorage.setItem(chapterKey, JSON.stringify({ index: closestIdx, paragraphText: text }));
+    const audioElBm = document.getElementById('chapter-audio');
+    const audioTime = (audioElBm && audioElBm.src && !isNaN(audioElBm.currentTime) && audioElBm.currentTime > 0) ? audioElBm.currentTime : undefined;
+    localStorage.setItem(chapterKey, JSON.stringify({ index: closestIdx, paragraphText: text, ...(audioTime !== undefined ? { audioTime } : {}) }));
     applyHighlight(closestIdx);
     bookmarkBtn.classList.add('saved');
     bookmarkBtn.querySelector('path').setAttribute('fill', 'var(--gold)');
@@ -669,6 +702,9 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
     if (!para) { context.classList.remove('visible'); return; }
     e.preventDefault();
     targetParagraph = para;
+    const isBookmarked = para.classList.contains('paragraph-highlight');
+    const tn = Array.from(contextItem.childNodes).find(n => n.nodeType === 3 && n.nodeValue.trim().length > 0);
+    if (tn) tn.nodeValue = isBookmarked ? ' Remove bookmark' : ' Bookmark this paragraph';
     context.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
     context.style.top = Math.min(e.clientY, window.innerHeight - 80) + 'px';
     context.classList.add('visible');
@@ -679,19 +715,178 @@ document.querySelector('.chapter-body').addEventListener('dragstart', e => e.pre
 
   contextItem && contextItem.addEventListener('click', () => {
     if (!targetParagraph) return;
-    const paras = Array.from(document.querySelectorAll('.chapter-body p'));
-    const idx = paras.indexOf(targetParagraph);
-    const text = targetParagraph.textContent.trim();
-    localStorage.setItem(chapterKey, JSON.stringify({ index: idx, paragraphText: text }));
-    applyHighlight(idx);
-    bookmarkBtn.classList.add('saved');
-    bookmarkBtn.querySelector('path').setAttribute('fill', 'var(--gold)');
+    const isBookmarked = targetParagraph.classList.contains('paragraph-highlight');
+    if (isBookmarked) {
+      localStorage.removeItem(chapterKey);
+      clearHighlights();
+      bookmarkBtn.classList.remove('saved');
+      bookmarkBtn.querySelector('path').setAttribute('fill', 'rgba(10,8,6,0.8)');
+      banner.classList.remove('visible');
+    } else {
+      const paras = Array.from(document.querySelectorAll('.chapter-body p'));
+      const idx = paras.indexOf(targetParagraph);
+      const text = targetParagraph.textContent.trim();
+      const audioElCtx = document.getElementById('chapter-audio');
+      const audioTimeCtx = (audioElCtx && audioElCtx.src && !isNaN(audioElCtx.currentTime) && audioElCtx.currentTime > 0) ? audioElCtx.currentTime : undefined;
+      localStorage.setItem(chapterKey, JSON.stringify({ index: idx, paragraphText: text, ...(audioTimeCtx !== undefined ? { audioTime: audioTimeCtx } : {}) }));
+      applyHighlight(idx);
+      bookmarkBtn.classList.add('saved');
+      bookmarkBtn.querySelector('path').setAttribute('fill', 'var(--gold)');
+    }
     context.classList.remove('visible');
   });
 })();
 </script>
+
+<script>
+// ── Load art + audio from CMS for chapter 1 ──
+(async function() {
+  try {
+    const res = await fetch('/_data/content-index.json');
+    if (!res.ok) return;
+    const items = await res.json();
+    const ch1 = items.find(i => i.type === 'Chapter' && parseInt(i.number) === 1);
+    if (!ch1) return;
+    if (ch1.art) {
+      const artEl = document.getElementById('ch-art');
+      if (artEl) artEl.src = ch1.art;
+    }
+    if (ch1.audio) initAudioPlayer(ch1.audio);
+  } catch(e) {}
+})();
+
+function initAudioPlayer(src) {
+  const audioEl  = document.getElementById('chapter-audio');
+  const player   = document.getElementById('audio-player');
+  const playBtn  = document.getElementById('ap-play');
+  const prevBtn  = document.getElementById('ap-prev');
+  const nextBtn  = document.getElementById('ap-next');
+  const scrub    = document.getElementById('ap-scrub');
+  const timeEl   = document.getElementById('ap-time');
+  const durEl    = document.getElementById('ap-duration');
+  const paraEl   = document.getElementById('ap-para');
+  const iconPlay  = document.getElementById('ap-icon-play');
+  const iconPause = document.getElementById('ap-icon-pause');
+
+  audioEl.src = src;
+  player.classList.add('active');
+  document.body.classList.add('has-audio');
+
+  const paras = Array.from(document.querySelectorAll('.chapter-body p'));
+  let idx = 0;
+  let audioCtx, analyser, dataArray;
+  let detecting = false, tickRunning = false, inSilence = false, silenceStart = null;
+  const VOL_THRESHOLD = 8, SILENCE_MS = 600;
+
+  function fmt(s) { return Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0'); }
+
+  function goTo(i) {
+    if (paras[idx]) paras[idx].classList.remove('audio-highlight');
+    idx = Math.max(0, Math.min(i, paras.length - 1));
+    if (paras[idx]) {
+      paras[idx].classList.add('audio-highlight');
+      const r = paras[idx].getBoundingClientRect();
+      if (r.top < 100 || r.bottom > window.innerHeight - 70)
+        paras[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    paraEl.textContent = '¶ ' + (idx + 1) + ' / ' + paras.length;
+  }
+
+  async function ensureCtx() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      audioCtx.createMediaElementSource(audioEl).connect(analyser);
+      analyser.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+  }
+
+  function tick() {
+    if (!detecting) { tickRunning = false; return; }
+    requestAnimationFrame(tick);
+    analyser.getByteFrequencyData(dataArray);
+    const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+    if (avg < VOL_THRESHOLD) {
+      if (!inSilence) { inSilence = true; silenceStart = Date.now(); }
+    } else {
+      if (inSilence && Date.now() - silenceStart >= SILENCE_MS) goTo(idx + 1);
+      inSilence = false; silenceStart = null;
+    }
+  }
+
+  function setPlaying(p) {
+    iconPlay.style.display  = p ? 'none' : '';
+    iconPause.style.display = p ? '' : 'none';
+  }
+
+  playBtn.addEventListener('click', async () => {
+    await ensureCtx();
+    audioEl.paused ? audioEl.play().catch(() => {}) : audioEl.pause();
+  });
+
+  audioEl.addEventListener('play',  () => { detecting = true;  setPlaying(true);  if (!tickRunning) { tickRunning = true; tick(); } });
+  audioEl.addEventListener('pause', () => { detecting = false; setPlaying(false); });
+  audioEl.addEventListener('ended', () => { detecting = false; setPlaying(false); });
+
+  audioEl.addEventListener('timeupdate', () => {
+    if (!audioEl.duration) return;
+    const pct = (audioEl.currentTime / audioEl.duration) * 100;
+    scrub.value = pct * 10;
+    scrub.style.setProperty('--pct', pct + '%');
+    timeEl.textContent = fmt(audioEl.currentTime);
+  });
+
+  audioEl.addEventListener('loadedmetadata', () => { durEl.textContent = fmt(audioEl.duration); });
+
+  scrub.addEventListener('input', () => {
+    if (!audioEl.duration) return;
+    audioEl.currentTime = (scrub.value / 1000) * audioEl.duration;
+    scrub.style.setProperty('--pct', scrub.value / 10 + '%');
+  });
+
+  audioEl.addEventListener('seeked', () => {
+    if (!audioEl.duration) return;
+    inSilence = false; silenceStart = null;
+    goTo(Math.floor((audioEl.currentTime / audioEl.duration) * paras.length));
+  });
+
+  // Expose goTo globally so bookmark jump can sync the audio highlight
+  window.audioGoTo = goTo;
+
+  // Arrows — seek audio proportionally alongside moving the highlight
+  prevBtn.addEventListener('click', () => {
+    goTo(idx - 1);
+    if (audioEl.duration) { audioEl.currentTime = (idx / paras.length) * audioEl.duration; inSilence = false; silenceStart = null; }
+  });
+  nextBtn.addEventListener('click', () => {
+    goTo(idx + 1);
+    if (audioEl.duration) { audioEl.currentTime = (idx / paras.length) * audioEl.duration; inSilence = false; silenceStart = null; }
+  });
+
+  // Restore audio position from bookmark if one exists, otherwise start at paragraph 1
+  const savedBm = localStorage.getItem('bookmark_' + window.location.pathname);
+  if (savedBm) {
+    try {
+      const bmData = JSON.parse(savedBm);
+      if (bmData.audioTime && bmData.index !== undefined) {
+        goTo(bmData.index); // highlight restored paragraph immediately
+        audioEl.addEventListener('loadedmetadata', () => {
+          audioEl.currentTime = bmData.audioTime;
+        }, { once: true });
+      } else {
+        goTo(0);
+      }
+    } catch(e) { goTo(0); }
+  } else {
+    goTo(0);
+  }
+}
+</script>
+
 <script src="engagement.js"></script>
 <script>document.addEventListener("DOMContentLoaded", () => initEngagement("chapter-1"));</script>
 </body>
 </html>
-
