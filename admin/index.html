@@ -5,8 +5,169 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ludicrous Chronicles — Admin</title>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <style>
+    /* ── Markdown Help Button ── */
+    #md-help-btn {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 1.5rem;
+      z-index: 99999;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #c9a84c;
+      color: #0a0806;
+      border: none;
+      font-family: Georgia, serif;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.15s;
+    }
+    #md-help-btn:hover { background: #e8c96a; transform: scale(1.08); }
+
+    #md-help-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,8,6,0.85);
+      z-index: 999999;
+      align-items: center;
+      justify-content: center;
+    }
+    #md-help-overlay.open { display: flex; }
+
+    #md-help-panel {
+      background: #17150f;
+      border: 1px solid rgba(201,168,76,0.35);
+      max-width: 520px;
+      width: 90vw;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 2rem;
+      position: relative;
+    }
+
+    #md-help-panel h2 {
+      font-family: Georgia, serif;
+      font-size: 13px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #c9a84c;
+      margin: 0 0 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(201,168,76,0.2);
+    }
+
+    #md-help-panel table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: Georgia, serif;
+      font-size: 13px;
+    }
+
+    #md-help-panel th {
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #8a6e2f;
+      padding: 0 0 0.6rem;
+    }
+
+    #md-help-panel td {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(201,168,76,0.1);
+      vertical-align: middle;
+    }
+
+    #md-help-panel td:first-child {
+      width: 50%;
+      font-family: monospace;
+      font-size: 13px;
+      color: #e8d5a0;
+      padding-right: 1rem;
+    }
+
+    #md-help-panel td:last-child { color: #ccc5b0; }
+
+    #md-help-panel .section-head {
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #8a6e2f;
+      padding-top: 1.25rem;
+      border-bottom: none;
+      font-family: Georgia, serif;
+    }
+
+    #md-help-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      color: #8a6e2f;
+      font-size: 18px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0.25rem 0.5rem;
+    }
+    #md-help-close:hover { color: #c9a84c; }
+
+    #md-help-panel .preview-small { font-size: 0.85em; }
+    #md-help-panel .preview-big { font-size: 1.2em; }
+  </style>
 </head>
 <body>
-  <script src="https://unpkg.com/netlify-cms@^2.0.0/dist/netlify-cms.js"></script>
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+
+  <!-- Markdown Help Button -->
+  <button id="md-help-btn" title="Markdown formatting guide">?</button>
+
+  <div id="md-help-overlay">
+    <div id="md-help-panel">
+      <button id="md-help-close">✕</button>
+      <h2>Markdown Cheat Sheet</h2>
+      <table>
+        <tr><th>You type</th><th>Result</th></tr>
+
+        <tr><td colspan="2" class="section-head">Basic Formatting</td></tr>
+        <tr><td>*word*</td><td><em>Italic</em></td></tr>
+        <tr><td>**word**</td><td><strong>Bold</strong></td></tr>
+        <tr><td>***word***</td><td><strong><em>Bold italic</em></strong></td></tr>
+        <tr><td>__word__</td><td style="text-decoration:underline;">Underline</td></tr>
+        <tr><td>~~word~~</td><td><s>Strikethrough</s></td></tr>
+
+        <tr><td colspan="2" class="section-head">Size</td></tr>
+        <tr><td>^^word^^</td><td class="preview-big">Bigger text</td></tr>
+        <tr><td>,,word,,</td><td class="preview-small">Smaller text</td></tr>
+
+        <tr><td colspan="2" class="section-head">Paragraph Breaks</td></tr>
+        <tr><td>blank line between</td><td>New paragraph</td></tr>
+        <tr><td>two spaces + Enter</td><td>Line break within paragraph</td></tr>
+
+        <tr><td colspan="2" class="section-head">Links</td></tr>
+        <tr><td>[text](url)</td><td style="color:#c9a84c;text-decoration:underline;">Clickable link</td></tr>
+
+        <tr><td colspan="2" class="section-head">Other</td></tr>
+        <tr><td>Cyrillic text</td><td style="color:#a8c4d8;">Auto-detected, turns blue, hover to translate</td></tr>
+        <tr><td>Paste Unicode fonts</td><td>𝓡𝓮𝓷𝓭𝓮𝓻𝓼 as-is</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const helpBtn = document.getElementById('md-help-btn');
+    const overlay = document.getElementById('md-help-overlay');
+    const closeBtn = document.getElementById('md-help-close');
+    helpBtn.addEventListener('click', () => overlay.classList.add('open'));
+    closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+  </script>
 </body>
 </html>
