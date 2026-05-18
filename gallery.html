@@ -50,26 +50,25 @@
   .lightbox-nav.hidden { display: none; }
   .lightbox-page-count { position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%); font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; color: var(--text-muted); z-index: 20; }
 
+  /* ── Stills section ── */
+  .stills-section { margin-top: 5rem; padding-top: 4rem; border-top: 1px solid var(--border); }
+  .stills-section .section-label { margin-bottom: 0.5rem; }
+  .stills-grid { columns: 3; column-gap: 12px; margin-top: 2rem; }
+  .stills-empty { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); padding: 3rem 0; text-align: center; }
+
   /* ── MOBILE ── */
   @media (max-width: 768px) {
-    .gallery-grid { margin-top: 1.5rem; }
-
-    /* No hover on mobile — always show the title overlay */
+    .gallery-grid, .stills-grid { margin-top: 1.5rem; }
     .gallery-item:not(.locked) .gallery-overlay { opacity: 1; bottom: 0; }
-
-    /* Bigger tap targets in lightbox */
-    .lightbox-close {
-      top: 0.75rem; right: 0.75rem;
-      padding: 0.75rem;
-      min-width: 44px; min-height: 44px;
-      display: flex; align-items: center; justify-content: center;
-    }
+    .lightbox-close { top: 0.75rem; right: 0.75rem; padding: 0.75rem; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
     .lightbox-nav { width: 52px; height: 52px; }
     .lightbox-nav.prev { left: 0.25rem; }
     .lightbox-nav.next { right: 0.25rem; }
     .lightbox-img { max-width: 96vw; max-height: 78vh; }
     .lightbox-hint { bottom: 0.75rem; font-size: 8px; }
     .lightbox-page-count { bottom: 2.25rem; }
+    .stills-grid { columns: 1; }
+    .stills-section { margin-top: 3rem; padding-top: 2.5rem; }
   }
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
@@ -117,7 +116,7 @@
 
 <section>
   <div class="section-inner">
-    <div class="gallery-grid">
+    <div class="gallery-grid" id="gallery-grid">
 
       <div class="gallery-item" onclick="openLightbox('images/art-01-witch-lantern.png', 'Nearly There', 'Character Art')">
         <img loading="lazy" decoding="async" src="images/art-01-witch-lantern.png" alt="Nearly There" />
@@ -199,6 +198,17 @@
       </div>
 
     </div>
+
+    <!-- ── Stills Section ── -->
+    <div class="stills-section" id="stills">
+      <div class="section-label">Roblox Stills</div>
+      <h2 class="section-title">Stills</h2>
+      <p class="section-body">Posed character photoshoots — composed and curated, not drawn.</p>
+      <div class="stills-grid" id="stills-grid">
+        <div class="stills-empty" id="stills-loading">Loading...</div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -239,6 +249,8 @@
 </footer>
 
 <script>
+  let slideImages = [], slideTitles = [], slideType = '', slideIndex = 0;
+
   function openSlideshow(images, titles, type) {
     slideImages = images; slideTitles = titles; slideType = type; slideIndex = 0;
     lbImg.style.opacity = '0';
@@ -256,10 +268,7 @@
   function showSlide(index) {
     lbImg.style.opacity = '0.15';
     const incoming = new Image();
-    incoming.onload = () => {
-      lbImg.src = slideImages[index];
-      lbImg.style.opacity = '1';
-    };
+    incoming.onload = () => { lbImg.src = slideImages[index]; lbImg.style.opacity = '1'; };
     incoming.onerror = () => { lbImg.style.opacity = '1'; };
     incoming.src = slideImages[index];
     lbCaption.textContent = slideTitles[index] + ' — ' + slideType;
@@ -269,14 +278,17 @@
     lbHint.textContent = 'Click image to zoom'; lbHint.style.opacity = '0.6';
     preloadAdjacent(index);
   }
+
   document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); if (slideIndex > 0) { slideIndex--; showSlide(slideIndex); } });
   document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); if (slideIndex < slideImages.length - 1) { slideIndex++; showSlide(slideIndex); } });
+
   const lb = document.getElementById('lightbox');
   const lbInner = document.getElementById('lb-inner');
   const lbImg = document.getElementById('lb-img');
   const lbCaption = document.getElementById('lb-caption');
   const lbHint = document.getElementById('lb-hint');
   let zoomed = false;
+
   function openLightbox(src, title, type) {
     lbImg.src = src; lbCaption.textContent = title + ' — ' + type;
     lb.classList.add('open'); lb.classList.remove('zoomed');
@@ -287,7 +299,9 @@
     document.getElementById('lb-next').classList.add('hidden');
     document.getElementById('lb-pages').textContent = '';
   }
+
   function closeLightbox() { lb.classList.remove('open','zoomed'); document.body.style.overflow = ''; zoomed = false; }
+
   document.getElementById('lb-close').addEventListener('click', e => { e.stopPropagation(); closeLightbox(); });
   lbImg.addEventListener('click', e => {
     e.stopPropagation();
@@ -310,7 +324,6 @@
   document.addEventListener('contextmenu', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
   document.querySelectorAll('img').forEach(img => { img.setAttribute('draggable', 'false'); img.style.userSelect = 'none'; img.style.webkitUserDrag = 'none'; });
 
-  // Touch devices: update hint text
   if ('ontouchstart' in window) {
     const hint = document.getElementById('lb-hint');
     if (hint) hint.textContent = 'Tap image to zoom';
@@ -390,13 +403,54 @@ async function checkHardcodedLocks() {
     }
   });
 }
+
+// ── Stills loader ──
+async function loadStills() {
+  const grid = document.getElementById('stills-grid');
+  const loading = document.getElementById('stills-loading');
+  try {
+    const res = await fetch('/_data/stills-index.json');
+    if (!res.ok) throw new Error();
+    const items = await res.json();
+    if (!items || items.length === 0) {
+      if (loading) loading.textContent = 'No stills yet.';
+      return;
+    }
+    const userTier = window.getUserTier ? await window.getUserTier() : 'free';
+    const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
+    if (loading) loading.remove();
+    items.forEach(item => {
+      const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
+      const images = item.images && item.images.length > 0 ? item.images : [item.image];
+      const titles = images.map((_, i) => i === 0 ? item.title : `${item.title} (${i+1})`);
+      const isSlideshow = images.length > 1;
+      const game = item.game ? ` · ${item.game}` : '';
+      const div = document.createElement('div');
+      if (isLocked) {
+        div.className = 'gallery-item locked';
+        div.setAttribute('onclick', "window.location.href='membership.html'");
+        div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div><div class="gallery-tier-label">${item.tier === 'devoted' ? 'Devoted' : 'Bound'}</div><div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div></div>`;
+      } else {
+        div.className = 'gallery-item';
+        div.setAttribute('onclick', isSlideshow
+          ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, 'Stills')`
+          : `openLightbox('${images[0]}', '${item.title}', 'Stills')`);
+        div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" />${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">Stills${game}${isSlideshow ? ' · ' + images.length + ' shots' : ''}</div></div>`;
+      }
+      grid.appendChild(div);
+    });
+  } catch(e) {
+    if (loading) loading.textContent = 'No stills yet.';
+  }
+}
 </script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
 <script>
 loadCMSGallery().then(() => checkHardcodedLocks()).then(() => {
-  if (window.location.hash) openFromHash();
+  if (window.location.hash && window.location.hash !== '#stills') openFromHash();
 });
+loadStills();
 </script>
 <script>
 function openFromHash() {
@@ -416,6 +470,11 @@ function openFromHash() {
 }
 window.addEventListener('load', () => {
   if (!window.location.hash) return;
+  // Scroll to stills section if hash is #stills
+  if (window.location.hash === '#stills') {
+    document.getElementById('stills')?.scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
   if (openFromHash()) return;
   [50, 200, 500, 1000].forEach(delay => { setTimeout(() => { if (!document.getElementById('lightbox').classList.contains('open')) openFromHash(); }, delay); });
 });
