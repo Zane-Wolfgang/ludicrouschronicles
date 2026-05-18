@@ -71,6 +71,18 @@ const gallery = galleryRaw.map(item => {
 fs.writeFileSync('_data/gallery-index.json', JSON.stringify(gallery, null, 2));
 console.log(`Gallery: ${gallery.length} items`);
 
+// ── Stills index ──
+const stillsRaw = readDataDir('_data/stills');
+const stills = stillsRaw.map(item => {
+  const images = [item.image].filter(Boolean);
+  for (let n = 2; n <= 20; n++) {
+    if (item[`image${n}`]) images.push(item[`image${n}`]);
+  }
+  return { ...item, images };
+});
+fs.writeFileSync('_data/stills-index.json', JSON.stringify(stills, null, 2));
+console.log(`Stills: ${stills.length} items`);
+
 const announcements = readDataDir('_data/announcements');
 fs.writeFileSync('_data/announcements-index.json', JSON.stringify(announcements, null, 2));
 console.log(`Announcements: ${announcements.length} items`);
@@ -102,8 +114,13 @@ const wips = readDataDir('_data/wips').map(w => ({
   href: 'membership.html', thumbnail: w.image || ''
 }));
 
+const stills_content = stills.map(s => ({
+  ...s, type: 'Stills', label: 'Stills', filter_type: 'stills',
+  href: 'gallery.html#stills', thumbnail: s.image || ''
+}));
+
 const sortedChapters = [...chapters].sort((a,b) => parseInt(a.number||0) - parseInt(b.number||0));
-const sortedOther = [...videos, ...shortStories, ...wips].sort((a,b) => new Date(b.date) - new Date(a.date));
+const sortedOther = [...videos, ...shortStories, ...wips, ...stills_content].sort((a,b) => new Date(b.date) - new Date(a.date));
 const contentIndex = [...sortedChapters, ...sortedOther];
 
 fs.writeFileSync('_data/content-index.json', JSON.stringify(contentIndex, null, 2));
@@ -132,7 +149,7 @@ async function maybeSendNewsletter() {
     console.log('Commit message:', commitMsg);
   } catch(e) { console.log('Could not read git log — skipping newsletter'); return; }
 
-  const cmsPattern = /^(Create|Update)\s+(Chapters|Videos|Gallery|Announcements|Short Stories|Short_stories)\s+/i;
+  const cmsPattern = /^(Create|Update)\s+(Chapters|Videos|Gallery|Announcements|Short Stories|Short_stories|Stills)\s+/i;
   if (!cmsPattern.test(commitMsg)) { console.log('Not a CMS publish commit — skipping newsletter'); return; }
 
   let character, quote, contentType, link, subject, title = '';
@@ -172,6 +189,13 @@ async function maybeSendNewsletter() {
     link = 'https://ludicrous-chronicles.netlify.app/content.html';
     subject = `${title} — Ludicrous Chronicles`;
     quote = `Ah, what delightful fortune brings you to my correspondence~! A new tale has unfurled itself, dear reader. Come — indulge me~.`;
+  } else if (/Stills/i.test(commitMsg)) {
+    const latest = stills[0];
+    title = latest ? latest.title : 'New Stills';
+    character = 'Rachel'; contentType = 'Stills';
+    link = 'https://ludicrous-chronicles.netlify.app/gallery.html';
+    subject = `${title} — Ludicrous Chronicles`;
+    quote = `Oh! Forgive the intrusion — why, I do hope I'm not bothering you — There are... some new stills in the gallery, if you'd care to have a look.`;
   }
 
   if (!character) { console.log('Could not determine content type — skipping newsletter'); return; }
@@ -217,7 +241,6 @@ async function maybeSendNewsletter() {
     });
     const contactsData = await contactsRes.json();
 
-    // Deduplicate by email address — prevents double-sending if API returns duplicates
     const seen = new Set();
     const contacts = (contactsData.contacts || [])
       .filter(c => !c.emailBlacklisted && c.email)
