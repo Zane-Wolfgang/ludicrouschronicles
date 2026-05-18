@@ -142,6 +142,45 @@ collections:
           - { label: "Bound — $12 members", value: "bound" }
         default: "bound"
 
+  - name: "stills"
+    label: "Stills"
+    folder: "_data/stills"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string", hint: "Name of the shoot, e.g. Pine Ridge — Spring Session" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Game / Location", name: "game", widget: "string", required: false, hint: "e.g. Pine Ridge, Brookhaven" }
+      - { label: "Description (optional)", name: "description", widget: "string", required: false, hint: "One line caption shown on the gallery" }
+      - { label: "Cover Image", name: "image", widget: "image", hint: "First image shown in the grid" }
+      - { label: "Image 2", name: "image2", widget: "image", required: false }
+      - { label: "Image 3", name: "image3", widget: "image", required: false }
+      - { label: "Image 4", name: "image4", widget: "image", required: false }
+      - { label: "Image 5", name: "image5", widget: "image", required: false }
+      - { label: "Image 6", name: "image6", widget: "image", required: false }
+      - { label: "Image 7", name: "image7", widget: "image", required: false }
+      - { label: "Image 8", name: "image8", widget: "image", required: false }
+      - { label: "Image 9", name: "image9", widget: "image", required: false }
+      - { label: "Image 10", name: "image10", widget: "image", required: false }
+      - { label: "Image 11", name: "image11", widget: "image", required: false }
+      - { label: "Image 12", name: "image12", widget: "image", required: false }
+      - { label: "Image 13", name: "image13", widget: "image", required: false }
+      - { label: "Image 14", name: "image14", widget: "image", required: false }
+      - { label: "Image 15", name: "image15", widget: "image", required: false }
+      - { label: "Image 16", name: "image16", widget: "image", required: false }
+      - { label: "Image 17", name: "image17", widget: "image", required: false }
+      - { label: "Image 18", name: "image18", widget: "image", required: false }
+      - { label: "Image 19", name: "image19", widget: "image", required: false }
+      - { label: "Image 20", name: "image20", widget: "image", required: false }
+      - label: "Access Tier"
+        name: "tier"
+        widget: "select"
+        options:
+          - { label: "Free — visible to everyone", value: "free" }
+          - { label: "Devoted — $5 members", value: "devoted" }
+          - { label: "Bound — $12 members", value: "bound" }
+        default: "free"
+
   - name: "socials"
     label: "Social Links"
     folder: "_data/socials"
