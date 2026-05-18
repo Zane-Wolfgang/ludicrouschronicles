@@ -343,6 +343,10 @@ function markdownToHtml(md) {
       .replace(/\*\*\*(.*?)\*\*\*/gs, '<strong><em>$1</em></strong>')
       .replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/gs, '<em>$1</em>')
+      .replace(/__(.*?)__/gs, '<span style="text-decoration:underline;">$1</span>')
+      .replace(/~~(.*?)~~/gs, '<span style="text-decoration:line-through;">$1</span>')
+      .replace(/\^\^(.*?)\^\^/gs, '<span style="font-size:1.2em;">$1</span>')
+      .replace(/,,(.*?),,/gs, '<span style="font-size:0.85em;">$1</span>')
       .replace(/_(.*?)_/gs, '<em>$1</em>');
   }
 
