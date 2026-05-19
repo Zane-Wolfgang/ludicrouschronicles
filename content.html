@@ -34,7 +34,27 @@
   .content-thumb.blurred .content-lock { z-index: 2; }
   .blur-overlay { position: absolute; inset: 0; background: rgba(10,8,6,0.35); z-index: 1; }
 
-  /* Newsletter float box */
+  /* ── Bookmarks panel ── */
+  .bookmarks-panel { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--gold-dim); padding: 1.5rem 2rem; margin-bottom: 2.5rem; display: none; }
+  .bookmarks-panel.visible { display: block; }
+  .bookmarks-label { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 1rem; }
+  .bookmarks-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .bookmarks-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .bookmark-entry { background: var(--deep); padding: 0.9rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: background 0.2s; }
+  .bookmark-entry:hover { background: var(--mid); }
+  .bookmark-entry-info { flex: 1; min-width: 0; }
+  .bookmark-entry-title { font-family: 'Cinzel', serif; font-size: 0.88rem; color: var(--parchment); margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bookmark-entry-snippet { font-family: 'EB Garamond', serif; font-size: 0.85rem; font-style: italic; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bookmark-entry-btn { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.4em 1em; cursor: pointer; white-space: nowrap; flex-shrink: 0; text-decoration: none; transition: background 0.2s; }
+  .bookmark-entry-btn:hover { background: var(--gold-bright); }
+  .bookmark-entry-dismiss { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 0.25rem; flex-shrink: 0; line-height: 1; transition: color 0.2s; }
+  .bookmark-entry-dismiss:hover { color: var(--gold); }
+
+  @media (max-width: 768px) {
+    .bookmarks-panel { padding: 1.25rem; }
+    .bookmark-entry { flex-wrap: wrap; gap: 0.6rem; }
+    .bookmark-entry-info { width: 100%; }
+  }
   .newsletter-float { position: fixed; left: 1.2rem; top: 50%; transform: translateY(-50%); z-index: 90; width: 165px; background: rgba(10,8,6,0.96); border: 1px solid var(--gold-dim); padding: 1.1rem 1rem; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
   .newsletter-float-label { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold-dim); display: block; margin-bottom: 0.4rem; }
   .newsletter-float-text { font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.82rem; color: var(--text-muted); margin: 0 0 0.7rem; line-height: 1.4; }
@@ -107,6 +127,13 @@
 
 <section>
   <div class="section-inner">
+
+    <!-- Bookmarks panel -->
+    <div class="bookmarks-panel" id="bookmarks-panel">
+      <div class="bookmarks-label">Continue Reading</div>
+      <div class="bookmarks-list" id="bookmarks-list"></div>
+    </div>
+
     <div class="filter-bar">
       <button class="filter-btn active" data-filter="all">All</button>
       <button class="filter-btn" data-filter="story">Story</button>
@@ -140,7 +167,7 @@
   <div class="socials-panel" id="socials-panel">
     <div class="socials-title">Find Me</div>
     <a class="socials-link" href="https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>YouTube</a>
-    <a class="socials-link" href="https://discord.gg/N82SVBVXXF" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>Discord</a>
+    <a class="socials-link" href="https://discord.gg/pEu4xNsESG" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>Discord</a>
     <a class="socials-link" href="https://x.com/spite_mstrs" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>X / Twitter</a>
     <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>AO3</a>
   </div>
@@ -327,6 +354,77 @@ async function loadAllContent() {
 <script src="socials.js"></script>
 <script>
 (async () => { await new Promise(r => setTimeout(r, 100)); loadAllContent(); })();
+</script>
+<script>
+// ── Bookmarks panel ──
+(function() {
+  const urlToTitle = {
+    '/chapter-1.html': 'Chapter I',
+    '/chapter.html': 'Chapter'
+  };
+
+  function getTitleFromKey(key) {
+    // key format: bookmark_/path/to/page.html or bookmark_/path/to/page.html?query=x
+    const path = key.replace('bookmark_', '');
+    const base = path.split('?')[0];
+    const query = path.includes('?') ? new URLSearchParams(path.split('?')[1]) : null;
+    if (base === '/chapter-1.html') return 'Chapter I';
+    if (base === '/chapter.html' && query) return 'Chapter ' + (query.get('chapter') || '');
+    if (base === '/story.html' && query) {
+      const slug = query.get('story') || '';
+      return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+    return null;
+  }
+
+  function getHrefFromKey(key) {
+    return key.replace('bookmark_', '');
+  }
+
+  function buildPanel() {
+    const panel = document.getElementById('bookmarks-panel');
+    const list  = document.getElementById('bookmarks-list');
+    if (!panel || !list) return;
+    const entries = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('bookmark_')) continue;
+      try {
+        const data = JSON.parse(localStorage.getItem(key));
+        if (!data || data.index === undefined) continue;
+        const title = getTitleFromKey(key);
+        if (!title) continue;
+        entries.push({ key, title, snippet: data.paragraphText || '', href: getHrefFromKey(key) });
+      } catch(e) {}
+    }
+    if (entries.length === 0) { panel.classList.remove('visible'); return; }
+    panel.classList.add('visible');
+    list.innerHTML = '';
+    entries.forEach(e => {
+      const div = document.createElement('div');
+      div.className = 'bookmark-entry';
+      div.innerHTML = `
+        <div class="bookmark-entry-info">
+          <div class="bookmark-entry-title">${e.title}</div>
+          <div class="bookmark-entry-snippet">${e.snippet ? '"' + e.snippet.slice(0, 60) + (e.snippet.length > 60 ? '…' : '') + '"' : 'Bookmark saved'}</div>
+        </div>
+        <a class="bookmark-entry-btn" href="${e.href}">Continue Reading</a>
+        <button class="bookmark-entry-dismiss" title="Remove bookmark">✕</button>`;
+      div.querySelector('.bookmark-entry-dismiss').addEventListener('click', () => {
+        localStorage.removeItem(e.key);
+        div.remove();
+        if (list.children.length === 0) panel.classList.remove('visible');
+      });
+      list.appendChild(div);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', buildPanel);
+  } else {
+    buildPanel();
+  }
+})();
 </script>
 </body>
 </html>
