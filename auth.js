@@ -2,51 +2,55 @@
 // Checks Netlify Identity for user role and gates content accordingly
 const tierRank = { free: 0, devoted: 1, bound: 2 };
 
-// ── Supabase config ──
-const SUPABASE_URL  = 'https://stdxmneifvavkzwttbzj.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZHhtbmVpZnZhdmt6d3R0YnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDczNTYsImV4cCI6MjA5MTg4MzM1Nn0.jWNSXOaSw5KEoFFPHSZqFZi17d9diq2ScBWCeS2o4XU';
-const SUPA_HEADERS  = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' };
+// ── Bookmark cloud helpers (scoped to avoid conflict with engagement.js constants) ──
+(function() {
+  const _BM_URL  = 'https://stdxmneifvavkzwttbzj.supabase.co';
+  const _BM_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZHhtbmVpZnZhdmt6d3R0YnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDczNTYsImV4cCI6MjA5MTg4MzM1Nn0.jWNSXOaSw5KEoFFPHSZqFZi17d9diq2ScBWCeS2o4XU';
+  const _BM_HDR  = { 'apikey': _BM_KEY, 'Authorization': 'Bearer ' + _BM_KEY, 'Content-Type': 'application/json' };
 
-// ── Bookmark cloud helpers ──
+  async function saveBookmarkCloud(slug, data) {
+    try {
+      const user = await waitForIdentity();
+      if (!user) return false;
+      const res = await fetch(`${_BM_URL}/rest/v1/bookmarks`, {
+        method: 'POST',
+        headers: { ..._BM_HDR, 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({ user_id: user.id, story_slug: slug, data, updated_at: new Date().toISOString() })
+      });
+      return res.ok;
+    } catch { return false; }
+  }
 
-async function saveBookmarkCloud(slug, data) {
-  try {
-    const user = await waitForIdentity();
-    if (!user) return false;
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/bookmarks`, {
-      method: 'POST',
-      headers: { ...SUPA_HEADERS, 'Prefer': 'resolution=merge-duplicates' },
-      body: JSON.stringify({ user_id: user.id, story_slug: slug, data, updated_at: new Date().toISOString() })
-    });
-    return res.ok;
-  } catch { return false; }
-}
+  async function loadBookmarkCloud(slug) {
+    try {
+      const user = await waitForIdentity();
+      if (!user) return null;
+      const res = await fetch(
+        `${_BM_URL}/rest/v1/bookmarks?user_id=eq.${encodeURIComponent(user.id)}&story_slug=eq.${encodeURIComponent(slug)}&select=data`,
+        { headers: _BM_HDR }
+      );
+      if (!res.ok) return null;
+      const rows = await res.json();
+      return rows && rows.length > 0 ? rows[0].data : null;
+    } catch { return null; }
+  }
 
-async function loadBookmarkCloud(slug) {
-  try {
-    const user = await waitForIdentity();
-    if (!user) return null;
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/bookmarks?user_id=eq.${encodeURIComponent(user.id)}&story_slug=eq.${encodeURIComponent(slug)}&select=data`,
-      { headers: SUPA_HEADERS }
-    );
-    if (!res.ok) return null;
-    const rows = await res.json();
-    return rows && rows.length > 0 ? rows[0].data : null;
-  } catch { return null; }
-}
+  async function deleteBookmarkCloud(slug) {
+    try {
+      const user = await waitForIdentity();
+      if (!user) return false;
+      const res = await fetch(
+        `${_BM_URL}/rest/v1/bookmarks?user_id=eq.${encodeURIComponent(user.id)}&story_slug=eq.${encodeURIComponent(slug)}`,
+        { method: 'DELETE', headers: _BM_HDR }
+      );
+      return res.ok;
+    } catch { return false; }
+  }
 
-async function deleteBookmarkCloud(slug) {
-  try {
-    const user = await waitForIdentity();
-    if (!user) return false;
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/bookmarks?user_id=eq.${encodeURIComponent(user.id)}&story_slug=eq.${encodeURIComponent(slug)}`,
-      { method: 'DELETE', headers: SUPA_HEADERS }
-    );
-    return res.ok;
-  } catch { return false; }
-}
+  window.saveBookmarkCloud   = saveBookmarkCloud;
+  window.loadBookmarkCloud   = loadBookmarkCloud;
+  window.deleteBookmarkCloud = deleteBookmarkCloud;
+})();
 
 function tierFromUser(user) {
   if (!user) return 'free';
