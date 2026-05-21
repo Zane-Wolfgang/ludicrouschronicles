@@ -2,11 +2,56 @@
 // Checks Netlify Identity for user role and gates content accordingly
 const tierRank = { free: 0, devoted: 1, bound: 2 };
 
+// ── Supabase config ──
+const SUPABASE_URL  = 'https://stdxmneifvavkzwttbzj.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZHhtbmVpZnZhdmt6d3R0YnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDczNTYsImV4cCI6MjA5MTg4MzM1Nn0.jWNSXOaSw5KEoFFPHSZqFZi17d9diq2ScBWCeS2o4XU';
+const SUPA_HEADERS  = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' };
+
+// ── Bookmark cloud helpers ──
+
+async function saveBookmarkCloud(slug, data) {
+  try {
+    const user = await waitForIdentity();
+    if (!user) return false;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/bookmarks`, {
+      method: 'POST',
+      headers: { ...SUPA_HEADERS, 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ user_id: user.id, story_slug: slug, data, updated_at: new Date().toISOString() })
+    });
+    return res.ok;
+  } catch { return false; }
+}
+
+async function loadBookmarkCloud(slug) {
+  try {
+    const user = await waitForIdentity();
+    if (!user) return null;
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/bookmarks?user_id=eq.${encodeURIComponent(user.id)}&story_slug=eq.${encodeURIComponent(slug)}&select=data`,
+      { headers: SUPA_HEADERS }
+    );
+    if (!res.ok) return null;
+    const rows = await res.json();
+    return rows && rows.length > 0 ? rows[0].data : null;
+  } catch { return null; }
+}
+
+async function deleteBookmarkCloud(slug) {
+  try {
+    const user = await waitForIdentity();
+    if (!user) return false;
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/bookmarks?user_id=eq.${encodeURIComponent(user.id)}&story_slug=eq.${encodeURIComponent(slug)}`,
+      { method: 'DELETE', headers: SUPA_HEADERS }
+    );
+    return res.ok;
+  } catch { return false; }
+}
+
 function tierFromUser(user) {
   if (!user) return 'free';
   const roles = user.app_metadata?.roles || [];
   if (roles.includes('admin')) {
-    // Admin override: read simulated tier from sessionStorage, default to bound
     const simulated = sessionStorage.getItem('admin-tier') || 'bound';
     return ['free', 'devoted', 'bound'].includes(simulated) ? simulated : 'bound';
   }
@@ -15,13 +60,9 @@ function tierFromUser(user) {
   return 'free';
 }
 
-// Wait for Netlify Identity to be ready, then resolve the user.
-// IMPORTANT: We do NOT cache the resolved user — we poll fresh each call,
-// because Identity may become ready AFTER an initial null resolution.
 function waitForIdentity() {
   return new Promise((resolve) => {
     if (!window.netlifyIdentity) {
-      // Poll briefly for widget to load
       let widgetWait = 0;
       const widgetInt = setInterval(() => {
         if (window.netlifyIdentity) {
@@ -39,31 +80,15 @@ function waitForIdentity() {
 }
 
 function waitForCurrentUser(resolve) {
-  // If currentUser is already defined (user object or null), resolve immediately
   const immediate = window.netlifyIdentity.currentUser();
-  if (immediate) {
-    resolve(immediate);
-    return;
-  }
-  // If it's null, it could mean either "logged out" or "not yet initialized".
-  // Netlify Identity sets currentUser to null during loading, then to actual user if logged in.
-  // Poll briefly to see if a user appears.
+  if (immediate) { resolve(immediate); return; }
   let waited = 0;
-  const maxWaitMs = 3000;
-  const pollIntervalMs = 50;
   const interval = setInterval(() => {
     const user = window.netlifyIdentity.currentUser();
-    if (user) {
-      clearInterval(interval);
-      resolve(user);
-      return;
-    }
-    waited += pollIntervalMs;
-    if (waited >= maxWaitMs) {
-      clearInterval(interval);
-      resolve(null); // truly logged out
-    }
-  }, pollIntervalMs);
+    if (user) { clearInterval(interval); resolve(user); return; }
+    waited += 50;
+    if (waited >= 3000) { clearInterval(interval); resolve(null); }
+  }, 50);
 }
 
 async function getUserTier() {
@@ -75,7 +100,6 @@ function canAccess(contentTier, userTier) {
   return tierRank[userTier || 'free'] >= tierRank[contentTier || 'free'];
 }
 
-// Add subtle member login to footer only
 function addAuthButton() {
   if (!window.netlifyIdentity) return;
   const footer = document.querySelector('footer');
@@ -88,33 +112,24 @@ function addAuthButton() {
     div.innerHTML = `<a href="#" id="auth-btn" style="color:var(--gold-dim);text-decoration:none;">
       ${tier !== 'free' ? '★ Member' : 'Logged in'} · <span style="text-decoration:underline;">Log out</span>
     </a>`;
-    div.querySelector('#auth-btn').addEventListener('click', (e) => {
-      e.preventDefault();
-      window.netlifyIdentity.logout();
-    });
+    div.querySelector('#auth-btn').addEventListener('click', (e) => { e.preventDefault(); window.netlifyIdentity.logout(); });
   } else {
     div.innerHTML = `<a href="#" id="auth-btn" style="color:var(--gold-dim);text-decoration:none;opacity:0.5;">Member login</a>`;
-    div.querySelector('#auth-btn').addEventListener('click', (e) => {
-      e.preventDefault();
-      window.netlifyIdentity.open();
-    });
+    div.querySelector('#auth-btn').addEventListener('click', (e) => { e.preventDefault(); window.netlifyIdentity.open(); });
   }
   footer.appendChild(div);
   window.netlifyIdentity.on('login', () => location.reload());
   window.netlifyIdentity.on('logout', () => location.reload());
 }
 
-// Admin-only tier switcher panel
 async function addAdminSwitcher() {
   const user = await waitForIdentity();
   if (!user) return;
   const roles = user.app_metadata?.roles || [];
   if (!roles.includes('admin')) return;
-
   if (document.getElementById('admin-tier-switcher')) return;
 
   const current = sessionStorage.getItem('admin-tier') || 'bound';
-
   const panel = document.createElement('div');
   panel.id = 'admin-tier-switcher';
   panel.style.cssText =
@@ -129,7 +144,6 @@ async function addAdminSwitcher() {
 
   const buttons = document.createElement('div');
   buttons.style.cssText = 'display:flex;gap:0.3rem;';
-
   ['free', 'devoted', 'bound'].forEach(tier => {
     const btn = document.createElement('button');
     btn.textContent = tier;
@@ -141,10 +155,7 @@ async function addAdminSwitcher() {
       'background:' + (isActive ? '#c9a84c' : 'transparent') + ';' +
       'color:' + (isActive ? '#0a0806' : '#7a7260') + ';' +
       'transition:all 0.2s;flex:1;';
-    btn.addEventListener('click', () => {
-      sessionStorage.setItem('admin-tier', tier);
-      location.reload();
-    });
+    btn.addEventListener('click', () => { sessionStorage.setItem('admin-tier', tier); location.reload(); });
     buttons.appendChild(btn);
   });
 
@@ -156,11 +167,8 @@ async function addAdminSwitcher() {
   panel.appendChild(buttons);
   panel.appendChild(hint);
 
-  if (document.body) {
-    document.body.appendChild(panel);
-  } else {
-    document.addEventListener('DOMContentLoaded', () => document.body.appendChild(panel));
-  }
+  if (document.body) document.body.appendChild(panel);
+  else document.addEventListener('DOMContentLoaded', () => document.body.appendChild(panel));
 }
 
 function initAuth() {
@@ -174,9 +182,12 @@ if (document.readyState === 'loading') {
   initAuth();
 }
 
-// Export for use in other scripts
-window.getUserTier = getUserTier;
-window.canAccess = canAccess;
-window.tierRank = tierRank;
-window.waitForIdentity = waitForIdentity;
-window.tierFromUser = tierFromUser;
+// ── Exports ──
+window.getUserTier          = getUserTier;
+window.canAccess            = canAccess;
+window.tierRank             = tierRank;
+window.waitForIdentity      = waitForIdentity;
+window.tierFromUser         = tierFromUser;
+window.saveBookmarkCloud    = saveBookmarkCloud;
+window.loadBookmarkCloud    = loadBookmarkCloud;
+window.deleteBookmarkCloud  = deleteBookmarkCloud;
