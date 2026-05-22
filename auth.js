@@ -4,9 +4,9 @@ const tierRank = { free: 0, devoted: 1, bound: 2 };
 
 // ── Bookmark cloud helpers (scoped to avoid conflict with engagement.js constants) ──
 (function() {
-  const _BM_URL  = 'https://stdxmneifvavkzwttbzj.supabase.co';
-  const _BM_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZHhtbmVpZnZhdmt6d3R0YnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDczNTYsImV4cCI6MjA5MTg4MzM1Nn0.jWNSXOaSw5KEoFFPHSZqFZi17d9diq2ScBWCeS2o4XU';
-  const _BM_HDR  = { 'apikey': _BM_KEY, 'Authorization': 'Bearer ' + _BM_KEY, 'Content-Type': 'application/json' };
+  const _BM_URL = 'https://stdxmneifvavkzwttbzj.supabase.co';
+  const _BM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZHhtbmVpZnZhdmt6d3R0YnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDczNTYsImV4cCI6MjA5MTg4MzM1Nn0.jWNSXOaSw5KEoFFPHSZqFZi17d9diq2ScBWCeS2o4XU';
+  const _BM_HDR = { 'apikey': _BM_KEY, 'Authorization': 'Bearer ' + _BM_KEY, 'Content-Type': 'application/json' };
 
   async function saveBookmarkCloud(slug, data) {
     try {
@@ -187,11 +187,8 @@ if (document.readyState === 'loading') {
 }
 
 // ── Exports ──
-window.getUserTier          = getUserTier;
-window.canAccess            = canAccess;
-window.tierRank             = tierRank;
-window.waitForIdentity      = waitForIdentity;
-window.tierFromUser         = tierFromUser;
-window.saveBookmarkCloud    = saveBookmarkCloud;
-window.loadBookmarkCloud    = loadBookmarkCloud;
-window.deleteBookmarkCloud  = deleteBookmarkCloud;
+window.getUserTier     = getUserTier;
+window.canAccess       = canAccess;
+window.tierRank        = tierRank;
+window.waitForIdentity = waitForIdentity;
+window.tierFromUser    = tierFromUser;
