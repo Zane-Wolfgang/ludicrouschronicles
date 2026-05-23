@@ -263,55 +263,42 @@
 
   /* ── MOBILE ── */
   @media (max-width: 768px) {
-    /* Fix hero image — background-attachment:fixed is broken on mobile browsers */
     .hero-parallax-bg {
       background-attachment: scroll;
       background-position: center 15%;
       background-size: cover;
     }
-
-    /* Shorter hero so it doesn't feel endless on a phone */
     .hero {
       height: 110vh;
       padding: 0 1.25rem 4rem;
     }
-
     .hero-content, .hero-text-section {
       bottom: 3rem;
     }
-
     .hero-ornament {
       font-size: 9px;
       gap: 0.75rem;
     }
-
     .hero-ornament::before, .hero-ornament::after {
       width: 30px;
     }
-
     .hero-divider { margin: 0 auto 2rem; }
-
     .hero-ctas {
       flex-direction: column;
       align-items: center;
       gap: 0.75rem;
     }
-
-    /* Collapse teaser grid to single column — this kills the black strip */
     .teaser-grid {
       grid-template-columns: 1fr;
     }
-
     .teaser-strip {
       padding: 3rem 1.25rem;
     }
-
     .teaser-card {
       padding: 1.75rem 1.25rem;
     }
   }
 
-  /* Landscape phones — hero adjustments only, nav handled by style.css */
   @media (max-width: 900px) and (orientation: landscape) {
     .hero {
       height: 160vh;
@@ -352,16 +339,8 @@
     const btn = document.getElementById('nav-hamburger');
     const links = document.querySelector('.nav-links');
     if (btn && links) {
-      btn.addEventListener('click', () => {
-        btn.classList.toggle('open');
-        links.classList.toggle('open');
-      });
-      links.querySelectorAll('a').forEach(a => {
-        a.addEventListener('click', () => {
-          btn.classList.remove('open');
-          links.classList.remove('open');
-        });
-      });
+      btn.addEventListener('click', () => { btn.classList.toggle('open'); links.classList.toggle('open'); });
+      links.querySelectorAll('a').forEach(a => { a.addEventListener('click', () => { btn.classList.remove('open'); links.classList.remove('open'); }); });
     }
   })();
 </script>
@@ -397,7 +376,7 @@
         <p>A tale of questionable decisions, worse company, and the last living god who saved a girl, cursed himself for it, and has been someone else's problem ever since — the man in question leading the story.</p>
         <span class="teaser-arrow">Read more →</span>
       </a>
-      <a href="content.html" class="teaser-card">
+      <a href="content.html?filter=voice" class="teaser-card">
         <div class="teaser-icon">Voice Acting</div>
         <h3>The Narration</h3>
         <p>Most (main) characters voiced by me — a girl who drew, wrote, and narrated the whole affair and has yet to show any signs of becoming a retard. How I manage, who's to say?</p>
@@ -412,7 +391,6 @@
     </div>
   </div>
 </section>
-
 
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
@@ -461,13 +439,9 @@
   window.addEventListener('scroll', () => {
     const scrollY = window.scrollY;
     const heroH = hero.offsetHeight;
-
-    // Gently pan image downward — reveals character heads as you scroll
     const progress = Math.min(1, scrollY / heroH);
     const pan = progress * 90;
     bg.style.backgroundPositionY = pan + '%';
-
-    // Fade out near end
     const fadeStart = heroH * 0.75;
     const fadeEnd = heroH * 0.97;
     const opacity = Math.max(0, 1 - (scrollY - fadeStart) / (fadeEnd - fadeStart));
