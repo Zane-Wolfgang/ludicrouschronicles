@@ -33,8 +33,6 @@
   .content-thumb.blurred .content-thumb-label { position: relative; z-index: 1; }
   .content-thumb.blurred .content-lock { z-index: 2; }
   .blur-overlay { position: absolute; inset: 0; background: rgba(10,8,6,0.35); z-index: 1; }
-
-  /* ── Bookmarks panel ── */
   .bookmarks-panel { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--gold-dim); padding: 1.5rem 2rem; margin-bottom: 2.5rem; display: none; }
   .bookmarks-panel.visible { display: block; }
   .bookmarks-label { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 1rem; }
@@ -49,7 +47,6 @@
   .bookmark-entry-btn:hover { background: var(--gold-bright); }
   .bookmark-entry-dismiss { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 0.25rem; flex-shrink: 0; line-height: 1; transition: color 0.2s; }
   .bookmark-entry-dismiss:hover { color: var(--gold); }
-
   @media (max-width: 768px) {
     .bookmarks-panel { padding: 1.25rem; }
     .bookmark-entry { flex-wrap: wrap; gap: 0.6rem; }
@@ -68,8 +65,6 @@
   .newsletter-float-msg.success { color: var(--gold); }
   .newsletter-float-msg.error { color: #c0705a; }
   @media (max-width: 1100px) { .newsletter-float { display: none; } }
-
-  /* ── MOBILE ── */
   @media (max-width: 768px) {
     .filter-bar { margin-top: 1.5rem; gap: 0.4rem; }
     .filter-btn { padding: 0.5em 0.9em; font-size: 9px; min-height: 36px; }
@@ -128,7 +123,6 @@
 <section>
   <div class="section-inner">
 
-    <!-- Bookmarks panel -->
     <div class="bookmarks-panel" id="bookmarks-panel">
       <div class="bookmarks-label">Continue Reading</div>
       <div class="bookmarks-list" id="bookmarks-list"></div>
@@ -153,7 +147,6 @@
   </div>
 </section>
 
-<!-- Newsletter float box -->
 <div class="newsletter-float">
   <span class="newsletter-float-label">Stay updated</span>
   <p class="newsletter-float-text">New drops, stories & art — straight to your inbox.</p>
@@ -200,6 +193,25 @@
     });
   });
 </script>
+
+<script>
+  // ── Auto-activate filter from URL param (e.g. content.html?filter=voice) ──
+  (function() {
+    const params = new URLSearchParams(window.location.search);
+    const filter = params.get('filter');
+    if (!filter) return;
+    // Wait for content to load before filtering
+    const tryFilter = () => {
+      const btn = document.querySelector(`.filter-btn[data-filter="${filter}"]`);
+      if (btn) {
+        btn.click();
+      }
+    };
+    // Run after loadAllContent settles
+    setTimeout(tryFilter, 400);
+  })();
+</script>
+
 <script>
   if (window.netlifyIdentity) { window.netlifyIdentity.on("init", user => { if (!user) { window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; }); } }); }
 </script>
@@ -328,6 +340,12 @@ async function loadAllContent() {
   grid.innerHTML = '';
   allCards.sort((a, b) => b.date - a.date);
   allCards.forEach(c => grid.appendChild(c.card));
+
+  // Re-apply filter after content loads
+  const activeFilter = document.querySelector('.filter-btn.active')?.dataset.filter;
+  if (activeFilter && activeFilter !== 'all') {
+    document.querySelector(`.filter-btn[data-filter="${activeFilter}"]`)?.click();
+  }
 }
 </script>
 <script>
@@ -356,15 +374,8 @@ async function loadAllContent() {
 (async () => { await new Promise(r => setTimeout(r, 100)); loadAllContent(); })();
 </script>
 <script>
-// ── Bookmarks panel ──
 (function() {
-  const urlToTitle = {
-    '/chapter-1.html': 'Chapter I',
-    '/chapter.html': 'Chapter'
-  };
-
   function getTitleFromKey(key) {
-    // key format: bookmark_/path/to/page.html or bookmark_/path/to/page.html?query=x
     const path = key.replace('bookmark_', '');
     const base = path.split('?')[0];
     const query = path.includes('?') ? new URLSearchParams(path.split('?')[1]) : null;
@@ -377,9 +388,7 @@ async function loadAllContent() {
     return null;
   }
 
-  function getHrefFromKey(key) {
-    return key.replace('bookmark_', '');
-  }
+  function getHrefFromKey(key) { return key.replace('bookmark_', ''); }
 
   function buildPanel() {
     const panel = document.getElementById('bookmarks-panel');
