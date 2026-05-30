@@ -51,6 +51,7 @@ collections:
       - { label: "Page 2 (optional)", name: "image2", widget: "image", required: false, hint: "Second image in slideshow" }
       - { label: "Page 3 (optional)", name: "image3", widget: "image", required: false, hint: "Third image in slideshow" }
       - { label: "Page 4 (optional)", name: "image4", widget: "image", required: false, hint: "Fourth image in slideshow" }
+      - { label: "Artist's Note (optional)", name: "notes", widget: "text", required: false, hint: "Shown below the image in the lightbox — like a Tumblr artist's note." }
       - label: "Type"
         name: "type"
         widget: "select"
@@ -151,7 +152,7 @@ collections:
       - { label: "Title", name: "title", widget: "string", hint: "Name of the shoot, e.g. Pine Ridge — Spring Session" }
       - { label: "Date", name: "date", widget: "datetime" }
       - { label: "Game / Location", name: "game", widget: "string", required: false, hint: "e.g. Pine Ridge, Brookhaven" }
-      - { label: "Description (optional)", name: "description", widget: "string", required: false, hint: "One line caption shown on the gallery" }
+      - { label: "Description (optional)", name: "description", widget: "string", required: false, hint: "One line caption shown below the image in the lightbox" }
       - { label: "Cover Image", name: "image", widget: "image", hint: "First image shown in the grid" }
       - { label: "Image 2", name: "image2", widget: "image", required: false }
       - { label: "Image 3", name: "image3", widget: "image", required: false }
