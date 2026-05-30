@@ -56,6 +56,75 @@
   .stills-grid { columns: 3; column-gap: 12px; margin-top: 2rem; }
   .stills-empty { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); padding: 3rem 0; text-align: center; }
 
+  /* ── Gallery Comments Button ── */
+  .lb-comments-btn {
+    position: fixed;
+    top: 1.5rem;
+    right: 8rem;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 202;
+    transition: color 0.2s;
+    display: none;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .lb-comments-btn:hover { color: var(--gold); }
+  .lb-comments-btn svg { width: 13px; height: 13px; fill: currentColor; }
+  .lightbox.open ~ .lb-comments-btn { display: flex; }
+
+  /* ── Gallery Comments Panel ── */
+  .gallery-comments-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 360px;
+    background: rgba(10,8,6,0.99);
+    border-left: 1px solid var(--border);
+    z-index: 210;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  }
+  .gallery-comments-panel.open { transform: translateX(0); }
+  .gcp-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .gcp-title { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold-dim); }
+  .gcp-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; transition: color 0.2s; }
+  .gcp-close:hover { color: var(--gold); }
+  .gcp-piece-name { font-family: 'Cinzel', serif; font-size: 0.8rem; color: var(--parchment); padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--border); flex-shrink: 0; font-style: italic; }
+  .gcp-comments-list { flex: 1; overflow-y: auto; padding: 1rem 1.5rem; }
+  .gcp-empty { font-family: 'EB Garamond', serif; font-style: italic; color: var(--text-muted); font-size: 0.9rem; padding: 2rem 0; text-align: center; }
+  .gcp-comment-item { padding: 0.9rem 0; border-bottom: 1px solid var(--border); }
+  .gcp-comment-item:last-child { border-bottom: none; }
+  .gcp-comment-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.3rem; }
+  .gcp-comment-name { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--parchment); }
+  .gcp-comment-date { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.1em; color: var(--text-muted); }
+  .gcp-comment-body { font-family: 'EB Garamond', serif; font-size: 0.95rem; line-height: 1.6; color: var(--text-body); }
+  .gcp-form { padding: 1rem 1.5rem; border-top: 1px solid var(--border); flex-shrink: 0; }
+  .gcp-form-label { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold-dim); display: block; margin-bottom: 0.75rem; }
+  .gcp-input { width: 100%; background: var(--surface); border: 1px solid var(--border); padding: 0.6rem 0.75rem; font-family: 'EB Garamond', serif; font-size: 0.9rem; color: var(--text-body); outline: none; transition: border-color 0.2s; box-sizing: border-box; margin-bottom: 0.5rem; }
+  .gcp-input:focus { border-color: var(--gold-dim); }
+  .gcp-input::placeholder { color: var(--text-muted); }
+  textarea.gcp-input { resize: vertical; min-height: 80px; }
+  .gcp-submit { width: 100%; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.75em; cursor: pointer; transition: background 0.2s; }
+  .gcp-submit:hover { background: var(--gold-bright); }
+  .gcp-submit:disabled { opacity: 0.5; cursor: default; }
+
   /* ── MOBILE ── */
   @media (max-width: 768px) {
     .gallery-grid, .stills-grid { margin-top: 1.5rem; }
@@ -69,6 +138,9 @@
     .lightbox-page-count { bottom: 2.25rem; }
     .stills-grid { columns: 1; }
     .stills-section { margin-top: 3rem; padding-top: 2.5rem; }
+    .lb-comments-btn { top: 0.75rem; right: 5rem; }
+    .gallery-comments-panel { width: 100%; top: auto; height: 60vh; transform: translateY(100%); border-left: none; border-top: 1px solid var(--border); }
+    .gallery-comments-panel.open { transform: translateY(0); }
   }
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
@@ -225,6 +297,30 @@
   <div class="lightbox-hint" id="lb-hint">Click image to zoom</div>
 </div>
 
+<!-- Comments toggle button (shown when lightbox is open) -->
+<button class="lb-comments-btn" id="lb-comments-btn" title="Comments">
+  <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+  Comments
+</button>
+
+<!-- Gallery Comments Panel -->
+<div class="gallery-comments-panel" id="gallery-comments-panel">
+  <div class="gcp-header">
+    <span class="gcp-title">Comments</span>
+    <button class="gcp-close" id="gcp-close">Close ✕</button>
+  </div>
+  <div class="gcp-piece-name" id="gcp-piece-name"></div>
+  <div class="gcp-comments-list" id="gcp-comments-list">
+    <div class="gcp-empty">Loading...</div>
+  </div>
+  <div class="gcp-form">
+    <span class="gcp-form-label">Leave Your Mark</span>
+    <input type="text" class="gcp-input" id="gcp-name" placeholder="Your name (optional)" maxlength="60" />
+    <textarea class="gcp-input" id="gcp-message" placeholder="What did you think?" maxlength="1000"></textarea>
+    <button class="gcp-submit" id="gcp-submit">Leave Your Mark</button>
+  </div>
+</div>
+
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
   <div class="socials-panel" id="socials-panel">
@@ -250,13 +346,16 @@
 
 <script>
   let slideImages = [], slideTitles = [], slideType = '', slideIndex = 0;
+  let currentLightboxTitle = '';
 
   function openSlideshow(images, titles, type) {
     slideImages = images; slideTitles = titles; slideType = type; slideIndex = 0;
+    currentLightboxTitle = titles[0] || '';
     lbImg.style.opacity = '0';
     lb.classList.add('open'); lb.classList.remove('zoomed');
     document.body.style.overflow = 'hidden'; zoomed = false;
     showSlide(0);
+    document.getElementById('lb-comments-btn').style.display = 'flex';
   }
 
   function preloadAdjacent(index) {
@@ -290,6 +389,7 @@
   let zoomed = false;
 
   function openLightbox(src, title, type) {
+    currentLightboxTitle = title;
     lbImg.src = src; lbCaption.textContent = title + ' — ' + type;
     lb.classList.add('open'); lb.classList.remove('zoomed');
     lbHint.style.opacity = '0.6'; lbHint.textContent = 'Click image to zoom';
@@ -298,9 +398,16 @@
     document.getElementById('lb-prev').classList.add('hidden');
     document.getElementById('lb-next').classList.add('hidden');
     document.getElementById('lb-pages').textContent = '';
+    document.getElementById('lb-comments-btn').style.display = 'flex';
   }
 
-  function closeLightbox() { lb.classList.remove('open','zoomed'); document.body.style.overflow = ''; zoomed = false; }
+  function closeLightbox() {
+    lb.classList.remove('open','zoomed');
+    document.body.style.overflow = '';
+    zoomed = false;
+    document.getElementById('lb-comments-btn').style.display = 'none';
+    closeCommentsPanel();
+  }
 
   document.getElementById('lb-close').addEventListener('click', e => { e.stopPropagation(); closeLightbox(); });
   lbImg.addEventListener('click', e => {
@@ -328,6 +435,94 @@
     const hint = document.getElementById('lb-hint');
     if (hint) hint.textContent = 'Tap image to zoom';
   }
+</script>
+
+<script>
+// ── Gallery Comments (scoped to avoid conflicts) ──
+(function() {
+  const _GC_URL = 'https://stdxmneifvavkzwttbzj.supabase.co';
+  const _GC_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZHhtbmVpZnZhdmt6d3R0YnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDczNTYsImV4cCI6MjA5MTg4MzM1Nn0.jWNSXOaSw5KEoFFPHSZqFZi17d9diq2ScBWCeS2o4XU';
+  const _GC_HDR = { 'apikey': _GC_KEY, 'Authorization': 'Bearer ' + _GC_KEY, 'Content-Type': 'application/json' };
+
+  async function gcFetch(path, opts = {}) {
+    const res = await fetch(_GC_URL + '/rest/v1/' + path, {
+      headers: { ..._GC_HDR, 'Prefer': opts.prefer || 'return=minimal', ...opts.headers },
+      method: opts.method || 'GET',
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    });
+    if (!opts.method || opts.method === 'GET') return res.json();
+    return res;
+  }
+
+  const commentsPanel = document.getElementById('gallery-comments-panel');
+  const commentsList  = document.getElementById('gcp-comments-list');
+  const pieceName     = document.getElementById('gcp-piece-name');
+  const nameInput     = document.getElementById('gcp-name');
+  const msgInput      = document.getElementById('gcp-message');
+  const submitBtn     = document.getElementById('gcp-submit');
+  let currentPiece    = '';
+
+  async function loadComments(title) {
+    currentPiece = 'gallery-' + title;
+    pieceName.textContent = title;
+    commentsList.innerHTML = '<div class="gcp-empty">Loading...</div>';
+    try {
+      const data = await gcFetch(`comments?chapter=eq.${encodeURIComponent(currentPiece)}&order=created_at.asc&select=*`);
+      if (!Array.isArray(data) || data.length === 0) {
+        commentsList.innerHTML = '<div class="gcp-empty">No comments yet — be the first.</div>';
+        return;
+      }
+      commentsList.innerHTML = data.map(c => {
+        const date = new Date(c.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        return `<div class="gcp-comment-item">
+          <div class="gcp-comment-meta">
+            <span class="gcp-comment-name">${c.name || 'Anonymous'}</span>
+            <span class="gcp-comment-date">${date}</span>
+          </div>
+          <div class="gcp-comment-body">${c.message}</div>
+        </div>`;
+      }).join('');
+    } catch(e) {
+      commentsList.innerHTML = '<div class="gcp-empty">Could not load comments.</div>';
+    }
+  }
+
+  async function submitComment() {
+    const name    = nameInput.value.trim() || 'Anonymous';
+    const message = msgInput.value.trim();
+    if (!message) return;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Leaving mark...';
+    try {
+      await gcFetch('comments', { method: 'POST', body: { chapter: currentPiece, name, message, pinned: false }, prefer: 'return=minimal' });
+      nameInput.value = '';
+      msgInput.value = '';
+      await loadComments(pieceName.textContent);
+    } catch(e) {}
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Leave Your Mark';
+  }
+
+  function openCommentsPanel() {
+    commentsPanel.classList.add('open');
+    loadComments(currentLightboxTitle);
+  }
+
+  function closeCommentsPanel() {
+    commentsPanel.classList.remove('open');
+  }
+
+  window.closeCommentsPanel = closeCommentsPanel;
+
+  document.getElementById('lb-comments-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    commentsPanel.classList.contains('open') ? closeCommentsPanel() : openCommentsPanel();
+  });
+
+  document.getElementById('gcp-close').addEventListener('click', closeCommentsPanel);
+  submitBtn.addEventListener('click', submitComment);
+  msgInput.addEventListener('keydown', e => { if (e.ctrlKey && e.key === 'Enter') submitComment(); });
+})();
 </script>
 
 <script>
@@ -470,7 +665,6 @@ function openFromHash() {
 }
 window.addEventListener('load', () => {
   if (!window.location.hash) return;
-  // Scroll to stills section if hash is #stills
   if (window.location.hash === '#stills') {
     document.getElementById('stills')?.scrollIntoView({ behavior: 'smooth' });
     return;
@@ -478,6 +672,15 @@ window.addEventListener('load', () => {
   if (openFromHash()) return;
   [50, 200, 500, 1000].forEach(delay => { setTimeout(() => { if (!document.getElementById('lightbox').classList.contains('open')) openFromHash(); }, delay); });
 });
+</script>
+<script>
+  (function() {
+    const cord = document.getElementById('cord-wrap');
+    const dot = document.getElementById('news-dot');
+    const dismissed = localStorage.getItem('news-dismissed');
+    if (dismissed) { if (cord) cord.classList.add('pulled'); if (dot) dot.classList.add('off'); }
+    if (cord) { cord.addEventListener('click', () => { cord.classList.add('pulled'); if (dot) dot.classList.add('off'); localStorage.setItem('news-dismissed', '1'); }); }
+  })();
 </script>
 </body>
 </html>
