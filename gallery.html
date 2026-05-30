@@ -234,7 +234,47 @@
   .lb-submit:hover { background: var(--gold-bright); }
   .lb-submit:disabled { opacity: 0.5; cursor: default; }
 
-  /* ── MOBILE ── */
+  .lb-engagement {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .lb-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .lb-stat svg { width: 13px; height: 13px; fill: var(--gold-dim); }
+  .lb-like-btn {
+    margin-left: auto;
+    background: none;
+    border: 1px solid var(--border);
+    padding: 0.45em 1.1em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    transition: all 0.2s;
+  }
+  .lb-like-btn svg { width: 13px; height: 13px; fill: var(--text-muted); transition: fill 0.2s; }
+  .lb-like-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .lb-like-btn:hover svg, .lb-like-btn.liked svg { fill: var(--gold); }
+  .lb-like-btn.liked { border-color: var(--gold); color: var(--gold); }
+
+
   @media (max-width: 768px) {
     .gallery-grid, .stills-grid { margin-top: 1.5rem; }
     .gallery-item:not(.locked) .gallery-overlay { opacity: 1; bottom: 0; }
@@ -413,6 +453,22 @@
         <span class="lightbox-type" id="lb-type"></span>
       </div>
 
+      <!-- Engagement row -->
+      <div class="lb-engagement">
+        <div class="lb-stat">
+          <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5C21.3 7.6 17 4.5 12 4.5zm0 12.5c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z"/></svg>
+          <span id="lb-witness-count">—</span>&nbsp;Witnesses
+        </div>
+        <div class="lb-stat">
+          <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
+          <span id="lb-like-count">—</span>&nbsp;Kudos
+        </div>
+        <button id="lb-like-btn" class="lb-like-btn" title="Leave kudos">
+          <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
+          Kudos
+        </button>
+      </div>
+
       <!-- Artist's note (hidden if empty) -->
       <div class="lightbox-notes" id="lb-notes" style="display:none;">
         <span class="lightbox-notes-label">Artist's Note</span>
@@ -518,7 +574,79 @@ document.getElementById('lb-comment-submit').addEventListener('click', async () 
 </script>
 
 <script>
-// ── Lightbox ──
+// ── Gallery engagement: witnesses + likes ──
+(function() {
+  const _GE_URL = 'https://stdxmneifvavkzwttbzj.supabase.co';
+  const _GE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZHhtbmVpZnZhdmt6d3R0YnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDczNTYsImV4cCI6MjA5MTg4MzM1Nn0.jWNSXOaSw5KEoFFPHSZqFZi17d9diq2ScBWCeS2o4XU';
+  const _GE_HDR = { 'apikey': _GE_KEY, 'Authorization': 'Bearer ' + _GE_KEY, 'Content-Type': 'application/json' };
+
+  function getVisitorId() {
+    let id = localStorage.getItem('lc_visitor_id');
+    if (!id) { id = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('lc_visitor_id', id); }
+    return id;
+  }
+
+  async function geFetch(path, opts = {}) {
+    const res = await fetch(_GE_URL + '/rest/v1/' + path, {
+      headers: { ..._GE_HDR, 'Prefer': opts.prefer || 'return=minimal', ...opts.headers },
+      method: opts.method || 'GET',
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    });
+    if (!opts.method || opts.method === 'GET') return res.json();
+    return res;
+  }
+
+  async function loadGalleryEngagement(title) {
+    const id = 'gallery-' + title;
+    const visitorId = getVisitorId();
+    const witnessEl = document.getElementById('lb-witness-count');
+    const likeEl    = document.getElementById('lb-like-count');
+    const likeBtn   = document.getElementById('lb-like-btn');
+
+    // Reset UI
+    if (witnessEl) witnessEl.textContent = '—';
+    if (likeEl)    likeEl.textContent    = '—';
+    if (likeBtn)   likeBtn.classList.remove('liked');
+
+    try {
+      // Witnesses
+      const witnesses = await geFetch(`witnesses?chapter=eq.${encodeURIComponent(id)}&select=id`);
+      let wCount = Array.isArray(witnesses) ? witnesses.length : 0;
+      if (witnessEl) witnessEl.textContent = wCount;
+      const seen = localStorage.getItem('witnessed_' + id);
+      if (!seen) {
+        await geFetch('witnesses', { method: 'POST', body: { chapter: id, visitor_id: visitorId }, prefer: 'return=minimal' });
+        localStorage.setItem('witnessed_' + id, '1');
+        if (witnessEl) witnessEl.textContent = wCount + 1;
+      }
+
+      // Likes
+      const likes = await geFetch(`likes?chapter=eq.${encodeURIComponent(id)}&select=id`);
+      if (likeEl) likeEl.textContent = Array.isArray(likes) ? likes.length : 0;
+      const myLike = await geFetch(`likes?chapter=eq.${encodeURIComponent(id)}&visitor_id=eq.${visitorId}&select=id`);
+      if (Array.isArray(myLike) && myLike.length > 0 && likeBtn) likeBtn.classList.add('liked');
+    } catch(e) {}
+  }
+
+  document.getElementById('lb-like-btn').addEventListener('click', async () => {
+    const btn   = document.getElementById('lb-like-btn');
+    const likeEl = document.getElementById('lb-like-count');
+    if (btn.classList.contains('liked')) return;
+    const title = document.getElementById('lb-title').textContent;
+    const id    = 'gallery-' + title;
+    const visitorId = getVisitorId();
+    try {
+      await geFetch('likes', { method: 'POST', body: { chapter: id, visitor_id: visitorId }, prefer: 'return=minimal' });
+      btn.classList.add('liked');
+      btn.style.transform = 'scale(1.2)';
+      setTimeout(() => { btn.style.transform = ''; }, 300);
+      if (likeEl) likeEl.textContent = parseInt(likeEl.textContent || 0) + 1;
+    } catch(e) {}
+  });
+
+  window.loadGalleryEngagement = loadGalleryEngagement;
+})();
+
 let slideImages = [], slideTitles = [], slideType = '', slideIndex = 0;
 const galleryNotes = new Map(); // title → notes string
 
@@ -539,6 +667,7 @@ function setLightboxContent(title, type, notes) {
     notesEl.style.display = 'none';
   }
   loadGalleryComments(title);
+  if (window.loadGalleryEngagement) window.loadGalleryEngagement(title);
   // Reset comment form
   document.getElementById('lb-comment-name').value = '';
   document.getElementById('lb-comment-msg').value = '';
@@ -557,7 +686,7 @@ function openLightbox(src, title, type, notes) {
   const hint = document.getElementById('lb-hint');
   hint.style.opacity = '0.5';
   hint.textContent = 'Click image to zoom · scroll for notes & comments';
-  setLightboxContent(title, type, notes || galleryNotes.get(title) || '');
+  setLightboxContent(title, type, notes || galleryNotes.get(title) || HARDCODED_NOTES[title] || '');
 }
 
 function openSlideshow(images, titles, type, notes) {
@@ -618,6 +747,24 @@ if ('ontouchstart' in window) {
 </script>
 
 <script>
+// ── Notes for hardcoded art pieces — edit these freely ──
+const HARDCODED_NOTES = {
+  'Nearly There':           '',
+  'The Dark Garden':        '',
+  'The Offer':              '',
+  'The Beginning':          '',
+  'Among Asteroids':        '',
+  'The Tunnel':             '',
+  'Fix You Up':             '',
+  'The Storm':              '',
+  'Patching Up':            '',
+  'Faces of the Suits':     '',
+  'Oh What Could Have Been':'',
+  'To Law And Order':       '',
+  'In the Rain':            '',
+};
+
+
 const HARDCODED_SLIDESHOWS = {
   'A Helping Hand': {
     images: ['images/art-helping-hand.png', 'images/art-nobody-special.png'],
