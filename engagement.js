@@ -2,7 +2,6 @@
 const SUPABASE_URL = 'https://stdxmneifvavkzwttbzj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_ie6tEdR7DxrJ2IGc3i6a1g_LJtU2j_e';
 
-// Get or create a unique visitor ID stored in localStorage
 function getVisitorId() {
   let id = localStorage.getItem('lc_visitor_id');
   if (!id) {
@@ -28,8 +27,22 @@ async function sb(path, options = {}) {
   return res;
 }
 
+// ── Admin check (lazy, runs once per page) ──
+let _engIsAdmin = false;
+let _engAdminChecked = false;
+async function checkEngAdmin() {
+  if (_engAdminChecked) return;
+  _engAdminChecked = true;
+  try {
+    if (!window.waitForIdentity) return;
+    const user = await window.waitForIdentity();
+    if (user && user.app_metadata?.roles?.includes('admin')) _engIsAdmin = true;
+  } catch(e) {}
+}
+
 async function initEngagement(chapterId) {
   const visitorId = getVisitorId();
+  await checkEngAdmin();
 
   // ── Witnesses ──
   async function loadWitnesses() {
@@ -38,15 +51,9 @@ async function initEngagement(chapterId) {
       const count = Array.isArray(data) ? data.length : 0;
       const el = document.getElementById('witness-count');
       if (el) el.textContent = count;
-
-      // Record this visit if not already seen
       const seen = localStorage.getItem('witnessed_' + chapterId);
       if (!seen) {
-        await sb('witnesses', {
-          method: 'POST',
-          body: { chapter: chapterId, visitor_id: visitorId },
-          prefer: 'return=minimal'
-        });
+        await sb('witnesses', { method: 'POST', body: { chapter: chapterId, visitor_id: visitorId }, prefer: 'return=minimal' });
         localStorage.setItem('witnessed_' + chapterId, '1');
         if (el) el.textContent = count + 1;
       }
@@ -60,29 +67,18 @@ async function initEngagement(chapterId) {
       const count = Array.isArray(data) ? data.length : 0;
       const el = document.getElementById('like-count');
       if (el) el.textContent = count;
-
-      // Check if this visitor already liked
       const myLike = await sb(`likes?chapter=eq.${encodeURIComponent(chapterId)}&visitor_id=eq.${visitorId}&select=id`);
       const btn = document.getElementById('like-btn');
-      if (Array.isArray(myLike) && myLike.length > 0) {
-        if (btn) btn.classList.add('liked');
-      }
+      if (Array.isArray(myLike) && myLike.length > 0 && btn) btn.classList.add('liked');
     } catch(e) {}
   }
 
   async function toggleLike() {
     const btn = document.getElementById('like-btn');
-    const el = document.getElementById('like-count');
-    if (!btn) return;
-
-    if (btn.classList.contains('liked')) return; // no unliking — AO3 style
-
+    const el  = document.getElementById('like-count');
+    if (!btn || btn.classList.contains('liked')) return;
     try {
-      await sb('likes', {
-        method: 'POST',
-        body: { chapter: chapterId, visitor_id: visitorId },
-        prefer: 'return=minimal'
-      });
+      await sb('likes', { method: 'POST', body: { chapter: chapterId, visitor_id: visitorId }, prefer: 'return=minimal' });
       btn.classList.add('liked');
       btn.style.transform = 'scale(1.3)';
       setTimeout(() => { btn.style.transform = ''; }, 300);
@@ -97,25 +93,78 @@ async function initEngagement(chapterId) {
       if (!Array.isArray(data)) return;
 
       const container = document.getElementById('comments-list');
-      const moreBtn = document.getElementById('comments-more-btn');
+      const moreBtn   = document.getElementById('comments-more-btn');
       if (!container) return;
 
-      const pinned = data.filter(c => c.pinned);
-      const rest = data.filter(c => !c.pinned);
-      const visible = showAll ? [...pinned, ...rest] : [...pinned, ...rest.slice(0, 1)];
-      const hidden = rest.length - (showAll ? rest.length : Math.min(1, rest.length));
+      // Mark section as admin for CSS delete button visibility
+      const section = container.closest('.comments-section');
+      if (_engIsAdmin && section) section.classList.add('is-admin');
 
-      container.innerHTML = visible.map(c => {
-        const date = new Date(c.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-        return `<div class="comment-item${c.pinned ? ' comment-pinned' : ''}">
+      const pinned  = data.filter(c => c.pinned);
+      const rest    = data.filter(c => !c.pinned);
+      const visible = showAll ? [...pinned, ...rest] : [...pinned, ...rest.slice(0, 1)];
+      const hidden  = rest.length - (showAll ? rest.length : Math.min(1, rest.length));
+
+      // Load comment likes
+      const likedSet   = new Set();
+      const likeCounts = {};
+      try {
+        const myLikes = await sb(`comment_likes?visitor_id=eq.${visitorId}&select=comment_id`);
+        if (Array.isArray(myLikes)) myLikes.forEach(l => likedSet.add(l.comment_id));
+        const allLikes = await sb(`comment_likes?select=comment_id`);
+        if (Array.isArray(allLikes)) allLikes.forEach(l => { likeCounts[l.comment_id] = (likeCounts[l.comment_id] || 0) + 1; });
+      } catch(e) {}
+
+      container.innerHTML = '';
+
+      visible.forEach(c => {
+        const date    = new Date(c.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        const liked   = likedSet.has(c.id);
+        const likeCount = likeCounts[c.id] || 0;
+        const div = document.createElement('div');
+        div.className = `comment-item${c.pinned ? ' comment-pinned' : ''}`;
+        div.innerHTML = `
           ${c.pinned ? '<div class="comment-pin-label">Pinned</div>' : ''}
           <div class="comment-meta">
             <span class="comment-name">${c.name || 'Anonymous'}</span>
             <span class="comment-date">${date}</span>
           </div>
           <div class="comment-body">${c.message}</div>
-        </div>`;
-      }).join('');
+          <div class="comment-footer">
+            <button class="comment-like-btn${liked ? ' liked' : ''}" data-id="${c.id}">
+              <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
+              <span class="clc">${likeCount > 0 ? likeCount : ''}</span>
+            </button>
+            <button class="comment-delete-btn" data-id="${c.id}">Delete</button>
+          </div>`;
+
+        // Like handler
+        div.querySelector('.comment-like-btn').addEventListener('click', async function() {
+          if (this.classList.contains('liked')) return;
+          try {
+            await sb('comment_likes', { method: 'POST', body: { comment_id: c.id, visitor_id: visitorId }, prefer: 'return=minimal' });
+            this.classList.add('liked');
+            const countEl = this.querySelector('.clc');
+            countEl.textContent = (parseInt(countEl.textContent || 0) + 1) || 1;
+          } catch(e) {}
+        });
+
+        // Delete handler (admin only)
+        div.querySelector('.comment-delete-btn').addEventListener('click', async function() {
+          if (!confirm('Delete this comment?')) return;
+          try {
+            await sb(`comments?id=eq.${c.id}`, { method: 'DELETE' });
+            div.remove();
+            const countEl = document.getElementById('comment-count');
+            if (countEl) countEl.textContent = Math.max(0, parseInt(countEl.textContent || 0) - 1);
+            if (!container.querySelector('.comment-item')) {
+              container.innerHTML = '<div style="font-style:italic;color:var(--text-muted);padding:1rem 0;">No comments yet.</div>';
+            }
+          } catch(e) {}
+        });
+
+        container.appendChild(div);
+      });
 
       if (moreBtn) {
         if (hidden > 0 && !showAll) {
@@ -135,33 +184,25 @@ async function initEngagement(chapterId) {
   async function submitComment(e) {
     if (e) e.preventDefault();
     const nameInput = document.getElementById('comment-name');
-    const msgInput = document.getElementById('comment-message');
+    const msgInput  = document.getElementById('comment-message');
     const submitBtn = document.getElementById('comment-submit');
     if (!nameInput || !msgInput) return;
-
-    const name = nameInput.value.trim() || 'Anonymous';
+    const name    = nameInput.value.trim() || 'Anonymous';
     const message = msgInput.value.trim();
     if (!message) return;
-
     submitBtn.disabled = true;
     submitBtn.textContent = 'Leaving mark...';
-
     try {
-      await sb('comments', {
-        method: 'POST',
-        body: { chapter: chapterId, name, message, pinned: false },
-        prefer: 'return=minimal'
-      });
+      await sb('comments', { method: 'POST', body: { chapter: chapterId, name, message, pinned: false }, prefer: 'return=minimal' });
       nameInput.value = '';
-      msgInput.value = '';
+      msgInput.value  = '';
       await loadComments(true);
     } catch(e) {}
-
     submitBtn.disabled = false;
     submitBtn.textContent = 'Leave Your Mark';
   }
 
-  // Init all
+  // Init
   loadWitnesses();
   loadLikes();
   loadComments();
