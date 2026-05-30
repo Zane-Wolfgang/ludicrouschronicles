@@ -575,3 +575,14 @@ footer {
 @media (max-width: 480px) {
   .nav-brand { font-size: 11px; }
 }
+
+
+/* ── Comment likes & admin delete (engagement) ── */
+.comment-footer { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.4rem; }
+.comment-like-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); padding: 0; transition: color 0.2s; }
+.comment-like-btn svg { width: 11px; height: 11px; fill: var(--text-muted); transition: fill 0.2s; }
+.comment-like-btn:hover, .comment-like-btn.liked { color: var(--gold); }
+.comment-like-btn:hover svg, .comment-like-btn.liked svg { fill: var(--gold); }
+.comment-delete-btn { background: none; border: none; cursor: pointer; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); padding: 0; margin-left: auto; transition: color 0.2s; display: none; }
+.comment-delete-btn:hover { color: #c0705a; }
+.comments-section.is-admin .comment-delete-btn { display: block; }
