@@ -420,6 +420,7 @@
   const filter = document.getElementById('tv-filter');
   const nowPlaying = document.getElementById('now-playing');
   const videosRight = document.querySelector('.videos-right');
+  const _videoDescriptions = new Map();
 
   function loadVideo(src, btn) {
     if (btn.classList.contains('active') && videosRight.classList.contains('visible')) {
@@ -441,11 +442,19 @@
     const title = btn.querySelector('.video-item-title').textContent;
     nowPlaying.textContent = 'Now Playing: ' + title;
 
-    const desc = btn.dataset.description || '';
+    const desc = _videoDescriptions.get(src) || '';
     const descEl = document.getElementById('video-description');
     if (desc && desc.trim()) {
-      const descHtml = desc.replace(/\\/g, '').split(/\n\n+/).map(p => p.trim().replace(/\n/g, '<br>')).filter(p => p.length > 0)
-        .map(p => `<p>${p.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>')}</p>`).join('');
+      const descHtml = desc
+        .replace(/\\/g, '')
+        .split(/\n\n+/)
+        .map(p => p.trim())
+        .filter(p => p.length > 0)
+        .map(p => `<p>${p
+          .replace(/\n/g, '<br>')
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>')
+        }</p>`)
+        .join('');
       descEl.innerHTML = descHtml;
       descEl.classList.add('visible');
     } else {
@@ -457,7 +466,6 @@
     if (window.innerWidth <= 768) videosRight.scrollIntoView({ behavior: 'smooth', block: 'start' });
     video.play();
 
-    // Load engagement for this video
     if (window.loadVideoEngagement) window.loadVideoEngagement(title);
   }
 
@@ -543,8 +551,12 @@ async function loadCMSVideos() {
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
       const btn = document.createElement('button');
       btn.className = 'video-item' + (idx === 0 && !isLocked ? ' active' : '');
-      if (isLocked) { btn.setAttribute('onclick', "window.location.href='membership.html'"); btn.dataset.description = ''; }
-      else { btn.setAttribute('onclick', `loadVideo('${item.video || ''}', this)`); btn.dataset.description = item.description || ''; }
+      if (isLocked) { btn.setAttribute('onclick', "window.location.href='membership.html'"); }
+      else {
+        const videoSrc = item.video || '';
+        btn.setAttribute('onclick', `loadVideo('${videoSrc}', this)`);
+        if (item.description) _videoDescriptions.set(videoSrc, item.description);
+      }
       const thumbHtml = item.thumbnail ? `<img src="${item.thumbnail}" alt="${item.title}">` : `<div class="video-thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`;
       const lockBadge = isLocked ? `<div style="position:absolute;top:3px;right:4px;font-family:'Cinzel',serif;font-size:8px;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:1px 5px;border:1px solid var(--border);">${item.tier === 'devoted' ? '$5' : '$12'}</div>` : '';
       btn.innerHTML = `<div class="video-thumb" style="position:relative;">${thumbHtml}${lockBadge}</div><div class="video-info"><div class="video-item-type">${item.label || 'Video'}</div><div class="video-item-title">${item.title}${isLocked ? ' 🔒' : ''}</div></div>`;
