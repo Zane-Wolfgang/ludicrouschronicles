@@ -57,8 +57,40 @@
   .video-description p:last-child { margin: 0; }
 
   /* Video engagement + comments */
-  .vid-engagement { display: flex; align-items: center; gap: 2rem; padding: 0.75rem 0; margin-top: 0.75rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; background: rgba(10,8,6,0.7); padding-left: 1rem; padding-right: 1rem; border: 1px solid var(--border); border-top: none; }
+  .vid-engagement { display: flex; align-items: center; gap: 2rem; padding: 0.75rem 1rem; margin-top: 0; flex-wrap: wrap; background: rgba(10,8,6,0.7); border: 1px solid var(--border); border-top: none; }
+  .lb-stat { display: flex; align-items: center; gap: 0.5rem; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
+  .lb-stat svg { width: 13px; height: 13px; fill: var(--gold-dim); }
+  .lb-like-btn { margin-left: auto; background: none; border: 1px solid var(--border); padding: 0.45em 1.1em; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); transition: all 0.2s; }
+  .lb-like-btn svg { width: 13px; height: 13px; fill: var(--text-muted); transition: fill 0.2s; }
+  .lb-like-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .lb-like-btn:hover svg, .lb-like-btn.liked svg { fill: var(--gold); }
+  .lb-like-btn.liked { border-color: var(--gold); color: var(--gold); }
   .vid-comments { margin-top: 0; background: rgba(10,8,6,0.7); border: 1px solid var(--border); border-top: none; padding: 1rem 1.2rem 1.5rem; }
+  .lightbox-comments-label { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; }
+  .lightbox-comments-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .lb-no-comments { font-family: 'EB Garamond', serif; font-style: italic; color: var(--text-muted); font-size: 0.9rem; padding: 0.5rem 0 1rem; }
+  .lb-comment-item { padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+  .lb-comment-item:last-child { border-bottom: none; }
+  .lb-comment-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem; }
+  .lb-comment-name { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--parchment); }
+  .lb-comment-date { font-family: 'Cinzel', serif; font-size: 8px; color: var(--text-muted); }
+  .lb-comment-body { font-family: 'EB Garamond', serif; font-size: 0.95rem; line-height: 1.6; color: var(--text-body); }
+  .lb-comment-footer { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.4rem; }
+  .lb-comment-like-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); padding: 0; transition: color 0.2s; }
+  .lb-comment-like-btn svg { width: 11px; height: 11px; fill: var(--text-muted); transition: fill 0.2s; }
+  .lb-comment-like-btn:hover, .lb-comment-like-btn.liked { color: var(--gold); }
+  .lb-comment-like-btn:hover svg, .lb-comment-like-btn.liked svg { fill: var(--gold); }
+  .lb-comment-delete-btn { background: none; border: none; cursor: pointer; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); padding: 0; margin-left: auto; transition: color 0.2s; }
+  .lb-comment-delete-btn:hover { color: #c0705a; }
+  .lightbox-comment-form { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+  .lb-form-label { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-dim); display: block; margin-bottom: 0.75rem; }
+  .lb-input { width: 100%; background: var(--deep); border: 1px solid var(--border); padding: 0.6rem 0.75rem; font-family: 'EB Garamond', serif; font-size: 0.9rem; color: var(--text-body); outline: none; transition: border-color 0.2s; box-sizing: border-box; margin-bottom: 0.5rem; }
+  .lb-input:focus { border-color: var(--gold-dim); }
+  .lb-input::placeholder { color: var(--text-muted); }
+  textarea.lb-input { resize: vertical; min-height: 80px; }
+  .lb-submit { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.75em 2em; cursor: pointer; transition: background 0.2s; }
+  .lb-submit:hover { background: var(--gold-bright); }
+  .lb-submit:disabled { opacity: 0.5; cursor: default; }
 
   @media (max-width: 768px) {
     .videos-page { flex-direction: column; padding: 4.5rem 1rem 3rem; gap: 1.25rem; align-items: stretch; }
