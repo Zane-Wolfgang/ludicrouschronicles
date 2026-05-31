@@ -13,331 +13,65 @@
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <style>
   body, html { margin: 0; padding: 0; overflow-x: hidden; }
-
-  /* ── Full page fireplace background ── */
-  .fireplace-bg {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-  }
-
-  .fireplace-bg video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-  }
-
-  /* Dark overlay */
-  .fireplace-overlay {
-    position: fixed;
-    inset: 0;
-    background:
-      linear-gradient(180deg, rgba(10,8,6,0.7) 0%, rgba(10,8,6,0.3) 30%, rgba(10,8,6,0.3) 70%, rgba(10,8,6,0.8) 100%);
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  /* ── Page layout ── */
-  .videos-page {
-    position: relative;
-    z-index: 2;
-    min-height: 100vh;
-    display: flex;
-    align-items: flex-start;
-    padding: 5.5rem 3rem 4rem;
-    gap: 3rem;
-  }
-
-  /* ── Left panel — video list ── */
-  .videos-left {
-    width: 340px;
-    flex-shrink: 0;
-    padding-top: 0;
-  }
-
-  .videos-header {
-    margin-bottom: 1.5rem;
-  }
-
-  .videos-title {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: 1.6rem;
-    color: var(--gold);
-    text-shadow: 0 0 20px rgba(201,168,76,0.4);
-  }
-
-  .video-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-  }
-
-  .video-item {
-    background: rgba(10,8,6,0.82);
-    padding: 0;
-    cursor: pointer;
-    transition: background 0.2s;
-    border: none;
-    text-align: left;
-    width: 100%;
-    display: flex;
-    gap: 0;
-    overflow: hidden;
-  }
-
+  .fireplace-bg { position: fixed; inset: 0; z-index: 0; }
+  .fireplace-bg video { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+  .fireplace-overlay { position: fixed; inset: 0; background: linear-gradient(180deg, rgba(10,8,6,0.7) 0%, rgba(10,8,6,0.3) 30%, rgba(10,8,6,0.3) 70%, rgba(10,8,6,0.8) 100%); z-index: 1; pointer-events: none; }
+  .videos-page { position: relative; z-index: 2; min-height: 100vh; display: flex; align-items: flex-start; padding: 5.5rem 3rem 4rem; gap: 3rem; }
+  .videos-left { width: 340px; flex-shrink: 0; padding-top: 0; }
+  .videos-header { margin-bottom: 1.5rem; }
+  .videos-title { font-family: 'Cinzel Decorative', serif; font-size: 1.6rem; color: var(--gold); text-shadow: 0 0 20px rgba(201,168,76,0.4); }
+  .video-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .video-item { background: rgba(10,8,6,0.82); padding: 0; cursor: pointer; transition: background 0.2s; border: none; text-align: left; width: 100%; display: flex; gap: 0; overflow: hidden; }
   .video-item:hover { background: rgba(20,15,8,0.92); }
   .video-item.active { background: rgba(25,18,8,0.95); border-left: 2px solid var(--gold); }
-
-  /* Thumbnail */
-  .video-thumb {
-    width: 100px;
-    height: 65px;
-    flex-shrink: 0;
-    background: #111;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .video-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .video-thumb-placeholder {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #1a1208, #0d0a05);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .video-thumb-placeholder svg {
-    width: 20px;
-    height: 20px;
-    fill: var(--gold-dim);
-    opacity: 0.4;
-  }
-
-  .video-duration {
-    position: absolute;
-    bottom: 3px;
-    right: 4px;
-    font-family: 'Cinzel', serif;
-    font-size: 8px;
-    color: #fff;
-    background: rgba(0,0,0,0.75);
-    padding: 1px 4px;
-    letter-spacing: 0.05em;
-  }
-
-  /* Video info */
-  .video-info {
-    padding: 0.7rem 0.9rem;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .video-item-type {
-    font-family: 'Cinzel', serif;
-    font-size: 8px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    margin-bottom: 0.3rem;
-  }
-
-  .video-item-title {
-    font-family: 'Cinzel', serif;
-    font-size: 0.8rem;
-    color: var(--parchment);
-    line-height: 1.3;
-  }
-
-  /* ── Right — player hidden until video clicked ── */
-  .videos-right {
-    flex: 1;
-    max-width: 600px;
-    display: none;
-    position: relative;
-  }
-
+  .video-thumb { width: 100px; height: 65px; flex-shrink: 0; background: #111; position: relative; overflow: hidden; }
+  .video-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .video-thumb-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, #1a1208, #0d0a05); display: flex; align-items: center; justify-content: center; }
+  .video-thumb-placeholder svg { width: 20px; height: 20px; fill: var(--gold-dim); opacity: 0.4; }
+  .video-duration { position: absolute; bottom: 3px; right: 4px; font-family: 'Cinzel', serif; font-size: 8px; color: #fff; background: rgba(0,0,0,0.75); padding: 1px 4px; letter-spacing: 0.05em; }
+  .video-info { padding: 0.7rem 0.9rem; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .video-item-type { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 0.3rem; }
+  .video-item-title { font-family: 'Cinzel', serif; font-size: 0.8rem; color: var(--parchment); line-height: 1.3; }
+  .videos-right { flex: 1; max-width: 600px; display: none; position: relative; }
   .videos-right.visible { display: block; }
-
-  .tv-wrap {
-    position: relative;
-    width: 100%;
-    background: #000;
-    border: 1px solid var(--border);
-    overflow: hidden;
-    box-shadow: 0 0 40px rgba(0,0,0,0.8);
-  }
-
-  .tv-wrap video {
-    width: 100%;
-    display: block;
-  }
-
-  .tv-filter {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 10;
-    opacity: 1;
-    transition: opacity 1.2s ease;
-  }
-
+  .tv-wrap { position: relative; width: 100%; background: #000; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 0 40px rgba(0,0,0,0.8); }
+  .tv-wrap video { width: 100%; display: block; }
+  .tv-filter { position: absolute; inset: 0; pointer-events: none; z-index: 10; opacity: 1; transition: opacity 1.2s ease; }
   .tv-filter.gone { opacity: 0; }
-
-  .tv-filter::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px,
-      transparent 1px, transparent 3px
-    );
-    z-index: 1;
-  }
-
-  .tv-filter::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(80,55,10,0.55);
-    mix-blend-mode: multiply;
-    z-index: 2;
-    animation: tvFlicker 0.08s infinite;
-  }
-
-  @keyframes tvFlicker {
-    0%   { opacity: 0.9; } 25% { opacity: 0.75; }
-    50%  { opacity: 0.95; } 75% { opacity: 0.7; }
-    100% { opacity: 0.88; }
-  }
-
-  .tv-vignette {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.7) 100%);
-    z-index: 3;
-    pointer-events: none;
-  }
-
-  .tv-scratch {
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    pointer-events: none;
-    animation: scratchMove 3s linear infinite;
-    background: repeating-linear-gradient(
-      90deg, transparent 0px, transparent 120px,
-      rgba(255,230,150,0.06) 121px, rgba(255,230,150,0.06) 122px,
-      transparent 123px, transparent 300px
-    );
-  }
-
-  @keyframes scratchMove {
-    0% { background-position: 0 0; } 100% { background-position: 400px 0; }
-  }
-
-  .video-now-playing {
-    margin-top: 0.75rem;
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-  }
-
-  /* ── X close button on player ── */
-  .video-close {
-    position: absolute;
-    top: 0.6rem;
-    right: 0.6rem;
-    width: 32px;
-    height: 32px;
-    background: rgba(10,8,6,0.6);
-    border: 1px solid rgba(201,168,76,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 50;
-    opacity: 0;
-    transition: opacity 0.2s, border-color 0.2s, background 0.2s;
-  }
-
+  .tv-filter::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px); z-index: 1; }
+  .tv-filter::after { content: ''; position: absolute; inset: 0; background: rgba(80,55,10,0.55); mix-blend-mode: multiply; z-index: 2; animation: tvFlicker 0.08s infinite; }
+  @keyframes tvFlicker { 0% { opacity: 0.9; } 25% { opacity: 0.75; } 50% { opacity: 0.95; } 75% { opacity: 0.7; } 100% { opacity: 0.88; } }
+  .tv-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.7) 100%); z-index: 3; pointer-events: none; }
+  .tv-scratch { position: absolute; inset: 0; z-index: 4; pointer-events: none; animation: scratchMove 3s linear infinite; background: repeating-linear-gradient(90deg, transparent 0px, transparent 120px, rgba(255,230,150,0.06) 121px, rgba(255,230,150,0.06) 122px, transparent 123px, transparent 300px); }
+  @keyframes scratchMove { 0% { background-position: 0 0; } 100% { background-position: 400px 0; } }
+  .video-now-playing { margin-top: 0.75rem; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
+  .video-close { position: absolute; top: 0.6rem; right: 0.6rem; width: 32px; height: 32px; background: rgba(10,8,6,0.6); border: 1px solid rgba(201,168,76,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; opacity: 0; transition: opacity 0.2s, border-color 0.2s, background 0.2s; }
   .tv-wrap:hover .video-close { opacity: 0.35; }
   .video-close:hover { opacity: 1 !important; border-color: var(--gold); background: rgba(10,8,6,0.9); }
-
-  .video-close svg {
-    width: 12px;
-    height: 12px;
-    fill: var(--gold);
-  }
-
-  .video-description {
-    margin-top: 1rem;
-    padding: 1rem 1.2rem;
-    background: rgba(10,8,6,0.7);
-    border: 1px solid var(--border);
-    border-top: 1px solid var(--gold-dim);
-    font-family: 'EB Garamond', serif;
-    font-size: 1rem;
-    line-height: 1.7;
-    color: #c9a84c;
-    display: none;
-  }
-
+  .video-close svg { width: 12px; height: 12px; fill: var(--gold); }
+  .video-description { margin-top: 1rem; padding: 1rem 1.2rem; background: rgba(10,8,6,0.7); border: 1px solid var(--border); border-top: 1px solid var(--gold-dim); font-family: 'EB Garamond', serif; font-size: 1rem; line-height: 1.7; color: #c9a84c; display: none; }
   .video-description.visible { display: block; }
   .video-description em { font-style: italic; color: #e0bc6a; }
   .video-description a { color: var(--gold); }
   .video-description p { margin: 0 0 0.5em; }
   .video-description p:last-child { margin: 0; }
 
-  /* ── MOBILE ── */
+  /* Video engagement + comments */
+  .vid-engagement { display: flex; align-items: center; gap: 2rem; padding: 0.75rem 0; margin-top: 0.75rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; background: rgba(10,8,6,0.7); padding-left: 1rem; padding-right: 1rem; border: 1px solid var(--border); border-top: none; }
+  .vid-comments { margin-top: 0; background: rgba(10,8,6,0.7); border: 1px solid var(--border); border-top: none; padding: 1rem 1.2rem 1.5rem; }
+
   @media (max-width: 768px) {
-    .videos-page {
-      flex-direction: column;
-      padding: 4.5rem 1rem 3rem;
-      gap: 1.25rem;
-      align-items: stretch;
-    }
-
-    /* Player sits above the list on mobile */
-    .videos-right {
-      order: 1;
-      max-width: 100%;
-      width: 100%;
-    }
-
-    .videos-left {
-      order: 2;
-      width: 100%;
-    }
-
+    .videos-page { flex-direction: column; padding: 4.5rem 1rem 3rem; gap: 1.25rem; align-items: stretch; }
+    .videos-right { order: 1; max-width: 100%; width: 100%; }
+    .videos-left { order: 2; width: 100%; }
     .videos-title { font-size: 1.2rem; }
     .videos-header { margin-bottom: 1rem; }
-
-    /* Always show close button — no hover on mobile */
     .video-close { opacity: 0.6 !important; width: 40px; height: 40px; }
     .video-close:active { opacity: 1 !important; }
-
-    /* Slightly taller list items for easier tapping */
     .video-thumb { width: 90px; height: 60px; }
     .video-info { padding: 0.6rem 0.75rem; }
     .video-item-title { font-size: 0.78rem; }
   }
-}
 </style>
 </head>
 <body>
@@ -369,21 +103,12 @@
     const btn = document.getElementById('nav-hamburger');
     const links = document.querySelector('.nav-links');
     if (btn && links) {
-      btn.addEventListener('click', () => {
-        btn.classList.toggle('open');
-        links.classList.toggle('open');
-      });
-      links.querySelectorAll('a').forEach(a => {
-        a.addEventListener('click', () => {
-          btn.classList.remove('open');
-          links.classList.remove('open');
-        });
-      });
+      btn.addEventListener('click', () => { btn.classList.toggle('open'); links.classList.toggle('open'); });
+      links.querySelectorAll('a').forEach(a => { a.addEventListener('click', () => { btn.classList.remove('open'); links.classList.remove('open'); }); });
     }
   })();
 </script>
 
-<!-- Full page fireplace background -->
 <div class="fireplace-bg">
   <video id="fireplace-vid" autoplay loop muted playsinline oncontextmenu="return false;">
     <source src="images/Fire_Place.mp4" type="video/mp4">
@@ -393,42 +118,22 @@
 
 <div class="videos-page">
 
-  <!-- LEFT: video list -->
   <div class="videos-left">
     <div class="videos-header">
       <h1 class="videos-title">Videos</h1>
     </div>
-
     <div class="video-list" id="video-list">
-      <button class="video-item active" onclick="loadVideo('images/video-pants.mp4', this)"
-        data-thumbnail="" data-duration="" data-description="">
-        <div class="video-thumb">
-          <div class="video-thumb-placeholder">
-            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          </div>
-        </div>
-        <div class="video-info">
-          <div class="video-item-type">Behind the Scenes</div>
-          <div class="video-item-title">Boo.</div>
-        </div>
+      <button class="video-item active" onclick="loadVideo('images/video-pants.mp4', this)" data-thumbnail="" data-duration="" data-description="">
+        <div class="video-thumb"><div class="video-thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+        <div class="video-info"><div class="video-item-type">Behind the Scenes</div><div class="video-item-title">Boo.</div></div>
       </button>
-
-      <button class="video-item" onclick="loadVideo('images/video-victor.mp4', this)"
-        data-thumbnail="" data-duration="" data-description="">
-        <div class="video-thumb">
-          <div class="video-thumb-placeholder">
-            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          </div>
-        </div>
-        <div class="video-info">
-          <div class="video-item-type">Behind the Scenes</div>
-          <div class="video-item-title">I Am the Victor</div>
-        </div>
+      <button class="video-item" onclick="loadVideo('images/video-victor.mp4', this)" data-thumbnail="" data-duration="" data-description="">
+        <div class="video-thumb"><div class="video-thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+        <div class="video-info"><div class="video-item-type">Behind the Scenes</div><div class="video-item-title">I Am the Victor</div></div>
       </button>
     </div>
   </div>
 
-  <!-- RIGHT: player -->
   <div class="videos-right">
     <div class="tv-wrap" id="tv-wrap">
       <video id="main-video" preload="none" controls controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture disableRemotePlayback oncontextmenu="return false;">
@@ -444,6 +149,34 @@
     </div>
     <div class="video-now-playing" id="now-playing">Now Playing: Boo.</div>
     <div class="video-description" id="video-description"></div>
+
+    <!-- Engagement row -->
+    <div class="vid-engagement" id="vid-engagement" style="display:none;">
+      <div class="lb-stat">
+        <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5C21.3 7.6 17 4.5 12 4.5zm0 12.5c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z"/></svg>
+        <span id="vid-witness-count">—</span>&nbsp;Witnesses
+      </div>
+      <div class="lb-stat">
+        <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
+        <span id="vid-like-count">—</span>&nbsp;Kudos
+      </div>
+      <button id="vid-like-btn" class="lb-like-btn">
+        <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
+        Kudos
+      </button>
+    </div>
+
+    <!-- Video comments -->
+    <div class="vid-comments" id="vid-comments" style="display:none;">
+      <div class="lightbox-comments-label">Comments</div>
+      <div id="vid-comments-list"><div class="lb-no-comments">Loading…</div></div>
+      <div class="lightbox-comment-form">
+        <span class="lb-form-label">Leave Your Mark</span>
+        <input type="text" class="lb-input" id="vid-comment-name" placeholder="Your name (optional)" maxlength="60" />
+        <textarea class="lb-input" id="vid-comment-msg" placeholder="What did you think?" maxlength="1000"></textarea>
+        <button class="lb-submit" id="vid-comment-submit">Leave Your Mark</button>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -452,26 +185,12 @@
 <div class="socials-trigger" id="socials-trigger">
   <div class="socials-panel" id="socials-panel">
     <div class="socials-title">Find Me</div>
-    <a class="socials-link" href="https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw" target="_blank">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
-      YouTube
-    </a>
-    <a class="socials-link" href="https://discord.gg/pEu4xNsESG" target="_blank">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>
-      Discord
-    </a>
-    <a class="socials-link" href="https://x.com/spite_mstrs" target="_blank">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>
-      X / Twitter
-    </a>
-    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank" title="Note: This work is for authorized viewers only. However, it's available on this site to read for free">
-      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>
-      AO3
-    </a>
+    <a class="socials-link" href="https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>YouTube</a>
+    <a class="socials-link" href="https://discord.gg/pEu4xNsESG" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>Discord</a>
+    <a class="socials-link" href="https://x.com/spite_mstrs" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>X / Twitter</a>
+    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank" title="Note: This work is for authorized viewers only. However, it's available on this site to read for free"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>AO3</a>
   </div>
-  <div class="socials-arrow" id="socials-arrow">
-    <svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg>
-  </div>
+  <div class="socials-arrow" id="socials-arrow"><svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg></div>
 </div>
 
 <footer>
@@ -481,7 +200,190 @@
 </footer>
 
 <script>
-  // ── Video player ──
+  const trigger = document.getElementById('socials-trigger');
+  const panel = document.getElementById('socials-panel');
+  document.getElementById('socials-arrow').addEventListener('click', () => { trigger.classList.toggle('open'); panel.classList.toggle('open'); });
+</script>
+<script>
+  if (window.netlifyIdentity) { window.netlifyIdentity.on("init", user => { if (!user) { window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; }); } }); }
+</script>
+
+<script>
+// ── Video engagement + comments (scoped) ──
+(function() {
+  const _VE_URL = 'https://stdxmneifvavkzwttbzj.supabase.co';
+  const _VE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZHhtbmVpZnZhdmt6d3R0YnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDczNTYsImV4cCI6MjA5MTg4MzM1Nn0.jWNSXOaSw5KEoFFPHSZqFZi17d9diq2ScBWCeS2o4XU';
+  const _VE_HDR = { 'apikey': _VE_KEY, 'Authorization': 'Bearer ' + _VE_KEY, 'Content-Type': 'application/json' };
+
+  function getVid() {
+    let id = localStorage.getItem('lc_visitor_id');
+    if (!id) { id = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('lc_visitor_id', id); }
+    return id;
+  }
+
+  async function veFetch(path, opts = {}) {
+    const res = await fetch(_VE_URL + '/rest/v1/' + path, {
+      headers: { ..._VE_HDR, 'Prefer': opts.prefer || 'return=minimal', ...opts.headers },
+      method: opts.method || 'GET',
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    });
+    if (!opts.method || opts.method === 'GET') return res.json();
+    return res;
+  }
+
+  let _veIsAdmin = false;
+  let _veAdminChecked = false;
+  async function checkVeAdmin() {
+    if (_veAdminChecked) return;
+    _veAdminChecked = true;
+    try {
+      if (!window.waitForIdentity) return;
+      const user = await window.waitForIdentity();
+      if (user && user.app_metadata?.roles?.includes('admin')) _veIsAdmin = true;
+    } catch(e) {}
+  }
+
+  window.loadVideoEngagement = async function(title) {
+    const id = 'video-' + title;
+    const visitorId = getVid();
+    const engEl   = document.getElementById('vid-engagement');
+    const commEl  = document.getElementById('vid-comments');
+    const listEl  = document.getElementById('vid-comments-list');
+    const witnEl  = document.getElementById('vid-witness-count');
+    const likeEl  = document.getElementById('vid-like-count');
+    const likeBtn = document.getElementById('vid-like-btn');
+
+    if (engEl)  engEl.style.display  = 'flex';
+    if (commEl) commEl.style.display = 'block';
+    if (witnEl) witnEl.textContent = '—';
+    if (likeEl) likeEl.textContent = '—';
+    if (likeBtn) likeBtn.classList.remove('liked');
+    if (likeBtn) likeBtn.onclick = null;
+
+    await checkVeAdmin();
+
+    // Witnesses
+    try {
+      const witnesses = await veFetch(`witnesses?chapter=eq.${encodeURIComponent(id)}&select=id`);
+      let wCount = Array.isArray(witnesses) ? witnesses.length : 0;
+      if (witnEl) witnEl.textContent = wCount;
+      const seen = localStorage.getItem('witnessed_' + id);
+      if (!seen) {
+        await veFetch('witnesses', { method: 'POST', body: { chapter: id, visitor_id: visitorId } });
+        localStorage.setItem('witnessed_' + id, '1');
+        if (witnEl) witnEl.textContent = wCount + 1;
+      }
+    } catch(e) {}
+
+    // Likes
+    try {
+      const likes = await veFetch(`likes?chapter=eq.${encodeURIComponent(id)}&select=id`);
+      if (likeEl) likeEl.textContent = Array.isArray(likes) ? likes.length : 0;
+      const myLike = await veFetch(`likes?chapter=eq.${encodeURIComponent(id)}&visitor_id=eq.${visitorId}&select=id`);
+      if (Array.isArray(myLike) && myLike.length > 0 && likeBtn) likeBtn.classList.add('liked');
+    } catch(e) {}
+
+    if (likeBtn) {
+      likeBtn.onclick = async function() {
+        if (this.classList.contains('liked')) return;
+        try {
+          await veFetch('likes', { method: 'POST', body: { chapter: id, visitor_id: visitorId } });
+          this.classList.add('liked');
+          this.style.transform = 'scale(1.2)';
+          setTimeout(() => { this.style.transform = ''; }, 300);
+          if (likeEl) likeEl.textContent = parseInt(likeEl.textContent || 0) + 1;
+        } catch(e) {}
+      };
+    }
+
+    // Comments
+    if (listEl) {
+      listEl.innerHTML = '<div class="lb-no-comments">Loading…</div>';
+      try {
+        const data = await veFetch(`comments?chapter=eq.${encodeURIComponent(id)}&order=created_at.asc&select=*`);
+
+        // Like counts
+        const likedSet = new Set();
+        const likeCounts = {};
+        try {
+          const myLikes = await veFetch(`comment_likes?visitor_id=eq.${visitorId}&select=comment_id`);
+          if (Array.isArray(myLikes)) myLikes.forEach(l => likedSet.add(l.comment_id));
+          const allLikes = await veFetch(`comment_likes?select=comment_id`);
+          if (Array.isArray(allLikes)) allLikes.forEach(l => { likeCounts[l.comment_id] = (likeCounts[l.comment_id] || 0) + 1; });
+        } catch(e) {}
+
+        if (!Array.isArray(data) || data.length === 0) {
+          listEl.innerHTML = '<div class="lb-no-comments">No comments yet — be the first.</div>';
+        } else {
+          listEl.innerHTML = '';
+          data.forEach(c => {
+            const date = new Date(c.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            const liked = likedSet.has(c.id);
+            const likeCount = likeCounts[c.id] || 0;
+            const div = document.createElement('div');
+            div.className = 'lb-comment-item';
+            div.innerHTML = `
+              <div class="lb-comment-meta">
+                <span class="lb-comment-name">${c.name || 'Anonymous'}</span>
+                <span class="lb-comment-date">${date}</span>
+              </div>
+              <div class="lb-comment-body">${c.message}</div>
+              <div class="lb-comment-footer">
+                <button class="lb-comment-like-btn${liked ? ' liked' : ''}" data-id="${c.id}">
+                  <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
+                  <span class="lb-clc">${likeCount > 0 ? likeCount : ''}</span>
+                </button>
+                ${_veIsAdmin ? `<button class="lb-comment-delete-btn" data-id="${c.id}">Delete</button>` : ''}
+              </div>`;
+
+            div.querySelector('.lb-comment-like-btn').addEventListener('click', async function() {
+              if (this.classList.contains('liked')) return;
+              try {
+                await veFetch('comment_likes', { method: 'POST', body: { comment_id: c.id, visitor_id: visitorId } });
+                this.classList.add('liked');
+                const countEl = this.querySelector('.lb-clc');
+                countEl.textContent = (parseInt(countEl.textContent || 0) + 1) || 1;
+              } catch(e) {}
+            });
+
+            if (_veIsAdmin) {
+              div.querySelector('.lb-comment-delete-btn').addEventListener('click', async function() {
+                if (!confirm('Delete this comment?')) return;
+                try {
+                  await veFetch(`comments?id=eq.${c.id}`, { method: 'DELETE' });
+                  div.remove();
+                  if (!listEl.querySelector('.lb-comment-item')) listEl.innerHTML = '<div class="lb-no-comments">No comments yet — be the first.</div>';
+                } catch(e) {}
+              });
+            }
+            listEl.appendChild(div);
+          });
+        }
+      } catch(e) { listEl.innerHTML = '<div class="lb-no-comments">Could not load comments.</div>'; }
+    }
+
+    // Submit handler
+    const submitBtn = document.getElementById('vid-comment-submit');
+    if (submitBtn) {
+      submitBtn.onclick = async function() {
+        const name = document.getElementById('vid-comment-name').value.trim() || 'Anonymous';
+        const msg  = document.getElementById('vid-comment-msg').value.trim();
+        if (!msg) return;
+        this.disabled = true; this.textContent = 'Leaving mark…';
+        try {
+          await veFetch('comments', { method: 'POST', body: { chapter: id, name, message: msg, pinned: false } });
+          document.getElementById('vid-comment-name').value = '';
+          document.getElementById('vid-comment-msg').value = '';
+          await window.loadVideoEngagement(title);
+        } catch(e) {}
+        this.disabled = false; this.textContent = 'Leave Your Mark';
+      };
+    }
+  };
+})();
+</script>
+
+<script>
   const video = document.getElementById('main-video');
   const filter = document.getElementById('tv-filter');
   const nowPlaying = document.getElementById('now-playing');
@@ -494,6 +396,8 @@
       btn.classList.remove('active');
       filter.classList.remove('gone');
       nowPlaying.textContent = '';
+      document.getElementById('vid-engagement').style.display = 'none';
+      document.getElementById('vid-comments').style.display = 'none';
       return;
     }
     video.pause();
@@ -504,28 +408,25 @@
     btn.classList.add('active');
     const title = btn.querySelector('.video-item-title').textContent;
     nowPlaying.textContent = 'Now Playing: ' + title;
+
     const desc = btn.dataset.description || '';
     const descEl = document.getElementById('video-description');
     if (desc && desc.trim()) {
-      const descHtml = desc
-        .replace(/\\/g, '')
-        .split(/\n\n+/)
-        .map(p => p.trim().replace(/\n/g, '<br>'))
-        .filter(p => p.length > 0)
-        .map(p => `<p>${p.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>')}</p>`)
-        .join('');
+      const descHtml = desc.replace(/\\/g, '').split(/\n\n+/).map(p => p.trim().replace(/\n/g, '<br>')).filter(p => p.length > 0)
+        .map(p => `<p>${p.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>')}</p>`).join('');
       descEl.innerHTML = descHtml;
       descEl.classList.add('visible');
     } else {
       descEl.innerHTML = '';
       descEl.classList.remove('visible');
     }
+
     videosRight.classList.add('visible');
-    // On mobile, scroll the player into view
-    if (window.innerWidth <= 768) {
-      videosRight.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    if (window.innerWidth <= 768) videosRight.scrollIntoView({ behavior: 'smooth', block: 'start' });
     video.play();
+
+    // Load engagement for this video
+    if (window.loadVideoEngagement) window.loadVideoEngagement(title);
   }
 
   document.getElementById('video-close').addEventListener('click', () => {
@@ -535,14 +436,13 @@
     filter.classList.remove('gone');
     nowPlaying.textContent = '';
     document.getElementById('video-description').classList.remove('visible');
+    document.getElementById('vid-engagement').style.display = 'none';
+    document.getElementById('vid-comments').style.display = 'none';
   });
 
-  video.addEventListener('play', () => {
-    setTimeout(() => { filter.classList.add('gone'); }, 1500);
-  });
+  video.addEventListener('play', () => { setTimeout(() => { filter.classList.add('gone'); }, 1500); });
   video.addEventListener('ended', () => { filter.classList.remove('gone'); });
 
-  // ── Duration loader ──
   document.querySelectorAll('.video-item').forEach(btn => {
     const src = btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
     if (!src) return;
@@ -563,34 +463,21 @@
     });
   });
 
-  // ── Fireplace character rotation ──
-  const characters = [
-    'images/Fire_Place.mp4',
-    'images/Fire_Place_2.mp4',
-    'images/Fire_Place_3.mp4',
-    'images/Fire_Place_4.mp4',
-  ];
-
+  const characters = ['images/Fire_Place.mp4','images/Fire_Place_2.mp4','images/Fire_Place_3.mp4','images/Fire_Place_4.mp4'];
   async function pickCharacter() {
     const fp = document.getElementById('fireplace-vid');
     if (!fp) return;
     const available = [];
     for (const src of characters) {
-      try {
-        const r = await fetch(src, { method: 'HEAD' });
-        if (r.ok) available.push(src);
-      } catch(e) {}
+      try { const r = await fetch(src, { method: 'HEAD' }); if (r.ok) available.push(src); } catch(e) {}
     }
     if (available.length === 0) return;
     const pick = available[Math.floor(Math.random() * available.length)];
     fp.querySelector('source').src = pick;
-    fp.load();
-    fp.play();
+    fp.load(); fp.play();
   }
-
   pickCharacter();
 
-  // ── Auto-open video from URL parameter ──
   function autoPlayFromURL() {
     const params = new URLSearchParams(window.location.search);
     const play = params.get('play');
@@ -599,57 +486,14 @@
       const buttons = document.querySelectorAll('.video-item');
       for (const btn of buttons) {
         const title = btn.querySelector('.video-item-title');
-        if (title && title.textContent.trim() === play) {
-          btn.click();
-          btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          return;
-        }
+        if (title && title.textContent.trim() === play) { btn.click(); btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
       }
     }, 300);
   }
-
   autoPlayFromURL();
-
-  // ── Socials ──
-  const trigger = document.getElementById('socials-trigger');
-  const panel = document.getElementById('socials-panel');
-  document.getElementById('socials-arrow').addEventListener('click', () => {
-    trigger.classList.toggle('open');
-    panel.classList.toggle('open');
-  });
 </script>
-
-<script>
-  (function() {
-    const cord = document.getElementById('cord-wrap');
-    const dot = document.getElementById('news-dot');
-    const dismissed = localStorage.getItem('news-dismissed');
-    if (dismissed) {
-      if (cord) cord.classList.add('pulled');
-      if (dot) dot.classList.add('off');
-    }
-    if (cord) {
-      cord.addEventListener('click', () => {
-        cord.classList.add('pulled');
-        if (dot) dot.classList.add('off');
-        localStorage.setItem('news-dismissed', '1');
-      });
-    }
-  })();
-</script>
-<script>
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; });
-      }
-    });
-  }
-</script>
-
 <script src="auth.js"></script>
 <script src="socials.js"></script>
-
 <script>
 async function loadCMSVideos() {
   const list = document.getElementById('video-list');
@@ -667,52 +511,23 @@ async function loadCMSVideos() {
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
       const btn = document.createElement('button');
       btn.className = 'video-item' + (idx === 0 && !isLocked ? ' active' : '');
-      if (isLocked) {
-        btn.setAttribute('onclick', "window.location.href='membership.html'");
-        btn.dataset.description = '';
-      } else {
-        btn.setAttribute('onclick', `loadVideo('${item.video || ''}', this)`);
-        btn.dataset.description = item.description || '';
-      }
-      const thumbHtml = item.thumbnail
-        ? `<img src="${item.thumbnail}" alt="${item.title}">`
-        : `<div class="video-thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`;
-      const lockBadge = isLocked
-        ? `<div style="position:absolute;top:3px;right:4px;font-family:'Cinzel',serif;font-size:8px;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:1px 5px;border:1px solid var(--border);">${item.tier === 'devoted' ? '$5' : '$12'}</div>`
-        : '';
-      btn.innerHTML = `
-        <div class="video-thumb" style="position:relative;">${thumbHtml}${lockBadge}</div>
-        <div class="video-info">
-          <div class="video-item-type">${item.label || 'Video'}</div>
-          <div class="video-item-title">${item.title}${isLocked ? ' 🔒' : ''}</div>
-        </div>`;
+      if (isLocked) { btn.setAttribute('onclick', "window.location.href='membership.html'"); btn.dataset.description = ''; }
+      else { btn.setAttribute('onclick', `loadVideo('${item.video || ''}', this)`); btn.dataset.description = item.description || ''; }
+      const thumbHtml = item.thumbnail ? `<img src="${item.thumbnail}" alt="${item.title}">` : `<div class="video-thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`;
+      const lockBadge = isLocked ? `<div style="position:absolute;top:3px;right:4px;font-family:'Cinzel',serif;font-size:8px;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:1px 5px;border:1px solid var(--border);">${item.tier === 'devoted' ? '$5' : '$12'}</div>` : '';
+      btn.innerHTML = `<div class="video-thumb" style="position:relative;">${thumbHtml}${lockBadge}</div><div class="video-info"><div class="video-item-type">${item.label || 'Video'}</div><div class="video-item-title">${item.title}${isLocked ? ' 🔒' : ''}</div></div>`;
       list.appendChild(btn);
     });
-    const firstUnlocked = list.querySelector('.video-item.active');
-    if (firstUnlocked) {
-      const src = firstUnlocked.getAttribute('onclick').match(/'([^']+)'/)?.[1];
-      if (src) {
-        document.getElementById('main-video').src = src;
-        const title = firstUnlocked.querySelector('.video-item-title').textContent.replace(' 🔒','');
-        document.getElementById('now-playing').textContent = 'Now Playing: ' + title;
-      }
-    }
     list.querySelectorAll('.video-item').forEach(btn => {
       const onclick = btn.getAttribute('onclick') || '';
       const src = onclick.match(/'([^']+)'/)?.[1];
       if (!src || src.includes('membership')) return;
       const thumbEl = btn.querySelector('.video-thumb');
       const tmp = document.createElement('video');
-      tmp.preload = 'metadata';
-      tmp.src = src;
+      tmp.preload = 'metadata'; tmp.src = src;
       tmp.addEventListener('loadedmetadata', () => {
-        const d = Math.round(tmp.duration);
-        const m = Math.floor(d / 60);
-        const s = String(d % 60).padStart(2, '0');
-        const dur = document.createElement('div');
-        dur.className = 'video-duration';
-        dur.textContent = `${m}:${s}`;
-        thumbEl.appendChild(dur);
+        const d = Math.round(tmp.duration); const m = Math.floor(d / 60); const s = String(d % 60).padStart(2, '0');
+        const dur = document.createElement('div'); dur.className = 'video-duration'; dur.textContent = `${m}:${s}`; thumbEl.appendChild(dur);
       });
     });
   } catch(e) {
