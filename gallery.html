@@ -488,6 +488,9 @@
         </button>
       </div>
 
+      <!-- Reactions -->
+      <div id="lb-reactions-container"></div>
+
       <!-- Artist's note (hidden if empty) -->
       <div class="lightbox-notes" id="lb-notes" style="display:none;">
         <span class="lightbox-notes-label">Artist's Note</span>
@@ -501,7 +504,10 @@
         <div class="lightbox-comment-form">
           <span class="lb-form-label">Leave Your Mark</span>
           <input type="text" class="lb-input" id="lb-comment-name" placeholder="Your name (optional)" maxlength="60" />
-          <textarea class="lb-input" id="lb-comment-msg" placeholder="What did you think?" maxlength="1000"></textarea>
+          <div style="display:flex;gap:0.5rem;align-items:flex-end;margin-bottom:0.5rem;">
+            <textarea class="lb-input" id="lb-comment-msg" placeholder="What did you think?" maxlength="1000" style="margin-bottom:0;flex:1;"></textarea>
+            <div id="lb-emoji-picker-mount"></div>
+          </div>
           <button class="lb-submit" id="lb-comment-submit">Leave Your Mark</button>
         </div>
       </div>
@@ -611,7 +617,7 @@ async function loadGalleryComments(title) {
           <span class="lb-comment-name">${c.name || 'Anonymous'}</span>
           <span class="lb-comment-date">${date}</span>
         </div>
-        <div class="lb-comment-body">${c.message}</div>
+        <div class="lb-comment-body">${window.renderEmojiShortcodes ? window.renderEmojiShortcodes(c.message) : c.message}</div>
         <div class="lb-comment-footer">
           <button class="lb-comment-like-btn${liked ? ' liked' : ''}" data-id="${c.id}">
             <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
@@ -763,6 +769,14 @@ function setLightboxContent(title, type, notes) {
   }
   loadGalleryComments(title);
   if (window.loadGalleryEngagement) window.loadGalleryEngagement(title);
+  // Reactions
+  const reactContainer = document.getElementById('lb-reactions-container');
+  if (reactContainer && window.initReactions) window.initReactions('gallery-' + title, reactContainer);
+  // Emoji picker (only mount once)
+  const pickerMount = document.getElementById('lb-emoji-picker-mount');
+  if (pickerMount && !pickerMount.hasChildNodes() && window.createEmojiPicker) {
+    window.createEmojiPicker(document.getElementById('lb-comment-msg'), pickerMount);
+  }
   // Reset comment form
   document.getElementById('lb-comment-name').value = '';
   document.getElementById('lb-comment-msg').value = '';
@@ -1011,6 +1025,7 @@ async function loadStills() {
   } catch(e) { if (loading) loading.textContent = 'No stills yet.'; }
 }
 </script>
+<script src="emojis.js"></script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
 <script>
