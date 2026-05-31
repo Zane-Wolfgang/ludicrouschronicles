@@ -190,12 +190,24 @@
       justify-content: center;
       border-radius: 3px;
       transition: background 0.15s, border-color 0.15s;
+      overflow: hidden;
+      width: 32px;
+      height: 32px;
+      box-sizing: border-box;
     }
     .lc-emoji-grid-item:hover {
       background: rgba(201,168,76,0.1);
       border-color: var(--border, rgba(201,168,76,0.18));
     }
-    .lc-emoji-grid-item img { display: block; image-rendering: auto; }
+    .lc-emoji-grid-item img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: auto;
+      max-width: 26px;
+      max-height: 26px;
+    }
 
     /* Comment emoji rendering */
     .lb-comment-body img.lc-emoji,
@@ -450,21 +462,37 @@
       btn.title = 'Insert emoji';
       btn.innerHTML = `<svg viewBox="0 0 24 24" width="15" height="15"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm3.5-9c.8 0 1.5-.7 1.5-1.5S16.3 8 15.5 8 14 8.7 14 9.5s.7 1.5 1.5 1.5zm-7 0c.8 0 1.5-.7 1.5-1.5S9.3 8 8.5 8 7 8.7 7 9.5 7.7 11 8.5 11zm3.5 6.5c2.3 0 4.3-1.5 5.1-3.5H6.9c.8 2 2.8 3.5 5.1 3.5z"/></svg>`;
 
-      // Grid is appended to body so it's never clipped by a parent container
       const grid = document.createElement('div');
       grid.className = 'lc-emoji-grid';
       grid.style.display = 'none';
       document.body.appendChild(grid);
 
+      function positionGrid() {
+        const rect = btn.getBoundingClientRect();
+        const gw = grid.offsetWidth || 220;
+        const gh = grid.offsetHeight || 160;
+        let left = rect.right - gw;
+        let top  = rect.top - gh - 8;
+        if (left < 10) left = 10;
+        if (left + gw > window.innerWidth - 10) left = window.innerWidth - gw - 10;
+        if (top < 10) top = rect.bottom + 8;
+        grid.style.left = left + 'px';
+        grid.style.top  = top  + 'px';
+      }
+
       function closeGrid() { grid.style.display = 'none'; }
+
+      // Reposition on any scroll so picker follows the button
+      window.addEventListener('scroll', () => {
+        if (grid.style.display !== 'none') requestAnimationFrame(positionGrid);
+      }, { capture: true });
 
       emojis.forEach(emoji => {
         const item = document.createElement('button');
         item.type = 'button';
         item.className = 'lc-emoji-grid-item';
         item.title = emoji.label;
-        const s = Math.min(emoji.size, 28);
-        item.innerHTML = `<img src="${emoji.src}" alt="${emoji.label}" width="${s}" height="${s}" style="width:${s}px;height:${s}px;object-fit:contain;">`;
+        item.innerHTML = `<img src="${emoji.src}" alt="${emoji.label}">`;
         item.addEventListener('click', e => {
           e.stopPropagation();
           const code = `:${emoji.id}:`;
@@ -480,33 +508,14 @@
 
       btn.addEventListener('click', e => {
         e.stopPropagation();
-        const open = grid.style.display !== 'none';
-        if (open) {
-          closeGrid();
-          return;
-        }
-        // Position flush to the button using viewport coords
-        const rect = btn.getBoundingClientRect();
+        if (grid.style.display !== 'none') { closeGrid(); return; }
         const gw = Math.min(220, window.innerWidth - 20);
         grid.style.width = gw + 'px';
         grid.style.display = 'grid';
-        // Let browser paint so offsetHeight is accurate
         requestAnimationFrame(() => {
-          const gh = grid.offsetHeight || 160;
-          let left = rect.right - gw;
-          let top  = rect.top - gh - 8;
-          if (left < 10) left = 10;
-          if (left + gw > window.innerWidth - 10) left = window.innerWidth - gw - 10;
-          if (top < 10) top = rect.bottom + 8;
-          if (top + gh > window.innerHeight - 10) top = rect.top - gh - 8;
-          grid.style.left = left + 'px';
-          grid.style.top  = top  + 'px';
+          positionGrid();
+          setTimeout(() => document.addEventListener('click', closeGrid, { once: true }), 10);
         });
-        // Close on click outside or any scroll (capture phase catches scroll in children too)
-        setTimeout(() => {
-          document.addEventListener('click', closeGrid, { once: true });
-          window.addEventListener('scroll', closeGrid, { once: true, capture: true });
-        }, 10);
       });
 
       wrap.appendChild(btn);
