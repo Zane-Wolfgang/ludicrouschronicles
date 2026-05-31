@@ -784,6 +784,9 @@ function setLightboxContent(title, type, notes) {
   btn.disabled = false; btn.textContent = 'Leave Your Mark';
 }
 
+function hideSocials() { const t = document.getElementById('socials-trigger'); if (t) t.style.visibility = 'hidden'; }
+function showSocials() { const t = document.getElementById('socials-trigger'); if (t) t.style.visibility = ''; }
+
 function openLightbox(src, title, type, notes) {
   lbImg.src = src;
   lb.classList.add('open'); lb.classList.remove('zoomed');
@@ -796,6 +799,7 @@ function openLightbox(src, title, type, notes) {
   hint.style.opacity = '0.5';
   hint.textContent = 'Click image to zoom · scroll for notes & comments';
   setLightboxContent(title, type, notes || galleryNotes.get(title) || HARDCODED_NOTES[title] || '');
+  hideSocials();
 }
 
 function openSlideshow(images, titles, type, notes) {
@@ -805,6 +809,7 @@ function openSlideshow(images, titles, type, notes) {
   lb.scrollTop = 0;
   showSlide(0);
   setLightboxContent(titles[0], type, notes || galleryNotes.get(titles[0]) || '');
+  hideSocials();
 }
 
 function showSlide(index) {
@@ -823,6 +828,7 @@ function closeLightbox() {
   lb.classList.remove('open', 'zoomed');
   document.body.style.overflow = '';
   zoomed = false;
+  showSocials();
 }
 
 document.getElementById('lb-close').addEventListener('click', e => { e.stopPropagation(); closeLightbox(); });
