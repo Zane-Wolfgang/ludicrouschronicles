@@ -133,6 +133,7 @@ fs.writeFileSync('_data/emojis-index.json', JSON.stringify(emojis, null, 2));
 console.log(`Emojis: ${emojis.length} items`);
 
 // ── Announcements index ──
+const announcements = readDataDir('_data/announcements');
 fs.writeFileSync('_data/announcements-index.json', JSON.stringify(announcements, null, 2));
 console.log(`Announcements: ${announcements.length} items`);
 
