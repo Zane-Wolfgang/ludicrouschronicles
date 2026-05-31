@@ -252,3 +252,16 @@ collections:
           - { label: "Devoted — $5 members", value: "devoted" }
           - { label: "Bound — $12 members", value: "bound" }
         default: "free"
+
+  - name: "emojis"
+    label: "Emojis"
+    folder: "_data/emojis"
+    create: true
+    media_folder: "/images/emojis"
+    public_folder: "/images/emojis"
+    slug: "{{slug}}"
+    fields:
+      - { label: "Name", name: "title", widget: "string", hint: "Display name, e.g. Angry Vasily" }
+      - { label: "Image", name: "image", widget: "image", hint: "Upload to images/emojis/" }
+      - { label: "Display Size (px)", name: "size", widget: "number", default: 32, hint: "How big it appears in reactions — 24 to 48 recommended" }
+      - { label: "Active", name: "active", widget: "boolean", default: true }
