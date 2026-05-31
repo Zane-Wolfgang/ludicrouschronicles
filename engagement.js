@@ -213,3 +213,96 @@ async function initEngagement(chapterId) {
   const submitBtn2 = document.getElementById('comment-submit');
   if (submitBtn2) submitBtn2.addEventListener('click', submitComment);
 }
+
+// ── Admin Recent Comments Panel ──
+(function initAdminPanel() {
+  async function setup() {
+    // Wait for auth.js to be ready
+    if (!window.waitForIdentity) {
+      setTimeout(setup, 200);
+      return;
+    }
+    const user = await window.waitForIdentity();
+    if (!user || !user.app_metadata?.roles?.includes('admin')) return;
+
+    // Inject panel HTML
+    const tab = document.createElement('div');
+    tab.className = 'admin-panel-tab visible';
+    tab.innerHTML = `
+      <div class="admin-panel-toggle" id="ap-toggle">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+        Comments
+      </div>
+      <div class="admin-panel-body" id="ap-body">
+        <div class="admin-panel-header">
+          <span class="admin-panel-title">Recent Comments</span>
+          <button class="admin-panel-refresh" id="ap-refresh">↻ Refresh</button>
+        </div>
+        <div class="admin-panel-list" id="ap-list">
+          <div class="admin-panel-empty">Loading…</div>
+        </div>
+      </div>`;
+    document.body.appendChild(tab);
+
+    const toggle = document.getElementById('ap-toggle');
+    const body   = document.getElementById('ap-body');
+    const list   = document.getElementById('ap-list');
+    let isOpen   = false;
+
+    toggle.addEventListener('click', () => {
+      isOpen = !isOpen;
+      body.classList.toggle('open', isOpen);
+      if (isOpen) loadRecentComments();
+    });
+
+    document.getElementById('ap-refresh').addEventListener('click', loadRecentComments);
+
+    async function loadRecentComments() {
+      list.innerHTML = '<div class="admin-panel-empty">Loading…</div>';
+      try {
+        const data = await sb(`comments?order=created_at.desc&limit=50&select=*`);
+        if (!Array.isArray(data) || data.length === 0) {
+          list.innerHTML = '<div class="admin-panel-empty">No comments yet.</div>';
+          return;
+        }
+        list.innerHTML = '';
+        data.forEach(c => {
+          const raw   = c.chapter || '';
+          const piece = raw.startsWith('gallery-')
+            ? raw.replace('gallery-', '') + ' (Gallery)'
+            : raw.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          const date  = new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          const div   = document.createElement('div');
+          div.className = 'admin-comment-item';
+          div.innerHTML = `
+            <div class="admin-comment-piece">${piece}</div>
+            <div class="admin-comment-meta">
+              <span class="admin-comment-name">${c.name || 'Anonymous'}</span>
+              <span class="admin-comment-date">${date}</span>
+            </div>
+            <div class="admin-comment-body">${c.message}</div>
+            <button class="admin-comment-delete" data-id="${c.id}">Delete</button>`;
+          div.querySelector('.admin-comment-delete').addEventListener('click', async function() {
+            if (!confirm('Delete this comment?')) return;
+            try {
+              await sb(`comments?id=eq.${c.id}`, { method: 'DELETE' });
+              div.remove();
+              if (!list.querySelector('.admin-comment-item')) {
+                list.innerHTML = '<div class="admin-panel-empty">No comments yet.</div>';
+              }
+            } catch(e) {}
+          });
+          list.appendChild(div);
+        });
+      } catch(e) {
+        list.innerHTML = '<div class="admin-panel-empty">Could not load comments.</div>';
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+})();
