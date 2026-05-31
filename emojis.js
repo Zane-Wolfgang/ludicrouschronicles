@@ -31,10 +31,13 @@
     .lc-reactions-row {
       display: flex;
       flex-wrap: wrap;
+      align-items: center;
       gap: 6px;
       padding: 0.75rem 1.5rem;
       border-bottom: 1px solid var(--border, rgba(201,168,76,0.18));
+      min-height: 48px;
     }
+    /* Existing reaction chips (only shown when count > 0) */
     .lc-reaction-btn {
       background: rgba(10,8,6,0.6);
       border: 1px solid var(--border, rgba(201,168,76,0.18));
@@ -45,16 +48,9 @@
       align-items: center;
       gap: 5px;
       transition: border-color 0.2s, background 0.2s, transform 0.1s;
-      min-width: 0;
     }
-    .lc-reaction-btn:hover {
-      border-color: var(--gold-dim, #8a6e2f);
-      background: rgba(201,168,76,0.08);
-    }
-    .lc-reaction-btn.reacted {
-      border-color: var(--gold, #c9a84c);
-      background: rgba(201,168,76,0.12);
-    }
+    .lc-reaction-btn:hover { border-color: var(--gold-dim, #8a6e2f); background: rgba(201,168,76,0.08); }
+    .lc-reaction-btn.reacted { border-color: var(--gold, #c9a84c); background: rgba(201,168,76,0.12); }
     .lc-reaction-btn:active { transform: scale(0.93); }
     .lc-reaction-btn img { display: block; image-rendering: auto; }
     .lc-reaction-count {
@@ -66,6 +62,39 @@
       transition: color 0.2s;
     }
     .lc-reaction-btn.reacted .lc-reaction-count { color: var(--gold, #c9a84c); }
+    /* Add reaction "+" button */
+    .lc-add-reaction-btn {
+      background: none;
+      border: 1px solid var(--border, rgba(201,168,76,0.18));
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted, #7a7260);
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .lc-add-reaction-btn:hover { border-color: var(--gold-dim, #8a6e2f); color: var(--gold, #c9a84c); background: rgba(201,168,76,0.06); }
+    .lc-add-reaction-btn svg { fill: currentColor; width: 14px; height: 14px; flex-shrink: 0; }
+    /* Reaction picker (fixed, viewport-aware) */
+    .lc-reaction-picker {
+      position: fixed;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 4px;
+      padding: 0.5rem;
+      background: rgba(10,8,6,0.98);
+      border: 1px solid var(--border, rgba(201,168,76,0.18));
+      width: 220px;
+      max-width: calc(100vw - 20px);
+      z-index: 9999;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+      animation: lcPopIn 0.12s ease;
+    }
 
     /* Emoji popup */
     .lc-emoji-popup {
@@ -296,12 +325,13 @@
     });
   }
 
-  // ── Reactions UI ──
+  // ── Reactions UI (Discord-style) ──
   async function initReactions(contentId, containerEl) {
     if (!containerEl) return;
     const emojis = await loadEmojis();
     const visitorId = getVisitorId();
 
+    // Fetch existing reactions
     let reactionData = [];
     try {
       reactionData = await emFetch(`reactions?content_id=eq.${encodeURIComponent(contentId)}&select=emoji_id,visitor_id`);
@@ -314,41 +344,98 @@
       if (r.visitor_id === visitorId) myReactions.add(r.emoji_id);
     });
 
-    const row = document.createElement('div');
-    row.className = 'lc-reactions-row';
+    // Render the full reaction bar
+    function render() {
+      containerEl.innerHTML = '';
+      const row = document.createElement('div');
+      row.className = 'lc-reactions-row';
 
-    emojis.forEach(emoji => {
-      const btn = document.createElement('button');
-      btn.className = 'lc-reaction-btn' + (myReactions.has(emoji.id) ? ' reacted' : '');
-      btn.title = emoji.label;
-      const imgSize = emoji.size;
-      btn.innerHTML = `<img src="${emoji.src}" alt="${emoji.label}" width="${imgSize}" height="${imgSize}" style="width:${imgSize}px;height:${imgSize}px;object-fit:contain;"><span class="lc-reaction-count">${(counts[emoji.id] || 0) > 0 ? counts[emoji.id] : ''}</span>`;
-
-      btn.addEventListener('click', e => {
-        e.stopPropagation();
-        const currentCount = parseInt(btn.querySelector('.lc-reaction-count').textContent || '0') || 0;
-        const currentlyReacted = btn.classList.contains('reacted');
-        showEmojiPopup(emoji, currentCount, currentlyReacted, async () => {
+      // Show only emojis that have at least one reaction
+      emojis.forEach(emoji => {
+        const count = counts[emoji.id] || 0;
+        if (count === 0) return;
+        const reacted = myReactions.has(emoji.id);
+        const s = emoji.size;
+        const chip = document.createElement('button');
+        chip.className = 'lc-reaction-btn' + (reacted ? ' reacted' : '');
+        chip.title = emoji.label + (reacted ? ' (click to remove)' : ' (click to add)');
+        chip.innerHTML = `<img src="${emoji.src}" alt="${emoji.label}" width="${s}" height="${s}" style="width:${s}px;height:${s}px;object-fit:contain;"><span class="lc-reaction-count">${count}</span>`;
+        chip.addEventListener('click', async e => {
+          e.stopPropagation();
           try {
-            if (currentlyReacted) {
+            if (reacted) {
               await emFetch(`reactions?content_id=eq.${encodeURIComponent(contentId)}&emoji_id=eq.${emoji.id}&visitor_id=eq.${visitorId}`, { method: 'DELETE' });
-              btn.classList.remove('reacted');
-              const n = Math.max(0, currentCount - 1);
-              btn.querySelector('.lc-reaction-count').textContent = n > 0 ? n : '';
+              myReactions.delete(emoji.id);
+              counts[emoji.id] = Math.max(0, (counts[emoji.id] || 1) - 1);
             } else {
               await emFetch('reactions', { method: 'POST', body: { content_id: contentId, emoji_id: emoji.id, visitor_id: visitorId } });
-              btn.classList.add('reacted');
-              btn.querySelector('.lc-reaction-count').textContent = currentCount + 1;
+              myReactions.add(emoji.id);
+              counts[emoji.id] = (counts[emoji.id] || 0) + 1;
             }
+            render();
           } catch(err) {}
-        }, btn);
+        });
+        row.appendChild(chip);
       });
 
-      row.appendChild(btn);
-    });
+      // "Add reaction" button
+      const addBtn = document.createElement('button');
+      addBtn.className = 'lc-add-reaction-btn';
+      addBtn.title = 'Add reaction';
+      addBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm3.5-9c.8 0 1.5-.7 1.5-1.5S16.3 8 15.5 8 14 8.7 14 9.5s.7 1.5 1.5 1.5zm-7 0c.8 0 1.5-.7 1.5-1.5S9.3 8 8.5 8 7 8.7 7 9.5 7.7 11 8.5 11zm3.5 6.5c2.3 0 4.3-1.5 5.1-3.5H6.9c.8 2 2.8 3.5 5.1 3.5z"/></svg>`;
 
-    containerEl.innerHTML = '';
-    containerEl.appendChild(row);
+      addBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        // Build picker
+        const existing = document.getElementById('lc-rpicker-' + CSS.escape(contentId));
+        if (existing) { existing.remove(); return; }
+        const picker = document.createElement('div');
+        picker.id = 'lc-rpicker-' + CSS.escape(contentId);
+        picker.className = 'lc-reaction-picker';
+        emojis.forEach(emoji => {
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'lc-emoji-grid-item' + (myReactions.has(emoji.id) ? ' reacted' : '');
+          item.title = emoji.label;
+          const s = Math.min(emoji.size, 28);
+          item.innerHTML = `<img src="${emoji.src}" alt="${emoji.label}" width="${s}" height="${s}" style="width:${s}px;height:${s}px;object-fit:contain;">`;
+          item.addEventListener('click', async ev => {
+            ev.stopPropagation();
+            picker.remove();
+            try {
+              if (myReactions.has(emoji.id)) {
+                await emFetch(`reactions?content_id=eq.${encodeURIComponent(contentId)}&emoji_id=eq.${emoji.id}&visitor_id=eq.${visitorId}`, { method: 'DELETE' });
+                myReactions.delete(emoji.id);
+                counts[emoji.id] = Math.max(0, (counts[emoji.id] || 1) - 1);
+              } else {
+                await emFetch('reactions', { method: 'POST', body: { content_id: contentId, emoji_id: emoji.id, visitor_id: visitorId } });
+                myReactions.add(emoji.id);
+                counts[emoji.id] = (counts[emoji.id] || 0) + 1;
+              }
+              render();
+            } catch(err) {}
+          });
+          picker.appendChild(item);
+        });
+        document.body.appendChild(picker);
+        // Position picker near button
+        const rect = addBtn.getBoundingClientRect();
+        const w = 220, h = 160;
+        let left = rect.right - w;
+        let top  = rect.top - h - 8;
+        if (left < 10) left = 10;
+        if (left + w > window.innerWidth - 10) left = window.innerWidth - w - 10;
+        if (top < 10) top = rect.bottom + 8;
+        picker.style.left = left + 'px';
+        picker.style.top  = top  + 'px';
+        setTimeout(() => document.addEventListener('click', () => picker.remove(), { once: true }), 10);
+      });
+
+      row.appendChild(addBtn);
+      containerEl.appendChild(row);
+    }
+
+    render();
   }
 
   // ── Emoji picker for textarea ──
