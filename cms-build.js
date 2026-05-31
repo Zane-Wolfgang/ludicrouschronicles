@@ -58,8 +58,7 @@ function readDataDir(dir) {
   return [];
 }
 
-// ── Build indexes ──
-
+// ── Gallery index ──
 const galleryRaw = [...readDataDir('_data/gallery'), ...readDataDir('gallery')];
 const gallery = galleryRaw.map(item => {
   const images = [item.image].filter(Boolean);
@@ -83,6 +82,19 @@ const stills = stillsRaw.map(item => {
 fs.writeFileSync('_data/stills-index.json', JSON.stringify(stills, null, 2));
 console.log(`Stills: ${stills.length} items`);
 
+// ── Traditional Art index ──
+const traditionalRaw = readDataDir('_data/traditional-art');
+const traditionalArt = traditionalRaw.map(item => {
+  const images = [item.image].filter(Boolean);
+  for (let n = 2; n <= 10; n++) {
+    if (item[`image${n}`]) images.push(item[`image${n}`]);
+  }
+  return { ...item, images };
+});
+fs.writeFileSync('_data/traditional-art-index.json', JSON.stringify(traditionalArt, null, 2));
+console.log(`Traditional Art: ${traditionalArt.length} items`);
+
+// ── Announcements index ──
 const announcements = readDataDir('_data/announcements');
 fs.writeFileSync('_data/announcements-index.json', JSON.stringify(announcements, null, 2));
 console.log(`Announcements: ${announcements.length} items`);
@@ -119,8 +131,14 @@ const stills_content = stills.map(s => ({
   href: 'gallery.html#stills', thumbnail: s.image || ''
 }));
 
+const traditional_content = traditionalArt.map(t => ({
+  ...t, type: 'Traditional Art', label: 'Traditional Art', filter_type: 'art',
+  href: 'gallery.html#traditional', thumbnail: t.image || ''
+}));
+
 const sortedChapters = [...chapters].sort((a,b) => parseInt(a.number||0) - parseInt(b.number||0));
-const sortedOther = [...videos, ...shortStories, ...wips, ...stills_content].sort((a,b) => new Date(b.date) - new Date(a.date));
+const sortedOther = [...videos, ...shortStories, ...wips, ...stills_content, ...traditional_content]
+  .sort((a,b) => new Date(b.date) - new Date(a.date));
 const contentIndex = [...sortedChapters, ...sortedOther];
 
 fs.writeFileSync('_data/content-index.json', JSON.stringify(contentIndex, null, 2));
@@ -138,7 +156,6 @@ console.log(`Socials: ${socials.length} items`);
 console.log('Build complete!');
 
 // ── Newsletter ──
-
 async function maybeSendNewsletter() {
   const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) { console.log('No BREVO_API_KEY — skipping newsletter'); return; }
@@ -149,7 +166,7 @@ async function maybeSendNewsletter() {
     console.log('Commit message:', commitMsg);
   } catch(e) { console.log('Could not read git log — skipping newsletter'); return; }
 
-  const cmsPattern = /^(Create|Update)\s+(Chapters|Videos|Gallery|Announcements|Short Stories|Short_stories|Stills)\s+/i;
+  const cmsPattern = /^(Create|Update)\s+(Chapters|Videos|Gallery|Announcements|Short Stories|Short_stories|Stills|Traditional.Art)\s+/i;
   if (!cmsPattern.test(commitMsg)) { console.log('Not a CMS publish commit — skipping newsletter'); return; }
 
   let character, quote, contentType, link, subject, title = '';
@@ -196,6 +213,13 @@ async function maybeSendNewsletter() {
     link = 'https://ludicrous-chronicles.netlify.app/gallery.html';
     subject = `${title} — Ludicrous Chronicles`;
     quote = `Oh! Forgive the intrusion — why, I do hope I'm not bothering you — There are... some new stills in the gallery, if you'd care to have a look.`;
+  } else if (/Traditional.Art/i.test(commitMsg)) {
+    const latest = traditionalArt[0];
+    title = latest ? latest.title : 'New Traditional Art';
+    character = 'Rachel'; contentType = 'Traditional Art';
+    link = 'https://ludicrous-chronicles.netlify.app/gallery.html#traditional';
+    subject = `New Traditional Art — Ludicrous Chronicles`;
+    quote = `Oh! Forgive the intrusion — why, I do hope I'm not bothering you — There is... a new piece in the gallery, if you'd care to have a look.`;
   }
 
   if (!character) { console.log('Could not determine content type — skipping newsletter'); return; }
@@ -240,7 +264,6 @@ async function maybeSendNewsletter() {
       headers: { 'api-key': apiKey, 'accept': 'application/json' }
     });
     const contactsData = await contactsRes.json();
-
     const seen = new Set();
     const contacts = (contactsData.contacts || [])
       .filter(c => !c.emailBlacklisted && c.email)
@@ -249,11 +272,8 @@ async function maybeSendNewsletter() {
         seen.add(c.email.toLowerCase());
         return true;
       });
-
     if (contacts.length === 0) { console.log('No subscribers yet — skipping newsletter send'); return; }
-
     console.log(`Sending newsletter to ${contacts.length} subscriber(s)...`);
-
     let sent = 0;
     for (const contact of contacts) {
       try {
@@ -268,22 +288,12 @@ async function maybeSendNewsletter() {
             replyTo: { email: 'zljr2008@gmail.com', name: 'Ludicrous Chronicles' }
           })
         });
-        if (sendRes.ok) {
-          sent++;
-          console.log(`Sent to ${contact.email}`);
-        } else {
-          const err = await sendRes.json();
-          console.error(`Failed to send to ${contact.email}:`, err.message);
-        }
-      } catch(e) {
-        console.error(`Error sending to ${contact.email}:`, e.message);
-      }
+        if (sendRes.ok) { sent++; console.log(`Sent to ${contact.email}`); }
+        else { const err = await sendRes.json(); console.error(`Failed to send to ${contact.email}:`, err.message); }
+      } catch(e) { console.error(`Error sending to ${contact.email}:`, e.message); }
     }
-
     console.log(`Newsletter sent to ${sent}/${contacts.length} subscribers`);
-  } catch(e) {
-    console.error('Newsletter send error:', e.message);
-  }
+  } catch(e) { console.error('Newsletter send error:', e.message); }
 }
 
 maybeSendNewsletter().catch(e => console.error('Newsletter error:', e.message));
