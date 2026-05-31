@@ -155,21 +155,13 @@
       <h1 class="videos-title">Videos</h1>
     </div>
     <div class="video-list" id="video-list">
-      <button class="video-item active" onclick="loadVideo('images/video-pants.mp4', this)" data-thumbnail="" data-duration="" data-description="">
-        <div class="video-thumb"><div class="video-thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-        <div class="video-info"><div class="video-item-type">Behind the Scenes</div><div class="video-item-title">Boo.</div></div>
-      </button>
-      <button class="video-item" onclick="loadVideo('images/video-victor.mp4', this)" data-thumbnail="" data-duration="" data-description="">
-        <div class="video-thumb"><div class="video-thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-        <div class="video-info"><div class="video-item-type">Behind the Scenes</div><div class="video-item-title">I Am the Victor</div></div>
-      </button>
+      <div style="padding:1.5rem 1rem;font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.2em;color:var(--gold-dim);text-transform:uppercase;" id="video-list-loading">Loading…</div>
     </div>
   </div>
 
   <div class="videos-right">
     <div class="tv-wrap" id="tv-wrap">
       <video id="main-video" preload="none" controls controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture disableRemotePlayback oncontextmenu="return false;">
-        <source src="images/video-pants.mp4" type="video/mp4">
       </video>
       <div class="tv-filter" id="tv-filter">
         <div class="tv-vignette"></div>
@@ -487,7 +479,7 @@
 
     videosRight.classList.add('visible');
     if (window.innerWidth <= 768) videosRight.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    video.play();
+    video.play().catch(() => {});
 
     if (window.loadVideoEngagement) window.loadVideoEngagement(title);
   }
