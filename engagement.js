@@ -1,4 +1,12 @@
-// ── Supabase config ──
+// ── Load emojis.js if not already present ──
+(function() {
+  if (window.initReactions) return;
+  const s = document.createElement('script');
+  s.src = 'emojis.js';
+  document.head.appendChild(s);
+})();
+
+
 const SUPABASE_URL = 'https://stdxmneifvavkzwttbzj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_ie6tEdR7DxrJ2IGc3i6a1g_LJtU2j_e';
 
@@ -129,7 +137,7 @@ async function initEngagement(chapterId) {
             <span class="comment-name">${c.name || 'Anonymous'}</span>
             <span class="comment-date">${date}</span>
           </div>
-          <div class="comment-body">${c.message}</div>
+          <div class="comment-body">${window.renderEmojiShortcodes ? window.renderEmojiShortcodes(c.message) : c.message}</div>
           <div class="comment-footer">
             <button class="comment-like-btn${liked ? ' liked' : ''}" data-id="${c.id}">
               <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
@@ -212,6 +220,27 @@ async function initEngagement(chapterId) {
 
   const submitBtn2 = document.getElementById('comment-submit');
   if (submitBtn2) submitBtn2.addEventListener('click', submitComment);
+
+  // ── Emoji reactions ──
+  const reactionsEl = document.getElementById('reactions-container');
+  if (reactionsEl && window.initReactions) {
+    window.initReactions(chapterId, reactionsEl);
+  } else if (reactionsEl) {
+    // emojis.js might still be loading — wait for it
+    const wait = setInterval(() => {
+      if (window.initReactions) { clearInterval(wait); window.initReactions(chapterId, reactionsEl); }
+    }, 100);
+    setTimeout(() => clearInterval(wait), 5000);
+  }
+
+  // ── Emoji picker in comment form ──
+  const msgInput2 = document.getElementById('comment-message');
+  const pickerMount = document.getElementById('comment-emoji-picker-mount');
+  if (msgInput2 && pickerMount && !pickerMount.hasChildNodes()) {
+    const mountPicker = () => { if (window.createEmojiPicker) window.createEmojiPicker(msgInput2, pickerMount); };
+    if (window.createEmojiPicker) mountPicker();
+    else { const w = setInterval(() => { if (window.createEmojiPicker) { clearInterval(w); mountPicker(); } }, 100); setTimeout(() => clearInterval(w), 5000); }
+  }
 }
 
 // ── Admin Recent Comments Panel ──
