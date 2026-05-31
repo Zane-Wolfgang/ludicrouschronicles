@@ -138,9 +138,7 @@
     .lc-emoji-picker-btn:hover { border-color: var(--gold-dim, #8a6e2f); }
     .lc-emoji-picker-btn:hover svg { fill: var(--gold, #c9a84c); }
     .lc-emoji-grid {
-      position: absolute;
-      bottom: calc(100% + 6px);
-      right: 0;
+      position: fixed;
       display: grid;
       grid-template-columns: repeat(6, 1fr);
       gap: 4px;
@@ -148,7 +146,8 @@
       background: rgba(10,8,6,0.98);
       border: 1px solid var(--border, rgba(201,168,76,0.18));
       width: 220px;
-      z-index: 500;
+      max-width: calc(100vw - 20px);
+      z-index: 9999;
       box-shadow: 0 4px 20px rgba(0,0,0,0.6);
       animation: lcPopIn 0.12s ease;
     }
@@ -391,8 +390,23 @@
       btn.addEventListener('click', e => {
         e.stopPropagation();
         const open = grid.style.display !== 'none';
-        grid.style.display = open ? 'none' : 'grid';
-        if (!open) setTimeout(() => document.addEventListener('click', () => { grid.style.display = 'none'; }, { once: true }), 10);
+        if (open) {
+          grid.style.display = 'none';
+        } else {
+          grid.style.display = 'grid';
+          // Position using fixed coords so it stays in viewport
+          const rect = btn.getBoundingClientRect();
+          const gridW = 220;
+          const gridH = 160;
+          let left = rect.right - gridW;
+          let top  = rect.top - gridH - 8;
+          if (left < 10) left = 10;
+          if (left + gridW > window.innerWidth - 10) left = window.innerWidth - gridW - 10;
+          if (top < 10) top = rect.bottom + 8;
+          grid.style.left = left + 'px';
+          grid.style.top  = top  + 'px';
+          setTimeout(() => document.addEventListener('click', () => { grid.style.display = 'none'; }, { once: true }), 10);
+        }
       });
 
       wrap.appendChild(btn);
