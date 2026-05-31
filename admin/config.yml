@@ -212,3 +212,43 @@ collections:
       - { label: "Hover Tooltip (optional)", name: "tooltip", widget: "string", required: false }
       - { label: "Order (1 = top)", name: "order", widget: "number", default: 99 }
       - { label: "Active", name: "active", widget: "boolean", default: true, hint: "Turn off to hide without deleting" }
+
+  - name: "traditional_art"
+    label: "Traditional Art"
+    folder: "_data/traditional-art"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Main Image", name: "image", widget: "image", hint: "Scan or photo of the piece" }
+      - { label: "Image 2 (optional)", name: "image2", widget: "image", required: false }
+      - { label: "Image 3 (optional)", name: "image3", widget: "image", required: false }
+      - { label: "Image 4 (optional)", name: "image4", widget: "image", required: false }
+      - { label: "Image 5 (optional)", name: "image5", widget: "image", required: false }
+      - { label: "Image 6 (optional)", name: "image6", widget: "image", required: false }
+      - { label: "Image 7 (optional)", name: "image7", widget: "image", required: false }
+      - { label: "Image 8 (optional)", name: "image8", widget: "image", required: false }
+      - { label: "Image 9 (optional)", name: "image9", widget: "image", required: false }
+      - { label: "Image 10 (optional)", name: "image10", widget: "image", required: false }
+      - { label: "Artist's Note (optional)", name: "notes", widget: "text", required: false, hint: "Shown below the image in the lightbox." }
+      - label: "Medium"
+        name: "medium"
+        widget: "select"
+        required: false
+        options:
+          - { label: "Pencil", value: "Pencil" }
+          - { label: "Ink", value: "Ink" }
+          - { label: "Watercolour", value: "Watercolour" }
+          - { label: "Charcoal", value: "Charcoal" }
+          - { label: "Coloured Pencil", value: "Coloured Pencil" }
+          - { label: "Mixed Media", value: "Mixed Media" }
+          - { label: "Other", value: "Other" }
+      - label: "Access Tier"
+        name: "tier"
+        widget: "select"
+        options:
+          - { label: "Free — visible to everyone", value: "free" }
+          - { label: "Devoted — $5 members", value: "devoted" }
+          - { label: "Bound — $12 members", value: "bound" }
+        default: "free"
