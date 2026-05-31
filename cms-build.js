@@ -27,8 +27,41 @@ function parseFrontmatter(fileContent) {
       while (i < lines.length && (lines[i].startsWith('  ') || lines[i] === '')) { block.push(lines[i].slice(2)); i++; }
       fm[key] = block.join('\n').trim();
     } else {
-      fm[key] = val.replace(/^["']|["']$/g, '');
-      i++;
+      // Handle multi-line quoted strings (Decap CMS wraps long values across lines)
+      const startQuote = val[0];
+      if ((startQuote === '"' || startQuote === "'") && val.length > 1) {
+        const inner = val.slice(1);
+        const closeIdx = inner.lastIndexOf(startQuote);
+        if (closeIdx === inner.length - 1) {
+          // Properly closed on same line
+          fm[key] = inner.slice(0, closeIdx).replace(/\\"/g, '"').replace(/\\'/g, "'");
+          i++;
+        } else {
+          // No closing quote found — read continuation lines
+          let accumulated = inner;
+          i++;
+          while (i < lines.length) {
+            const cont = lines[i];
+            if (cont.startsWith('  ') || cont.startsWith('\t')) {
+              const trimmed = cont.trim();
+              if (trimmed.endsWith(startQuote)) {
+                accumulated += ' ' + trimmed.slice(0, -1);
+                i++;
+                break;
+              } else {
+                accumulated += ' ' + trimmed;
+                i++;
+              }
+            } else {
+              break;
+            }
+          }
+          fm[key] = accumulated.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\n/g, '\n');
+        }
+      } else {
+        fm[key] = val.replace(/^["']|["']$/g, '');
+        i++;
+      }
     }
   }
   const body = match[2] ? match[2].trim() : '';
