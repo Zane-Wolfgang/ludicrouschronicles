@@ -974,6 +974,8 @@ async function loadTraditional() {
     });
   } catch(e) { if (loading) loading.textContent = 'No traditional art yet.'; }
 }
+
+async function loadStills() {
   const grid = document.getElementById('stills-grid');
   const loading = document.getElementById('stills-loading');
   try {
