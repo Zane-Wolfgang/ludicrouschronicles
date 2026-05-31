@@ -586,3 +586,168 @@ footer {
 .comment-delete-btn { background: none; border: none; cursor: pointer; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); padding: 0; margin-left: auto; transition: color 0.2s; display: none; }
 .comment-delete-btn:hover { color: #c0705a; }
 .comments-section.is-admin .comment-delete-btn { display: block; }
+
+/* ── Comment likes & admin delete (engagement) ── */
+.comment-footer { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.4rem; }
+.comment-like-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); padding: 0; transition: color 0.2s; }
+.comment-like-btn svg { width: 11px; height: 11px; fill: var(--text-muted); transition: fill 0.2s; }
+.comment-like-btn:hover, .comment-like-btn.liked { color: var(--gold); }
+.comment-like-btn:hover svg, .comment-like-btn.liked svg { fill: var(--gold); }
+.comment-delete-btn { background: none; border: none; cursor: pointer; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); padding: 0; margin-left: auto; transition: color 0.2s; display: none; }
+.comment-delete-btn:hover { color: #c0705a; }
+.comments-section.is-admin .comment-delete-btn { display: block; }
+
+/* ── Admin Recent Comments Panel ── */
+.admin-panel-tab {
+  position: fixed;
+  top: 72px;
+  left: 0;
+  z-index: 500;
+  display: none;
+}
+.admin-panel-tab.visible { display: block; }
+.admin-panel-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(10,8,6,0.95);
+  border: 1px solid var(--gold-dim);
+  border-left: none;
+  padding: 0.45rem 0.85rem 0.45rem 0.6rem;
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  border-radius: 0 3px 3px 0;
+  user-select: none;
+}
+.admin-panel-toggle:hover { color: var(--gold); border-color: var(--gold); }
+.admin-panel-toggle svg { width: 10px; height: 10px; fill: currentColor; }
+.admin-panel-body {
+  position: fixed;
+  top: 72px;
+  left: 0;
+  width: 340px;
+  max-height: calc(100vh - 90px);
+  background: rgba(10,8,6,0.98);
+  border: 1px solid var(--border);
+  border-left: none;
+  border-top: none;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  z-index: 499;
+  border-radius: 0 0 4px 0;
+}
+.admin-panel-body.open { transform: translateX(0); }
+.admin-panel-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.admin-panel-title {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+}
+.admin-panel-refresh {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+  padding: 0;
+}
+.admin-panel-refresh:hover { color: var(--gold); }
+.admin-panel-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0.5rem 0;
+}
+.admin-panel-empty {
+  padding: 2rem 1rem;
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+.admin-comment-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.admin-comment-item:hover { background: var(--surface); }
+.admin-comment-item:last-child { border-bottom: none; }
+.admin-comment-piece {
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-comment-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+.admin-comment-name {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--parchment);
+}
+.admin-comment-date {
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+.admin-comment-body {
+  font-family: 'EB Garamond', serif;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-body);
+  margin-bottom: 0.4rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.admin-comment-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0;
+  transition: color 0.2s;
+}
+.admin-comment-delete:hover { color: #c0705a; }
+@media (max-width: 768px) {
+  .admin-panel-body { width: 100vw; max-height: 60vh; top: auto; bottom: 0; border-radius: 8px 8px 0 0; border-left: 1px solid var(--border); transform: translateY(100%); }
+  .admin-panel-body.open { transform: translateY(0); }
+  .admin-panel-tab { top: auto; bottom: 4rem; }
+  .admin-panel-toggle { border-left: 1px solid var(--gold-dim); border-radius: 3px; }
+}
