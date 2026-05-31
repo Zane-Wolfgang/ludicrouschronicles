@@ -3,302 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="ImageToolbar" content="no">
-<title>Gallery — Ludicrous Chronicles</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
-  <link rel="icon" type="image/png" href="images/favicon.png">
+<title>Videos — Ludicrous Chronicles</title>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
 <link rel="stylesheet" href="style.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <style>
-  .gallery-grid { columns: 3; column-gap: 12px; margin-top: 3rem; }
-  .gallery-item { break-inside: avoid; margin-bottom: 12px; position: relative; overflow: hidden; cursor: pointer; display: block; border: 1px solid var(--border); transition: border-color 0.25s, transform 0.25s; }
-  .gallery-item:hover { border-color: var(--gold-dim); transform: scale(1.01); }
-  .gallery-item img { width: 100%; display: block; filter: brightness(0.92); transition: filter 0.3s; }
-  .gallery-item:hover img { filter: brightness(1.05); }
-  .gallery-overlay { position: absolute; bottom: -8px; left: 0; right: 0; padding: 2rem 1rem 1.2rem; background: linear-gradient(0deg, rgba(10,8,6,0.85) 0%, transparent 100%); opacity: 0; transition: opacity 0.25s; }
-  .gallery-item:hover .gallery-overlay { opacity: 1; }
-  .gallery-overlay-title { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--parchment); margin-bottom: 0.2rem; }
-  .gallery-overlay-type { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
-  .gallery-item.locked { position: relative; }
-  .gallery-item.locked .gallery-overlay { top: 0; bottom: auto; padding: 1rem 1rem 2rem; background: linear-gradient(180deg, rgba(10,8,6,0.85) 0%, transparent 100%); }
-  .gallery-item.locked img { pointer-events: none !important; filter: brightness(0.92) blur(6px); transform: scale(1.05); }
-  .gallery-item.locked::after { content: ''; position: absolute; inset: 0; z-index: 3; cursor: pointer; }
-  .gallery-item.locked:hover img { filter: brightness(1.0) blur(5px); }
-  .gallery-lock-badge { position: absolute; top: 0.75rem; right: 0.75rem; width: 24px; height: 24px; border: 1px solid rgba(201,168,76,0.5); background: rgba(10,8,6,0.8); display: flex; align-items: center; justify-content: center; z-index: 2; }
-  .gallery-lock-badge svg { width: 10px; height: 10px; fill: var(--gold-dim); }
-  .gallery-tier-label { position: absolute; bottom: 0.75rem; left: 0.75rem; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); background: rgba(10,8,6,0.8); padding: 0.2em 0.6em; border: 1px solid var(--border); z-index: 2; }
+  body, html { margin: 0; padding: 0; overflow-x: hidden; }
+  .fireplace-bg { position: fixed; inset: 0; z-index: 0; }
+  .fireplace-bg video { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+  .fireplace-overlay { position: fixed; inset: 0; background: linear-gradient(180deg, rgba(10,8,6,0.7) 0%, rgba(10,8,6,0.3) 30%, rgba(10,8,6,0.3) 70%, rgba(10,8,6,0.8) 100%); z-index: 1; pointer-events: none; }
+  .videos-page { position: relative; z-index: 2; min-height: 100vh; display: flex; align-items: flex-start; padding: 5.5rem 3rem 4rem; gap: 3rem; }
+  .videos-left { width: 340px; flex-shrink: 0; padding-top: 0; }
+  .videos-header { margin-bottom: 1.5rem; }
+  .videos-title { font-family: 'Cinzel Decorative', serif; font-size: 1.6rem; color: var(--gold); text-shadow: 0 0 20px rgba(201,168,76,0.4); }
+  .video-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .video-item { background: rgba(10,8,6,0.82); padding: 0; cursor: pointer; transition: background 0.2s; border: none; text-align: left; width: 100%; display: flex; gap: 0; overflow: hidden; }
+  .video-item:hover { background: rgba(20,15,8,0.92); }
+  .video-item.active { background: rgba(25,18,8,0.95); border-left: 2px solid var(--gold); }
+  .video-thumb { width: 100px; height: 65px; flex-shrink: 0; background: #111; position: relative; overflow: hidden; }
+  .video-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .video-thumb-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, #1a1208, #0d0a05); display: flex; align-items: center; justify-content: center; }
+  .video-thumb-placeholder svg { width: 20px; height: 20px; fill: var(--gold-dim); opacity: 0.4; }
+  .video-duration { position: absolute; bottom: 3px; right: 4px; font-family: 'Cinzel', serif; font-size: 8px; color: #fff; background: rgba(0,0,0,0.75); padding: 1px 4px; letter-spacing: 0.05em; }
+  .video-info { padding: 0.7rem 0.9rem; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .video-item-type { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 0.3rem; }
+  .video-item-title { font-family: 'Cinzel', serif; font-size: 0.8rem; color: var(--parchment); line-height: 1.3; }
+  .videos-right { flex: 1; max-width: 600px; display: none; position: relative; }
+  .videos-right.visible { display: block; }
+  .tv-wrap { position: relative; width: 100%; background: #000; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 0 40px rgba(0,0,0,0.8); }
+  .tv-wrap video { width: 100%; display: block; }
+  .tv-filter { position: absolute; inset: 0; pointer-events: none; z-index: 10; opacity: 1; transition: opacity 1.2s ease; }
+  .tv-filter.gone { opacity: 0; }
+  .tv-filter::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px); z-index: 1; }
+  .tv-filter::after { content: ''; position: absolute; inset: 0; background: rgba(80,55,10,0.55); mix-blend-mode: multiply; z-index: 2; animation: tvFlicker 0.08s infinite; }
+  @keyframes tvFlicker { 0% { opacity: 0.9; } 25% { opacity: 0.75; } 50% { opacity: 0.95; } 75% { opacity: 0.7; } 100% { opacity: 0.88; } }
+  .tv-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.7) 100%); z-index: 3; pointer-events: none; }
+  .tv-scratch { position: absolute; inset: 0; z-index: 4; pointer-events: none; animation: scratchMove 3s linear infinite; background: repeating-linear-gradient(90deg, transparent 0px, transparent 120px, rgba(255,230,150,0.06) 121px, rgba(255,230,150,0.06) 122px, transparent 123px, transparent 300px); }
+  @keyframes scratchMove { 0% { background-position: 0 0; } 100% { background-position: 400px 0; } }
+  .video-now-playing { margin-top: 0.75rem; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
+  .video-close { position: absolute; top: 0.6rem; right: 0.6rem; width: 32px; height: 32px; background: rgba(10,8,6,0.6); border: 1px solid rgba(201,168,76,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; opacity: 0; transition: opacity 0.2s, border-color 0.2s, background 0.2s; }
+  .tv-wrap:hover .video-close { opacity: 0.35; }
+  .video-close:hover { opacity: 1 !important; border-color: var(--gold); background: rgba(10,8,6,0.9); }
+  .video-close svg { width: 12px; height: 12px; fill: var(--gold); }
+  .video-description { margin-top: 1rem; padding: 1rem 1.2rem; background: rgba(10,8,6,0.7); border: 1px solid var(--border); border-top: 1px solid var(--gold-dim); font-family: 'EB Garamond', serif; font-size: 1rem; line-height: 1.7; color: #c9a84c; display: none; }
+  .video-description.visible { display: block; }
+  .video-description em { font-style: italic; color: #e0bc6a; }
+  .video-description a { color: var(--gold); }
+  .video-description p { margin: 0 0 0.5em; }
+  .video-description p:last-child { margin: 0; }
 
-  /* ── Stills section ── */
-  .stills-section { margin-top: 5rem; padding-top: 4rem; border-top: 1px solid var(--border); }
-  .stills-section .section-label { margin-bottom: 0.5rem; }
-  .stills-grid { columns: 3; column-gap: 12px; margin-top: 2rem; }
-  .stills-empty { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); padding: 3rem 0; text-align: center; }
-
-  /* ── Lightbox ── */
-  .lightbox {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(10,8,6,0.96);
-    z-index: 200;
-    overflow-y: auto;
-    padding: 3rem 1rem 4rem;
-  }
-  .lightbox.open { display: block; }
-  .lightbox.zoomed { overflow: hidden; padding: 0; }
-
-  .lightbox-card {
-    max-width: 780px;
-    margin: 0 auto;
-    position: relative;
-  }
-
-  /* Image section */
-  .lightbox-img-wrap {
-    position: relative;
-    text-align: center;
-    background: #000;
-  }
-  .lightbox-img {
-    display: block;
-    max-width: 100%;
-    max-height: 80vh;
-    object-fit: contain;
-    margin: 0 auto;
-    -webkit-user-drag: none;
-    user-select: none;
-    cursor: zoom-in;
-    transition: opacity 0.2s ease;
-    border: 1px solid var(--border);
-  }
-  .lightbox-img:hover { opacity: 0.95; }
-
-  /* Zoom mode — image takes over full screen */
-  .lightbox.zoomed .lightbox-card { max-width: none; }
-  .lightbox.zoomed .lightbox-img-wrap {
-    position: fixed;
-    inset: 0;
-    z-index: 210;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: auto;
-    background: rgba(10,8,6,0.99);
-  }
-  .lightbox.zoomed .lightbox-img {
-    max-width: none;
-    max-height: none;
-    width: 150vw;
-    cursor: zoom-out;
-    border: none;
-  }
-
-  .lightbox-close {
-    position: fixed;
-    top: 1rem;
-    right: 1.5rem;
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    background: none;
-    border: none;
-    cursor: pointer;
-    z-index: 220;
-    transition: color 0.2s;
-  }
-  .lightbox-close:hover { color: var(--gold); }
-  .lightbox.zoomed .lightbox-close { display: none; }
-
-  .lightbox-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px; height: 40px;
-    background: rgba(10,8,6,0.7);
-    border: 1px solid var(--border-bright);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; z-index: 20;
-    transition: border-color 0.2s;
-  }
-  .lightbox-nav:hover { border-color: var(--gold); }
-  .lightbox-nav svg { width: 14px; height: 14px; fill: var(--gold); }
-  .lightbox-nav.prev { left: 0.75rem; }
-  .lightbox-nav.next { right: 0.75rem; }
-  .lightbox-nav.hidden { display: none; }
-  .lightbox-page-count {
-    text-align: center;
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    color: var(--text-muted);
-    padding: 0.5rem 0;
-  }
-
-  .lightbox-hint {
-    text-align: center;
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    opacity: 0.5;
-    padding: 0.4rem 0 0;
-    pointer-events: none;
-  }
-
-  /* Below image — caption, notes, comments */
-  .lightbox-below {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-top: none;
-  }
-  .lightbox.zoomed .lightbox-below { display: none; }
-
-  .lightbox-caption-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem 1.5rem 0.75rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .lightbox-title {
-    font-family: 'Cinzel', serif;
-    font-size: 0.9rem;
-    color: var(--parchment);
-    letter-spacing: 0.05em;
-  }
-  .lightbox-type {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    white-space: nowrap;
-  }
-
-  /* Artist note */
-  .lightbox-notes {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    font-family: 'EB Garamond', serif;
-    font-size: 1rem;
-    font-style: italic;
-    line-height: 1.7;
-    color: var(--text-body);
-  }
-  .lightbox-notes-label {
-    font-family: 'Cinzel', serif;
-    font-size: 8px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    display: block;
-    margin-bottom: 0.5rem;
-    font-style: normal;
-  }
-
-  /* Comments section */
-  .lightbox-comments { padding: 1rem 1.5rem 1.5rem; }
-  .lightbox-comments-label {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  .lightbox-comments-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .lb-comment-item { padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
-  .lb-comment-item:last-child { border-bottom: none; }
-  .lb-comment-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem; }
-  .lb-comment-name { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--parchment); }
-  .lb-comment-date { font-family: 'Cinzel', serif; font-size: 8px; color: var(--text-muted); }
-  .lb-comment-body { font-family: 'EB Garamond', serif; font-size: 0.95rem; line-height: 1.6; color: var(--text-body); }
-  .lb-no-comments { font-family: 'EB Garamond', serif; font-style: italic; color: var(--text-muted); font-size: 0.9rem; padding: 0.5rem 0 1rem; }
-
-  .lightbox-comment-form { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
-  .lb-form-label { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-dim); display: block; margin-bottom: 0.75rem; }
-  .lb-input { width: 100%; background: var(--deep); border: 1px solid var(--border); padding: 0.6rem 0.75rem; font-family: 'EB Garamond', serif; font-size: 0.9rem; color: var(--text-body); outline: none; transition: border-color 0.2s; box-sizing: border-box; margin-bottom: 0.5rem; }
-  .lb-input:focus { border-color: var(--gold-dim); }
-  .lb-input::placeholder { color: var(--text-muted); }
-  textarea.lb-input { resize: vertical; min-height: 80px; }
-  .lb-submit { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.75em 2em; cursor: pointer; transition: background 0.2s; }
-  .lb-submit:hover { background: var(--gold-bright); }
-  .lb-submit:disabled { opacity: 0.5; cursor: default; }
-
-  .lb-comment-footer { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.4rem; }
-  .lb-comment-like-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); padding: 0; transition: color 0.2s; }
-  .lb-comment-like-btn svg { width: 11px; height: 11px; fill: var(--text-muted); transition: fill 0.2s; }
-  .lb-comment-like-btn:hover, .lb-comment-like-btn.liked { color: var(--gold); }
-  .lb-comment-like-btn:hover svg, .lb-comment-like-btn.liked svg { fill: var(--gold); }
-  .lb-comment-delete-btn { background: none; border: none; cursor: pointer; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); padding: 0; margin-left: auto; transition: color 0.2s; display: none; }
-  .lb-comment-delete-btn:hover { color: #c0705a; }
-  .is-admin .lb-comment-delete-btn { display: block; }
-
-
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    padding: 0.75rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
-  }
-  .lb-stat {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-  .lb-stat svg { width: 13px; height: 13px; fill: var(--gold-dim); }
-  .lb-like-btn {
-    margin-left: auto;
-    background: none;
-    border: 1px solid var(--border);
-    padding: 0.45em 1.1em;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    transition: all 0.2s;
-  }
-  .lb-like-btn svg { width: 13px; height: 13px; fill: var(--text-muted); transition: fill 0.2s; }
-  .lb-like-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
-  .lb-like-btn:hover svg, .lb-like-btn.liked svg { fill: var(--gold); }
-  .lb-like-btn.liked { border-color: var(--gold); color: var(--gold); }
-
+  /* Video engagement + comments */
+  .vid-engagement { display: flex; align-items: center; gap: 2rem; padding: 0.75rem 0; margin-top: 0.75rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; background: rgba(10,8,6,0.7); padding-left: 1rem; padding-right: 1rem; border: 1px solid var(--border); border-top: none; }
+  .vid-comments { margin-top: 0; background: rgba(10,8,6,0.7); border: 1px solid var(--border); border-top: none; padding: 1rem 1.2rem 1.5rem; }
 
   @media (max-width: 768px) {
-    .gallery-grid, .stills-grid { margin-top: 1.5rem; }
-    .gallery-item:not(.locked) .gallery-overlay { opacity: 1; bottom: 0; }
-    .lightbox { padding: 2rem 0 3rem; }
-    .lightbox-img { max-height: 60vh; }
-    .lightbox-close { top: 0.5rem; right: 0.75rem; }
-    .lightbox-nav { width: 52px; height: 52px; }
-    .lightbox-nav.prev { left: 0.25rem; }
-    .lightbox-nav.next { right: 0.25rem; }
-    .lightbox-caption-row { flex-direction: column; gap: 0.25rem; }
-    .stills-grid { columns: 1; }
-    .stills-section { margin-top: 3rem; padding-top: 2.5rem; }
+    .videos-page { flex-direction: column; padding: 4.5rem 1rem 3rem; gap: 1.25rem; align-items: stretch; }
+    .videos-right { order: 1; max-width: 100%; width: 100%; }
+    .videos-left { order: 2; width: 100%; }
+    .videos-title { font-size: 1.2rem; }
+    .videos-header { margin-bottom: 1rem; }
+    .video-close { opacity: 0.6 !important; width: 40px; height: 40px; }
+    .video-close:active { opacity: 1 !important; }
+    .video-thumb { width: 90px; height: 60px; }
+    .video-info { padding: 0.6rem 0.75rem; }
+    .video-item-title { font-size: 0.78rem; }
   }
 </style>
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
 
@@ -307,8 +81,8 @@
   <ul class="nav-links">
     <li><a href="about.html">About</a></li>
     <li><a href="content.html">Content</a></li>
-    <li><a href="gallery.html" class="active">Gallery</a></li>
-    <li><a href="videos.html">Videos</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="videos.html" class="active">Videos</a></li>
     <li class="nav-news-item">
       <a href="news.html">News<span class="nav-news-dot" id="news-dot"></span></a>
       <div class="nav-cord-wrap" id="cord-wrap" title="Pull to dismiss">
@@ -335,169 +109,76 @@
   })();
 </script>
 
-<div class="page-header">
-  <div class="section-label fade-up fade-up-1">Original Art</div>
-  <h1 class="section-title fade-up fade-up-2">The Gallery</h1>
-  <p class="section-body fade-up fade-up-3">Illustrations made for the Chronicles — every piece drawn by hand.</p>
+<div class="fireplace-bg">
+  <video id="fireplace-vid" autoplay loop muted playsinline oncontextmenu="return false;">
+    <source src="images/Fire_Place.mp4" type="video/mp4">
+  </video>
 </div>
+<div class="fireplace-overlay"></div>
 
-<section>
-  <div class="section-inner">
-    <div class="gallery-grid" id="gallery-grid">
+<div class="videos-page">
 
-      <div class="gallery-item" onclick="openLightbox('images/art-01-witch-lantern.png', 'Nearly There', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-01-witch-lantern.png" alt="Nearly There" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Nearly There</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-02-dark-garden.png', 'The Dark Garden', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-02-dark-garden.png" alt="The Dark Garden" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">The Dark Garden</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-03-bridge.png', 'The Offer', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-03-bridge.png" alt="The Offer" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">The Offer</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-04-train.png', 'The Beginning', 'Chapter Art')">
-        <img loading="lazy" decoding="async" src="images/art-04-train.png" alt="The Beginning" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">The Beginning</div><div class="gallery-overlay-type">Chapter Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-05-asteroid.png', 'Among Asteroids', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-05-asteroid.png" alt="Among Asteroids" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Among Asteroids</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-06-tunnel.png', 'The Tunnel', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-06-tunnel.png" alt="The Tunnel" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">The Tunnel</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-07-steampunk.png', 'Fix You Up', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-07-steampunk.png" alt="Fix You Up" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Fix You Up</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-08-lightning.png', 'The Storm', 'Chapter Art')">
-        <img loading="lazy" decoding="async" src="images/art-08-lightning.png" alt="The Storm" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">The Storm</div><div class="gallery-overlay-type">Chapter Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-09-needle.png', 'Patching Up', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-09-needle.png" alt="Patching Up" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Patching Up</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-10-cards.png', 'Faces of the Suits', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-10-cards.png" alt="Faces of the Suits" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Faces of the Suits</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-11-portraits.png', 'Oh What Could Have Been', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-11-portraits.png" alt="Oh What Could Have Been" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Oh What Could Have Been</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-12-gentleman.png', 'To Law And Order', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-12-gentleman.png" alt="To Law And Order" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">To Law And Order</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-13-rain.png', 'In the Rain', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-13-rain.png" alt="In the Rain" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">In the Rain</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-
-      <div class="gallery-item locked" onclick="window.location.href='membership.html'">
-        <img loading="lazy" decoding="async" src="images/art-birthday.png" alt="Happy Birthday" />
-        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Devoted</div>
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Happy Birthday</div></div>
-      </div>
-      <div class="gallery-item locked" onclick="window.location.href='membership.html'">
-        <img loading="lazy" decoding="async" src="images/art-dont-miss-legs.png" alt="Don't You Miss Your Legs?" />
-        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Devoted</div>
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Don't You Miss Your Legs?</div></div>
-      </div>
-      <div class="gallery-item locked" id="helping-hand-item" onclick="window.location.href='membership.html'">
-        <img loading="lazy" decoding="async" src="images/art-helping-hand.png" alt="A Helping Hand" />
-        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Devoted</div>
-        <div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / 2</div>
-        <div class="gallery-overlay"><div class="gallery-overlay-title">A Helping Hand</div></div>
-      </div>
-      <div class="gallery-item locked" onclick="window.location.href='membership.html'">
-        <img loading="lazy" decoding="async" src="images/art-blue-threads.png" alt="Blue Threads" />
-        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Devoted</div>
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Blue Threads</div></div>
-      </div>
-
+  <div class="videos-left">
+    <div class="videos-header">
+      <h1 class="videos-title">Videos</h1>
     </div>
-
-    <!-- ── Stills Section ── -->
-    <div class="stills-section" id="stills">
-      <div class="section-label">Roblox Stills</div>
-      <h2 class="section-title">Stills</h2>
-      <p class="section-body">Posed character photoshoots — composed and curated, not drawn.</p>
-      <div class="stills-grid" id="stills-grid">
-        <div class="stills-empty" id="stills-loading">Loading...</div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<!-- ── Lightbox ── -->
-<div class="lightbox" id="lightbox">
-  <button class="lightbox-close" id="lb-close">Close ✕</button>
-
-  <div class="lightbox-card" id="lb-card">
-
-    <!-- Image -->
-    <div class="lightbox-img-wrap" id="lb-img-wrap">
-      <img class="lightbox-img" id="lb-img" src="" alt="" />
-      <div class="lightbox-nav prev hidden" id="lb-prev"><svg viewBox="0 0 14 14"><path d="M9 2L4 7l5 5"/></svg></div>
-      <div class="lightbox-nav next hidden" id="lb-next"><svg viewBox="0 0 14 14"><path d="M5 2l5 5-5 5"/></svg></div>
-    </div>
-    <div class="lightbox-page-count" id="lb-pages"></div>
-    <div class="lightbox-hint" id="lb-hint">Click image to zoom · scroll for notes & comments</div>
-
-    <!-- Below image: title, notes, comments -->
-    <div class="lightbox-below" id="lb-below">
-
-      <div class="lightbox-caption-row">
-        <span class="lightbox-title" id="lb-title"></span>
-        <span class="lightbox-type" id="lb-type"></span>
-      </div>
-
-      <!-- Engagement row -->
-      <div class="lb-engagement">
-        <div class="lb-stat">
-          <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5C21.3 7.6 17 4.5 12 4.5zm0 12.5c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z"/></svg>
-          <span id="lb-witness-count">—</span>&nbsp;Witnesses
-        </div>
-        <div class="lb-stat">
-          <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
-          <span id="lb-like-count">—</span>&nbsp;Kudos
-        </div>
-        <button id="lb-like-btn" class="lb-like-btn" title="Leave kudos">
-          <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
-          Kudos
-        </button>
-      </div>
-
-      <!-- Artist's note (hidden if empty) -->
-      <div class="lightbox-notes" id="lb-notes" style="display:none;">
-        <span class="lightbox-notes-label">Artist's Note</span>
-        <span id="lb-notes-text"></span>
-      </div>
-
-      <!-- Comments -->
-      <div class="lightbox-comments">
-        <div class="lightbox-comments-label">Comments</div>
-        <div id="lb-comments-list"><div class="lb-no-comments">Loading…</div></div>
-        <div class="lightbox-comment-form">
-          <span class="lb-form-label">Leave Your Mark</span>
-          <input type="text" class="lb-input" id="lb-comment-name" placeholder="Your name (optional)" maxlength="60" />
-          <textarea class="lb-input" id="lb-comment-msg" placeholder="What did you think?" maxlength="1000"></textarea>
-          <button class="lb-submit" id="lb-comment-submit">Leave Your Mark</button>
-        </div>
-      </div>
-
+    <div class="video-list" id="video-list">
+      <button class="video-item active" onclick="loadVideo('images/video-pants.mp4', this)" data-thumbnail="" data-duration="" data-description="">
+        <div class="video-thumb"><div class="video-thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+        <div class="video-info"><div class="video-item-type">Behind the Scenes</div><div class="video-item-title">Boo.</div></div>
+      </button>
+      <button class="video-item" onclick="loadVideo('images/video-victor.mp4', this)" data-thumbnail="" data-duration="" data-description="">
+        <div class="video-thumb"><div class="video-thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+        <div class="video-info"><div class="video-item-type">Behind the Scenes</div><div class="video-item-title">I Am the Victor</div></div>
+      </button>
     </div>
   </div>
+
+  <div class="videos-right">
+    <div class="tv-wrap" id="tv-wrap">
+      <video id="main-video" preload="none" controls controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture disableRemotePlayback oncontextmenu="return false;">
+        <source src="images/video-pants.mp4" type="video/mp4">
+      </video>
+      <div class="tv-filter" id="tv-filter">
+        <div class="tv-vignette"></div>
+        <div class="tv-scratch"></div>
+      </div>
+      <div class="video-close" id="video-close" title="Close">
+        <svg viewBox="0 0 12 12"><path d="M1 1l10 10M11 1L1 11" stroke="#c9a84c" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <div class="video-now-playing" id="now-playing">Now Playing: Boo.</div>
+    <div class="video-description" id="video-description"></div>
+
+    <!-- Engagement row -->
+    <div class="vid-engagement" id="vid-engagement" style="display:none;">
+      <div class="lb-stat">
+        <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5C21.3 7.6 17 4.5 12 4.5zm0 12.5c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z"/></svg>
+        <span id="vid-witness-count">—</span>&nbsp;Witnesses
+      </div>
+      <div class="lb-stat">
+        <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
+        <span id="vid-like-count">—</span>&nbsp;Kudos
+      </div>
+      <button id="vid-like-btn" class="lb-like-btn">
+        <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
+        Kudos
+      </button>
+    </div>
+
+    <!-- Video comments -->
+    <div class="vid-comments" id="vid-comments" style="display:none;">
+      <div class="lightbox-comments-label">Comments</div>
+      <div id="vid-comments-list"><div class="lb-no-comments">Loading…</div></div>
+      <div class="lightbox-comment-form">
+        <span class="lb-form-label">Leave Your Mark</span>
+        <input type="text" class="lb-input" id="vid-comment-name" placeholder="Your name (optional)" maxlength="60" />
+        <textarea class="lb-input" id="vid-comment-msg" placeholder="What did you think?" maxlength="1000"></textarea>
+        <button class="lb-submit" id="vid-comment-submit">Leave Your Mark</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Socials Sidebar -->
@@ -511,11 +192,6 @@
   </div>
   <div class="socials-arrow" id="socials-arrow"><svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg></div>
 </div>
-<script>
-  const trigger = document.getElementById('socials-trigger');
-  const panel = document.getElementById('socials-panel');
-  document.getElementById('socials-arrow').addEventListener('click', () => { trigger.classList.toggle('open'); panel.classList.toggle('open'); });
-</script>
 
 <footer>
   <span class="footer-brand">Ludicrous Chronicles</span>
@@ -524,156 +200,30 @@
 </footer>
 
 <script>
-// ── Supabase for gallery comments (scoped) ──
-const _gcUrl = 'https://stdxmneifvavkzwttbzj.supabase.co';
-const _gcKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZHhtbmVpZnZhdmt6d3R0YnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDczNTYsImV4cCI6MjA5MTg4MzM1Nn0.jWNSXOaSw5KEoFFPHSZqFZi17d9diq2ScBWCeS2o4XU';
-const _gcHdr = { 'apikey': _gcKey, 'Authorization': 'Bearer ' + _gcKey, 'Content-Type': 'application/json' };
-
-async function gcFetch(path, opts = {}) {
-  const res = await fetch(_gcUrl + '/rest/v1/' + path, {
-    headers: { ..._gcHdr, 'Prefer': opts.prefer || 'return=minimal', ...opts.headers },
-    method: opts.method || 'GET',
-    body: opts.body ? JSON.stringify(opts.body) : undefined
-  });
-  if (!opts.method || opts.method === 'GET') return res.json();
-  return res;
-}
-
-let _gcIsAdmin = false;
-let _gcAdminChecked = false;
-
-async function checkGCAdmin() {
-  if (_gcAdminChecked) return;
-  _gcAdminChecked = true;
-  try {
-    if (!window.waitForIdentity) return;
-    const user = await window.waitForIdentity();
-    if (user && user.app_metadata?.roles?.includes('admin')) _gcIsAdmin = true;
-  } catch(e) {}
-}
-
-function getVisitorIdGC() {
-  let id = localStorage.getItem('lc_visitor_id');
-  if (!id) { id = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('lc_visitor_id', id); }
-  return id;
-}
-
-async function loadGalleryComments(title) {
-  await checkGCAdmin();
-  const id = 'gallery-' + title;
-  const list = document.getElementById('lb-comments-list');
-  if (_gcIsAdmin) list.classList.add('is-admin');
-  list.innerHTML = '<div class="lb-no-comments">Loading…</div>';
-  const visitorId = getVisitorIdGC();
-  try {
-    const data = await gcFetch(`comments?chapter=eq.${encodeURIComponent(id)}&order=created_at.asc&select=*`);
-    if (!Array.isArray(data) || data.length === 0) {
-      list.innerHTML = '<div class="lb-no-comments">No comments yet — be the first.</div>';
-      return;
-    }
-
-    // Load which comments this visitor has liked
-    const likedSet = new Set();
-    try {
-      const myLikes = await gcFetch(`comment_likes?visitor_id=eq.${visitorId}&select=comment_id`);
-      if (Array.isArray(myLikes)) myLikes.forEach(l => likedSet.add(l.comment_id));
-    } catch(e) {}
-
-    // Load like counts per comment
-    const likeCounts = {};
-    try {
-      const allLikes = await gcFetch(`comment_likes?select=comment_id`);
-      if (Array.isArray(allLikes)) {
-        allLikes.forEach(l => { likeCounts[l.comment_id] = (likeCounts[l.comment_id] || 0) + 1; });
-      }
-    } catch(e) {}
-
-    list.innerHTML = '';
-    data.forEach(c => {
-      const date = new Date(c.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-      const liked = likedSet.has(c.id);
-      const likeCount = likeCounts[c.id] || 0;
-      const div = document.createElement('div');
-      div.className = 'lb-comment-item';
-      div.dataset.commentId = c.id;
-      div.innerHTML = `
-        <div class="lb-comment-meta">
-          <span class="lb-comment-name">${c.name || 'Anonymous'}</span>
-          <span class="lb-comment-date">${date}</span>
-        </div>
-        <div class="lb-comment-body">${c.message}</div>
-        <div class="lb-comment-footer">
-          <button class="lb-comment-like-btn${liked ? ' liked' : ''}" data-id="${c.id}">
-            <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
-            <span class="lb-clc">${likeCount > 0 ? likeCount : ''}</span>
-          </button>
-          <button class="lb-comment-delete-btn" data-id="${c.id}">Delete</button>
-        </div>`;
-
-      // Like handler
-      div.querySelector('.lb-comment-like-btn').addEventListener('click', async function() {
-        if (this.classList.contains('liked')) return;
-        try {
-          await gcFetch('comment_likes', { method: 'POST', body: { comment_id: c.id, visitor_id: visitorId }, prefer: 'return=minimal' });
-          this.classList.add('liked');
-          const countEl = this.querySelector('.lb-clc');
-          countEl.textContent = (parseInt(countEl.textContent || 0) + 1) || 1;
-        } catch(e) {}
-      });
-
-      // Delete handler (admin only)
-      div.querySelector('.lb-comment-delete-btn').addEventListener('click', async function() {
-        if (!confirm('Delete this comment?')) return;
-        try {
-          await gcFetch(`comments?id=eq.${c.id}`, { method: 'DELETE' });
-          div.remove();
-          if (!list.querySelector('.lb-comment-item')) {
-            list.innerHTML = '<div class="lb-no-comments">No comments yet — be the first.</div>';
-          }
-        } catch(e) {}
-      });
-
-      list.appendChild(div);
-    });
-  } catch(e) {
-    list.innerHTML = '<div class="lb-no-comments">Could not load comments.</div>';
-  }
-}
-
-document.getElementById('lb-comment-submit').addEventListener('click', async () => {
-  const title = document.getElementById('lb-title').textContent;
-  const id    = 'gallery-' + title;
-  const name  = document.getElementById('lb-comment-name').value.trim() || 'Anonymous';
-  const msg   = document.getElementById('lb-comment-msg').value.trim();
-  if (!msg) return;
-  const btn = document.getElementById('lb-comment-submit');
-  btn.disabled = true; btn.textContent = 'Leaving mark…';
-  try {
-    await gcFetch('comments', { method: 'POST', body: { chapter: id, name, message: msg, pinned: false }, prefer: 'return=minimal' });
-    document.getElementById('lb-comment-name').value = '';
-    document.getElementById('lb-comment-msg').value = '';
-    await loadGalleryComments(title);
-  } catch(e) {}
-  btn.disabled = false; btn.textContent = 'Leave Your Mark';
-});
+  const trigger = document.getElementById('socials-trigger');
+  const panel = document.getElementById('socials-panel');
+  document.getElementById('socials-arrow').addEventListener('click', () => { trigger.classList.toggle('open'); panel.classList.toggle('open'); });
+</script>
+<script>
+  if (window.netlifyIdentity) { window.netlifyIdentity.on("init", user => { if (!user) { window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; }); } }); }
 </script>
 
 <script>
-// ── Gallery engagement: witnesses + likes ──
+// ── Video engagement + comments (scoped) ──
 (function() {
-  const _GE_URL = 'https://stdxmneifvavkzwttbzj.supabase.co';
-  const _GE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZHhtbmVpZnZhdmt6d3R0YnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDczNTYsImV4cCI6MjA5MTg4MzM1Nn0.jWNSXOaSw5KEoFFPHSZqFZi17d9diq2ScBWCeS2o4XU';
-  const _GE_HDR = { 'apikey': _GE_KEY, 'Authorization': 'Bearer ' + _GE_KEY, 'Content-Type': 'application/json' };
+  const _VE_URL = 'https://stdxmneifvavkzwttbzj.supabase.co';
+  const _VE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZHhtbmVpZnZhdmt6d3R0YnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDczNTYsImV4cCI6MjA5MTg4MzM1Nn0.jWNSXOaSw5KEoFFPHSZqFZi17d9diq2ScBWCeS2o4XU';
+  const _VE_HDR = { 'apikey': _VE_KEY, 'Authorization': 'Bearer ' + _VE_KEY, 'Content-Type': 'application/json' };
 
-  function getVisitorId() {
+  function getVid() {
     let id = localStorage.getItem('lc_visitor_id');
     if (!id) { id = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('lc_visitor_id', id); }
     return id;
   }
 
-  async function geFetch(path, opts = {}) {
-    const res = await fetch(_GE_URL + '/rest/v1/' + path, {
-      headers: { ..._GE_HDR, 'Prefer': opts.prefer || 'return=minimal', ...opts.headers },
+  async function veFetch(path, opts = {}) {
+    const res = await fetch(_VE_URL + '/rest/v1/' + path, {
+      headers: { ..._VE_HDR, 'Prefer': opts.prefer || 'return=minimal', ...opts.headers },
       method: opts.method || 'GET',
       body: opts.body ? JSON.stringify(opts.body) : undefined
     });
@@ -681,329 +231,310 @@ document.getElementById('lb-comment-submit').addEventListener('click', async () 
     return res;
   }
 
-  async function loadGalleryEngagement(title) {
-    const id = 'gallery-' + title;
-    const visitorId = getVisitorId();
-    const witnessEl = document.getElementById('lb-witness-count');
-    const likeEl    = document.getElementById('lb-like-count');
-    const likeBtn   = document.getElementById('lb-like-btn');
-
-    // Reset UI
-    if (witnessEl) witnessEl.textContent = '—';
-    if (likeEl)    likeEl.textContent    = '—';
-    if (likeBtn)   likeBtn.classList.remove('liked');
-
+  let _veIsAdmin = false;
+  let _veAdminChecked = false;
+  async function checkVeAdmin() {
+    if (_veAdminChecked) return;
+    _veAdminChecked = true;
     try {
-      // Witnesses
-      const witnesses = await geFetch(`witnesses?chapter=eq.${encodeURIComponent(id)}&select=id`);
+      if (!window.waitForIdentity) return;
+      const user = await window.waitForIdentity();
+      if (user && user.app_metadata?.roles?.includes('admin')) _veIsAdmin = true;
+    } catch(e) {}
+  }
+
+  window.loadVideoEngagement = async function(title) {
+    const id = 'video-' + title;
+    const visitorId = getVid();
+    const engEl   = document.getElementById('vid-engagement');
+    const commEl  = document.getElementById('vid-comments');
+    const listEl  = document.getElementById('vid-comments-list');
+    const witnEl  = document.getElementById('vid-witness-count');
+    const likeEl  = document.getElementById('vid-like-count');
+    const likeBtn = document.getElementById('vid-like-btn');
+
+    if (engEl)  engEl.style.display  = 'flex';
+    if (commEl) commEl.style.display = 'block';
+    if (witnEl) witnEl.textContent = '—';
+    if (likeEl) likeEl.textContent = '—';
+    if (likeBtn) likeBtn.classList.remove('liked');
+    if (likeBtn) likeBtn.onclick = null;
+
+    await checkVeAdmin();
+
+    // Witnesses
+    try {
+      const witnesses = await veFetch(`witnesses?chapter=eq.${encodeURIComponent(id)}&select=id`);
       let wCount = Array.isArray(witnesses) ? witnesses.length : 0;
-      if (witnessEl) witnessEl.textContent = wCount;
+      if (witnEl) witnEl.textContent = wCount;
       const seen = localStorage.getItem('witnessed_' + id);
       if (!seen) {
-        await geFetch('witnesses', { method: 'POST', body: { chapter: id, visitor_id: visitorId }, prefer: 'return=minimal' });
+        await veFetch('witnesses', { method: 'POST', body: { chapter: id, visitor_id: visitorId } });
         localStorage.setItem('witnessed_' + id, '1');
-        if (witnessEl) witnessEl.textContent = wCount + 1;
+        if (witnEl) witnEl.textContent = wCount + 1;
       }
+    } catch(e) {}
 
-      // Likes
-      const likes = await geFetch(`likes?chapter=eq.${encodeURIComponent(id)}&select=id`);
+    // Likes
+    try {
+      const likes = await veFetch(`likes?chapter=eq.${encodeURIComponent(id)}&select=id`);
       if (likeEl) likeEl.textContent = Array.isArray(likes) ? likes.length : 0;
-      const myLike = await geFetch(`likes?chapter=eq.${encodeURIComponent(id)}&visitor_id=eq.${visitorId}&select=id`);
+      const myLike = await veFetch(`likes?chapter=eq.${encodeURIComponent(id)}&visitor_id=eq.${visitorId}&select=id`);
       if (Array.isArray(myLike) && myLike.length > 0 && likeBtn) likeBtn.classList.add('liked');
     } catch(e) {}
-  }
 
-  document.getElementById('lb-like-btn').addEventListener('click', async () => {
-    const btn   = document.getElementById('lb-like-btn');
-    const likeEl = document.getElementById('lb-like-count');
-    if (btn.classList.contains('liked')) return;
-    const title = document.getElementById('lb-title').textContent;
-    const id    = 'gallery-' + title;
-    const visitorId = getVisitorId();
-    try {
-      await geFetch('likes', { method: 'POST', body: { chapter: id, visitor_id: visitorId }, prefer: 'return=minimal' });
-      btn.classList.add('liked');
-      btn.style.transform = 'scale(1.2)';
-      setTimeout(() => { btn.style.transform = ''; }, 300);
-      if (likeEl) likeEl.textContent = parseInt(likeEl.textContent || 0) + 1;
-    } catch(e) {}
-  });
+    if (likeBtn) {
+      likeBtn.onclick = async function() {
+        if (this.classList.contains('liked')) return;
+        try {
+          await veFetch('likes', { method: 'POST', body: { chapter: id, visitor_id: visitorId } });
+          this.classList.add('liked');
+          this.style.transform = 'scale(1.2)';
+          setTimeout(() => { this.style.transform = ''; }, 300);
+          if (likeEl) likeEl.textContent = parseInt(likeEl.textContent || 0) + 1;
+        } catch(e) {}
+      };
+    }
 
-  window.loadGalleryEngagement = loadGalleryEngagement;
+    // Comments
+    if (listEl) {
+      listEl.innerHTML = '<div class="lb-no-comments">Loading…</div>';
+      try {
+        const data = await veFetch(`comments?chapter=eq.${encodeURIComponent(id)}&order=created_at.asc&select=*`);
+
+        // Like counts
+        const likedSet = new Set();
+        const likeCounts = {};
+        try {
+          const myLikes = await veFetch(`comment_likes?visitor_id=eq.${visitorId}&select=comment_id`);
+          if (Array.isArray(myLikes)) myLikes.forEach(l => likedSet.add(l.comment_id));
+          const allLikes = await veFetch(`comment_likes?select=comment_id`);
+          if (Array.isArray(allLikes)) allLikes.forEach(l => { likeCounts[l.comment_id] = (likeCounts[l.comment_id] || 0) + 1; });
+        } catch(e) {}
+
+        if (!Array.isArray(data) || data.length === 0) {
+          listEl.innerHTML = '<div class="lb-no-comments">No comments yet — be the first.</div>';
+        } else {
+          listEl.innerHTML = '';
+          data.forEach(c => {
+            const date = new Date(c.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            const liked = likedSet.has(c.id);
+            const likeCount = likeCounts[c.id] || 0;
+            const div = document.createElement('div');
+            div.className = 'lb-comment-item';
+            div.innerHTML = `
+              <div class="lb-comment-meta">
+                <span class="lb-comment-name">${c.name || 'Anonymous'}</span>
+                <span class="lb-comment-date">${date}</span>
+              </div>
+              <div class="lb-comment-body">${c.message}</div>
+              <div class="lb-comment-footer">
+                <button class="lb-comment-like-btn${liked ? ' liked' : ''}" data-id="${c.id}">
+                  <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
+                  <span class="lb-clc">${likeCount > 0 ? likeCount : ''}</span>
+                </button>
+                ${_veIsAdmin ? `<button class="lb-comment-delete-btn" data-id="${c.id}">Delete</button>` : ''}
+              </div>`;
+
+            div.querySelector('.lb-comment-like-btn').addEventListener('click', async function() {
+              if (this.classList.contains('liked')) return;
+              try {
+                await veFetch('comment_likes', { method: 'POST', body: { comment_id: c.id, visitor_id: visitorId } });
+                this.classList.add('liked');
+                const countEl = this.querySelector('.lb-clc');
+                countEl.textContent = (parseInt(countEl.textContent || 0) + 1) || 1;
+              } catch(e) {}
+            });
+
+            if (_veIsAdmin) {
+              div.querySelector('.lb-comment-delete-btn').addEventListener('click', async function() {
+                if (!confirm('Delete this comment?')) return;
+                try {
+                  await veFetch(`comments?id=eq.${c.id}`, { method: 'DELETE' });
+                  div.remove();
+                  if (!listEl.querySelector('.lb-comment-item')) listEl.innerHTML = '<div class="lb-no-comments">No comments yet — be the first.</div>';
+                } catch(e) {}
+              });
+            }
+            listEl.appendChild(div);
+          });
+        }
+      } catch(e) { listEl.innerHTML = '<div class="lb-no-comments">Could not load comments.</div>'; }
+    }
+
+    // Submit handler
+    const submitBtn = document.getElementById('vid-comment-submit');
+    if (submitBtn) {
+      submitBtn.onclick = async function() {
+        const name = document.getElementById('vid-comment-name').value.trim() || 'Anonymous';
+        const msg  = document.getElementById('vid-comment-msg').value.trim();
+        if (!msg) return;
+        this.disabled = true; this.textContent = 'Leaving mark…';
+        try {
+          await veFetch('comments', { method: 'POST', body: { chapter: id, name, message: msg, pinned: false } });
+          document.getElementById('vid-comment-name').value = '';
+          document.getElementById('vid-comment-msg').value = '';
+          await window.loadVideoEngagement(title);
+        } catch(e) {}
+        this.disabled = false; this.textContent = 'Leave Your Mark';
+      };
+    }
+  };
 })();
-
-let slideImages = [], slideTitles = [], slideType = '', slideIndex = 0;
-const galleryNotes = new Map(); // title → notes string
-
-const lb      = document.getElementById('lightbox');
-const lbCard  = document.getElementById('lb-card');
-const lbImg   = document.getElementById('lb-img');
-let zoomed = false;
-
-function setLightboxContent(title, type, notes) {
-  document.getElementById('lb-title').textContent = title;
-  document.getElementById('lb-type').textContent  = type || '';
-  const notesEl = document.getElementById('lb-notes');
-  const notesTxt = document.getElementById('lb-notes-text');
-  if (notes) {
-    notesTxt.textContent = notes;
-    notesEl.style.display = 'block';
-  } else {
-    notesEl.style.display = 'none';
-  }
-  loadGalleryComments(title);
-  if (window.loadGalleryEngagement) window.loadGalleryEngagement(title);
-  // Reset comment form
-  document.getElementById('lb-comment-name').value = '';
-  document.getElementById('lb-comment-msg').value = '';
-  const btn = document.getElementById('lb-comment-submit');
-  btn.disabled = false; btn.textContent = 'Leave Your Mark';
-}
-
-function openLightbox(src, title, type, notes) {
-  lbImg.src = src;
-  lb.classList.add('open'); lb.classList.remove('zoomed');
-  document.body.style.overflow = 'hidden'; zoomed = false;
-  lb.scrollTop = 0;
-  document.getElementById('lb-prev').classList.add('hidden');
-  document.getElementById('lb-next').classList.add('hidden');
-  document.getElementById('lb-pages').textContent = '';
-  const hint = document.getElementById('lb-hint');
-  hint.style.opacity = '0.5';
-  hint.textContent = 'Click image to zoom · scroll for notes & comments';
-  setLightboxContent(title, type, notes || galleryNotes.get(title) || HARDCODED_NOTES[title] || '');
-}
-
-function openSlideshow(images, titles, type, notes) {
-  slideImages = images; slideTitles = titles; slideType = type; slideIndex = 0;
-  lb.classList.add('open'); lb.classList.remove('zoomed');
-  document.body.style.overflow = 'hidden'; zoomed = false;
-  lb.scrollTop = 0;
-  showSlide(0);
-  setLightboxContent(titles[0], type, notes || galleryNotes.get(titles[0]) || '');
-}
-
-function showSlide(index) {
-  lbImg.style.opacity = '0.2';
-  const incoming = new Image();
-  incoming.onload = () => { lbImg.src = slideImages[index]; lbImg.style.opacity = '1'; };
-  incoming.onerror = () => { lbImg.style.opacity = '1'; };
-  incoming.src = slideImages[index];
-  document.getElementById('lb-pages').textContent = slideImages.length > 1 ? (index + 1) + ' / ' + slideImages.length : '';
-  document.getElementById('lb-prev').classList.toggle('hidden', index === 0);
-  document.getElementById('lb-next').classList.toggle('hidden', index === slideImages.length - 1);
-  [index - 1, index + 1].forEach(i => { if (i >= 0 && i < slideImages.length) new Image().src = slideImages[i]; });
-}
-
-function closeLightbox() {
-  lb.classList.remove('open', 'zoomed');
-  document.body.style.overflow = '';
-  zoomed = false;
-}
-
-document.getElementById('lb-close').addEventListener('click', e => { e.stopPropagation(); closeLightbox(); });
-document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); if (slideIndex > 0) { slideIndex--; showSlide(slideIndex); } });
-document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); if (slideIndex < slideImages.length - 1) { slideIndex++; showSlide(slideIndex); } });
-
-// Click outside card closes
-lb.addEventListener('click', e => {
-  if (!lbCard.contains(e.target)) closeLightbox();
-});
-
-// Zoom on image click
-lbImg.addEventListener('click', e => {
-  e.stopPropagation();
-  if (!zoomed) {
-    lb.classList.add('zoomed');
-    zoomed = true;
-  } else {
-    lb.classList.remove('zoomed');
-    zoomed = false;
-  }
-});
-
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
-document.addEventListener('contextmenu', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
-document.querySelectorAll('img').forEach(img => { img.setAttribute('draggable', 'false'); img.style.userSelect = 'none'; img.style.webkitUserDrag = 'none'; });
-
-if ('ontouchstart' in window) {
-  document.getElementById('lb-hint').textContent = 'Tap image to zoom · scroll for notes & comments';
-}
 </script>
 
 <script>
-// ── Notes for hardcoded art pieces — edit these freely ──
-const HARDCODED_NOTES = {
-  'Nearly There':           '',
-  'The Dark Garden':        '',
-  'The Offer':              '',
-  'The Beginning':          '',
-  'Among Asteroids':        '',
-  'The Tunnel':             '',
-  'Fix You Up':             '',
-  'The Storm':              '',
-  'Patching Up':            '',
-  'Faces of the Suits':     '',
-  'Oh What Could Have Been':'',
-  'To Law And Order':       '',
-  'In the Rain':            '',
-};
+  const video = document.getElementById('main-video');
+  const filter = document.getElementById('tv-filter');
+  const nowPlaying = document.getElementById('now-playing');
+  const videosRight = document.querySelector('.videos-right');
 
-
-const HARDCODED_SLIDESHOWS = {
-  'A Helping Hand': {
-    images: ['images/art-helping-hand.png', 'images/art-nobody-special.png'],
-    titles: ['A Helping Hand', 'Nobody Special'],
-    type: 'Character Art'
-  }
-};
-
-async function loadCMSGallery() {
-  try {
-    const res = await fetch('/_data/gallery-index.json');
-    if (!res.ok) return;
-    const items = await res.json();
-    if (!items || items.length === 0) return;
-    const userTier = window.getUserTier ? await window.getUserTier() : 'free';
-    const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-    const grid = document.querySelector('.gallery-grid');
-    if (!grid) return;
-    // Store notes for lightbox use
-    items.forEach(item => { if (item.notes) galleryNotes.set(item.title, item.notes); });
-    const sets = {}, singles = [];
-    items.forEach(item => { if (item.set) { if (!sets[item.set]) sets[item.set] = []; sets[item.set].push(item); } else { singles.push(item); } });
-    Object.values(sets).forEach(s => s.sort((a,b) => a.set_order - b.set_order));
-    const firstHardcoded = grid.firstChild;
-    singles.forEach(item => { grid.insertBefore(makeCMSGalleryItem(item, userTier, tRank), firstHardcoded); });
-    Object.entries(sets).forEach(([, items]) => { grid.insertBefore(makeCMSGalleryItem(items[0], userTier, tRank), grid.firstChild); });
-  } catch(e) {}
-}
-
-function makeCMSGalleryItem(item, userTier, tRank) {
-  userTier = userTier || 'free'; tRank = tRank || { free: 0, devoted: 1, bound: 2 };
-  const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
-  const images = item.images && item.images.length > 0 ? item.images : [item.image];
-  const titles = images.map((_, i) => i === 0 ? item.title : `${item.title} (${i+1})`);
-  const isSlideshow = images.length > 1;
-  const notes = item.notes || '';
-  const div = document.createElement('div');
-  if (isLocked) {
-    div.className = 'gallery-item locked';
-    div.setAttribute('onclick', "window.location.href='membership.html'");
-    div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div><div class="gallery-tier-label">${item.tier === 'devoted' ? 'Devoted' : 'Bound'}</div>${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div></div>`;
-  } else {
-    div.className = 'gallery-item';
-    const notesJson = JSON.stringify(notes);
-    div.setAttribute('onclick', isSlideshow
-      ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, '${item.type}', ${notesJson})`
-      : `openLightbox('${images[0]}', '${item.title}', '${item.type}', ${notesJson})`);
-    div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" />${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">${item.type}${isSlideshow ? ' · ' + images.length + ' pages' : ''}</div></div>`;
-  }
-  return div;
-}
-
-async function checkHardcodedLocks() {
-  const userTier = window.getUserTier ? await window.getUserTier() : 'free';
-  const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-  if (tRank[userTier] === 0) return;
-  document.querySelectorAll('.gallery-item.locked').forEach(item => {
-    const tierLabel = item.querySelector('.gallery-tier-label');
-    if (!tierLabel) return;
-    const itemTier = tierLabel.textContent.trim() === 'Devoted' ? 'devoted' : 'bound';
-    if (tRank[userTier] >= tRank[itemTier]) {
-      item.classList.remove('locked');
-      const img = item.querySelector('img');
-      const title = item.querySelector('.gallery-overlay-title')?.textContent?.trim() || '';
-      if (!img) return;
-      const slideshow = HARDCODED_SLIDESHOWS[title];
-      if (slideshow) {
-        item.setAttribute('onclick', `openSlideshow(${JSON.stringify(slideshow.images)}, ${JSON.stringify(slideshow.titles)}, '${slideshow.type}')`);
-        const overlay = item.querySelector('.gallery-overlay');
-        if (overlay) overlay.innerHTML = `<div class="gallery-overlay-title">${title}</div><div class="gallery-overlay-type">${slideshow.type} · ${slideshow.images.length} pages</div>`;
-      } else {
-        item.setAttribute('onclick', `openLightbox('${img.getAttribute('src')}', '${title}', 'Illustration')`);
-      }
-      item.querySelector('.gallery-lock-badge')?.remove();
-      tierLabel.remove();
+  function loadVideo(src, btn) {
+    if (btn.classList.contains('active') && videosRight.classList.contains('visible')) {
+      video.pause();
+      videosRight.classList.remove('visible');
+      btn.classList.remove('active');
+      filter.classList.remove('gone');
+      nowPlaying.textContent = '';
+      document.getElementById('vid-engagement').style.display = 'none';
+      document.getElementById('vid-comments').style.display = 'none';
+      return;
     }
-  });
-}
+    video.pause();
+    video.src = src;
+    video.load();
+    filter.classList.remove('gone');
+    document.querySelectorAll('.video-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const title = btn.querySelector('.video-item-title').textContent;
+    nowPlaying.textContent = 'Now Playing: ' + title;
 
-async function loadStills() {
-  const grid = document.getElementById('stills-grid');
-  const loading = document.getElementById('stills-loading');
-  try {
-    const res = await fetch('/_data/stills-index.json');
-    if (!res.ok) throw new Error();
-    const items = await res.json();
-    if (!items || items.length === 0) { if (loading) loading.textContent = 'No stills yet.'; return; }
-    const userTier = window.getUserTier ? await window.getUserTier() : 'free';
-    const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-    if (loading) loading.remove();
-    items.forEach(item => {
-      const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
-      const images = item.images && item.images.length > 0 ? item.images : [item.image];
-      const titles = images.map((_, i) => i === 0 ? item.title : `${item.title} (${i+1})`);
-      const isSlideshow = images.length > 1;
-      const game = item.game ? ` · ${item.game}` : '';
-      const notes = item.description || '';
-      const div = document.createElement('div');
-      if (isLocked) {
-        div.className = 'gallery-item locked';
-        div.setAttribute('onclick', "window.location.href='membership.html'");
-        div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div><div class="gallery-tier-label">${item.tier === 'devoted' ? 'Devoted' : 'Bound'}</div><div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div></div>`;
-      } else {
-        const notesJson = JSON.stringify(notes);
-        div.className = 'gallery-item';
-        div.setAttribute('onclick', isSlideshow
-          ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, 'Stills', ${notesJson})`
-          : `openLightbox('${images[0]}', '${item.title}', 'Stills${game}', ${notesJson})`);
-        div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" />${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">Stills${game}${isSlideshow ? ' · ' + images.length + ' shots' : ''}</div></div>`;
-      }
-      grid.appendChild(div);
+    const desc = btn.dataset.description || '';
+    const descEl = document.getElementById('video-description');
+    if (desc && desc.trim()) {
+      const descHtml = desc.replace(/\\/g, '').split(/\n\n+/).map(p => p.trim().replace(/\n/g, '<br>')).filter(p => p.length > 0)
+        .map(p => `<p>${p.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>')}</p>`).join('');
+      descEl.innerHTML = descHtml;
+      descEl.classList.add('visible');
+    } else {
+      descEl.innerHTML = '';
+      descEl.classList.remove('visible');
+    }
+
+    videosRight.classList.add('visible');
+    if (window.innerWidth <= 768) videosRight.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    video.play();
+
+    // Load engagement for this video
+    if (window.loadVideoEngagement) window.loadVideoEngagement(title);
+  }
+
+  document.getElementById('video-close').addEventListener('click', () => {
+    video.pause();
+    videosRight.classList.remove('visible');
+    document.querySelectorAll('.video-item').forEach(b => b.classList.remove('active'));
+    filter.classList.remove('gone');
+    nowPlaying.textContent = '';
+    document.getElementById('video-description').classList.remove('visible');
+    document.getElementById('vid-engagement').style.display = 'none';
+    document.getElementById('vid-comments').style.display = 'none';
+  });
+
+  video.addEventListener('play', () => { setTimeout(() => { filter.classList.add('gone'); }, 1500); });
+  video.addEventListener('ended', () => { filter.classList.remove('gone'); });
+
+  document.querySelectorAll('.video-item').forEach(btn => {
+    const src = btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+    if (!src) return;
+    const thumb = btn.dataset.thumbnail;
+    const thumbEl = btn.querySelector('.video-thumb');
+    if (thumb) { thumbEl.innerHTML = `<img src="${thumb}" alt="thumbnail">`; }
+    const tmp = document.createElement('video');
+    tmp.preload = 'metadata';
+    tmp.src = src;
+    tmp.addEventListener('loadedmetadata', () => {
+      const d = Math.round(tmp.duration);
+      const m = Math.floor(d / 60);
+      const s = String(d % 60).padStart(2, '0');
+      const dur = document.createElement('div');
+      dur.className = 'video-duration';
+      dur.textContent = `${m}:${s}`;
+      thumbEl.appendChild(dur);
     });
-  } catch(e) { if (loading) loading.textContent = 'No stills yet.'; }
-}
+  });
+
+  const characters = ['images/Fire_Place.mp4','images/Fire_Place_2.mp4','images/Fire_Place_3.mp4','images/Fire_Place_4.mp4'];
+  async function pickCharacter() {
+    const fp = document.getElementById('fireplace-vid');
+    if (!fp) return;
+    const available = [];
+    for (const src of characters) {
+      try { const r = await fetch(src, { method: 'HEAD' }); if (r.ok) available.push(src); } catch(e) {}
+    }
+    if (available.length === 0) return;
+    const pick = available[Math.floor(Math.random() * available.length)];
+    fp.querySelector('source').src = pick;
+    fp.load(); fp.play();
+  }
+  pickCharacter();
+
+  function autoPlayFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const play = params.get('play');
+    if (!play) return;
+    setTimeout(() => {
+      const buttons = document.querySelectorAll('.video-item');
+      for (const btn of buttons) {
+        const title = btn.querySelector('.video-item-title');
+        if (title && title.textContent.trim() === play) { btn.click(); btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+      }
+    }, 300);
+  }
+  autoPlayFromURL();
 </script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
 <script>
-loadCMSGallery().then(() => checkHardcodedLocks()).then(() => {
-  if (window.location.hash && window.location.hash !== '#stills') openFromHash();
-});
-loadStills();
-</script>
-<script>
-function openFromHash() {
-  const hash = decodeURIComponent(window.location.hash.slice(1));
-  if (!hash) return false;
-  const hashLower = hash.toLowerCase();
-  let found = false;
-  document.querySelectorAll('.gallery-item:not(.locked)').forEach(item => {
-    const title = item.querySelector('.gallery-overlay-title')?.textContent?.trim();
-    if (title && title.toLowerCase() === hashLower) {
-      const img = item.querySelector('img');
-      const type = item.querySelector('.gallery-overlay-type')?.textContent?.trim();
-      if (img) { openLightbox(img.src, title, type || ''); found = true; }
-    }
-  });
-  return found;
+async function loadCMSVideos() {
+  const list = document.getElementById('video-list');
+  if (!list) return;
+  list.innerHTML = '';
+  const userTier = window.getUserTier ? await window.getUserTier() : 'free';
+  const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
+  try {
+    const res = await fetch('/_data/content-index.json');
+    if (!res.ok) throw new Error();
+    const items = await res.json();
+    const videos = items.filter(i => i.type === 'Video');
+    if (!videos || videos.length === 0) throw new Error();
+    videos.forEach((item, idx) => {
+      const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
+      const btn = document.createElement('button');
+      btn.className = 'video-item' + (idx === 0 && !isLocked ? ' active' : '');
+      if (isLocked) { btn.setAttribute('onclick', "window.location.href='membership.html'"); btn.dataset.description = ''; }
+      else { btn.setAttribute('onclick', `loadVideo('${item.video || ''}', this)`); btn.dataset.description = item.description || ''; }
+      const thumbHtml = item.thumbnail ? `<img src="${item.thumbnail}" alt="${item.title}">` : `<div class="video-thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`;
+      const lockBadge = isLocked ? `<div style="position:absolute;top:3px;right:4px;font-family:'Cinzel',serif;font-size:8px;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:1px 5px;border:1px solid var(--border);">${item.tier === 'devoted' ? '$5' : '$12'}</div>` : '';
+      btn.innerHTML = `<div class="video-thumb" style="position:relative;">${thumbHtml}${lockBadge}</div><div class="video-info"><div class="video-item-type">${item.label || 'Video'}</div><div class="video-item-title">${item.title}${isLocked ? ' 🔒' : ''}</div></div>`;
+      list.appendChild(btn);
+    });
+    list.querySelectorAll('.video-item').forEach(btn => {
+      const onclick = btn.getAttribute('onclick') || '';
+      const src = onclick.match(/'([^']+)'/)?.[1];
+      if (!src || src.includes('membership')) return;
+      const thumbEl = btn.querySelector('.video-thumb');
+      const tmp = document.createElement('video');
+      tmp.preload = 'metadata'; tmp.src = src;
+      tmp.addEventListener('loadedmetadata', () => {
+        const d = Math.round(tmp.duration); const m = Math.floor(d / 60); const s = String(d % 60).padStart(2, '0');
+        const dur = document.createElement('div'); dur.className = 'video-duration'; dur.textContent = `${m}:${s}`; thumbEl.appendChild(dur);
+      });
+    });
+  } catch(e) {
+    list.innerHTML = '<p style="padding:1rem;font-family:\'Cinzel\',serif;font-size:10px;color:var(--gold-dim);letter-spacing:0.2em;">No videos found.</p>';
+  }
 }
-window.addEventListener('load', () => {
-  if (!window.location.hash) return;
-  if (window.location.hash === '#stills') { document.getElementById('stills')?.scrollIntoView({ behavior: 'smooth' }); return; }
-  if (openFromHash()) return;
-  [50, 200, 500, 1000].forEach(delay => { setTimeout(() => { if (!lb.classList.contains('open')) openFromHash(); }, delay); });
-});
-</script>
-<script>
-  (function() {
-    const cord = document.getElementById('cord-wrap');
-    const dot  = document.getElementById('news-dot');
-    const dismissed = localStorage.getItem('news-dismissed');
-    if (dismissed) { if (cord) cord.classList.add('pulled'); if (dot) dot.classList.add('off'); }
-    if (cord) { cord.addEventListener('click', () => { cord.classList.add('pulled'); if (dot) dot.classList.add('off'); localStorage.setItem('news-dismissed', '1'); }); }
-  })();
+loadCMSVideos();
 </script>
 </body>
 </html>
