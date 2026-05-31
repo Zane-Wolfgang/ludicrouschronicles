@@ -27,24 +27,24 @@ function parseFrontmatter(fileContent) {
       while (i < lines.length && (lines[i].startsWith('  ') || lines[i] === '')) { block.push(lines[i].slice(2)); i++; }
       fm[key] = block.join('\n').trim();
     } else {
-      // Handle multi-line quoted strings (Decap CMS wraps long values across lines)
       const startQuote = val[0];
       if ((startQuote === '"' || startQuote === "'") && val.length > 1) {
-        const inner = val.slice(1);
-        const closeIdx = inner.lastIndexOf(startQuote);
-        if (closeIdx === inner.length - 1) {
-          // Properly closed on same line
-          fm[key] = inner.slice(0, closeIdx).replace(/\\"/g, '"').replace(/\\'/g, "'");
+        // Quoted string — collect continuation lines until closing quote
+        let accumulated = val.slice(1); // strip opening quote
+        const hasClose = accumulated.endsWith(startQuote)
+          && !(accumulated.endsWith(startQuote + startQuote)); // not a doubled ''
+        if (hasClose) {
+          // Closed on same line
+          accumulated = accumulated.slice(0, -1);
           i++;
         } else {
-          // No closing quote found — read continuation lines
-          let accumulated = inner;
           i++;
           while (i < lines.length) {
             const cont = lines[i];
             if (cont.startsWith('  ') || cont.startsWith('\t')) {
               const trimmed = cont.trim();
-              if (trimmed.endsWith(startQuote)) {
+              // Remove closing quote if this line ends with it (and it's not a doubled '')
+              if (trimmed.endsWith(startQuote) && !trimmed.endsWith(startQuote + startQuote)) {
                 accumulated += ' ' + trimmed.slice(0, -1);
                 i++;
                 break;
@@ -56,11 +56,25 @@ function parseFrontmatter(fileContent) {
               break;
             }
           }
-          fm[key] = accumulated.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\n/g, '\n');
         }
+        // Unescape: '' → ' for single-quoted, \" → " for double-quoted
+        if (startQuote === "'") accumulated = accumulated.replace(/''/g, "'");
+        if (startQuote === '"')  accumulated = accumulated.replace(/\\"/g, '"');
+        fm[key] = accumulated.replace(/\uFEFF/g, '').trim();
       } else {
-        fm[key] = val.replace(/^["']|["']$/g, '');
+        // Plain scalar — collect continuation lines (indented, not a new key)
+        let accumulated = val;
         i++;
+        while (i < lines.length) {
+          const next = lines[i];
+          if ((next.startsWith('  ') || next.startsWith('\t')) && next.indexOf(':') === -1) {
+            accumulated += ' ' + next.trim();
+            i++;
+          } else {
+            break;
+          }
+        }
+        fm[key] = accumulated.replace(/^["']|["']$/g, '').replace(/\uFEFF/g, '').trim();
       }
     }
   }
