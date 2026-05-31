@@ -94,8 +94,12 @@ const traditionalArt = traditionalRaw.map(item => {
 fs.writeFileSync('_data/traditional-art-index.json', JSON.stringify(traditionalArt, null, 2));
 console.log(`Traditional Art: ${traditionalArt.length} items`);
 
+// ── Emojis index ──
+const emojis = readDataDir('_data/emojis').filter(e => e.active !== false && e.active !== 'false');
+fs.writeFileSync('_data/emojis-index.json', JSON.stringify(emojis, null, 2));
+console.log(`Emojis: ${emojis.length} items`);
+
 // ── Announcements index ──
-const announcements = readDataDir('_data/announcements');
 fs.writeFileSync('_data/announcements-index.json', JSON.stringify(announcements, null, 2));
 console.log(`Announcements: ${announcements.length} items`);
 
