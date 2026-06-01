@@ -196,6 +196,11 @@
     .mp-toggle:hover { opacity: 1; transform: scale(1.05); }
     .mp-toggle.playing { opacity: 1; }
     .mp-toggle img { width: 44px; height: 44px; object-fit: contain; display: block; }
+    @keyframes mpPulse {
+      0%, 100% { opacity: 0.7; transform: scale(1); }
+      50%       { opacity: 1;   transform: scale(1.1); filter: drop-shadow(0 2px 10px rgba(201,168,76,0.5)); }
+    }
+    .mp-toggle.mp-pulse { animation: mpPulse 1.8s ease-in-out infinite; }
     @media (max-width: 768px) {
       #lc-music-player { bottom: 0.75rem; right: 0.75rem; }
       .mp-panel { width: 175px; padding: 0.75rem; }
@@ -249,7 +254,10 @@
     currentIndex = ((index % tracks.length) + tracks.length) % tracks.length;
     audio.src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
     audio.volume = isMuted ? 0 : (isDucked ? DUCK_VOL : userVolume);
-    audio.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+    audio.play().then(() => setPlaying(true)).catch(() => {
+      // Don't set isPlaying=false here — browser may just need a moment
+      // Only the explicit pause button should mark as not playing
+    });
     updateTrackInfo();
   }
 
@@ -409,8 +417,9 @@
   audio.addEventListener('ended', () => playTrack(currentIndex + 1));
 
   // ── State persistence ──
-  const _SK = 'lc-music-state';
-  let _savedState = null; // loaded once on init, cleared after use
+  const _SK  = 'lc-music-state';
+  const _NAV = 'lc-music-nav'; // timestamp of last internal nav click
+  let _savedState = null;
 
   function saveState() {
     try {
@@ -429,6 +438,27 @@
       return JSON.parse(raw);
     } catch(e) { return null; }
   }
+
+  function wasRecentNav() {
+    try {
+      const ts = localStorage.getItem(_NAV);
+      if (!ts) return false;
+      const age = Date.now() - parseInt(ts);
+      localStorage.removeItem(_NAV);
+      return age < 8000; // within 8 seconds of a link click
+    } catch(e) { return false; }
+  }
+
+  // Intercept internal link clicks — save gesture timestamp so next page can autoplay
+  document.addEventListener('click', e => {
+    const link = e.target.closest('a[href]');
+    if (!link) return;
+    const href = link.getAttribute('href') || '';
+    if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto') || href.startsWith('tel')) return;
+    // Internal navigation — note the gesture and save state
+    saveState();
+    try { localStorage.setItem(_NAV, Date.now().toString()); } catch(e) {}
+  }, true);
 
   // Save before leaving page
   window.addEventListener('beforeunload', saveState);
@@ -458,6 +488,7 @@
       setPlaying(true);
       updateTrackInfo();
       if (seekTime > 0) audio.currentTime = seekTime;
+      document.getElementById('mp-toggle')?.classList.remove('mp-pulse');
       _cleanupAutoplay();
     }).catch(() => {
       _autoplayArmed = true;
@@ -475,17 +506,19 @@
     await loadTracks();
     buildWidget();
 
-    // Restore saved state if available
+    // Restore saved state
+    const recentNav = wasRecentNav();
     _savedState = loadState();
     if (_savedState && tracks.length) {
       currentIndex = Math.min(_savedState.index || 0, tracks.length - 1);
-      _autoplayArmed = !!_savedState.playing;
+      // Arm autoplay if was playing OR if user just clicked a nav link
+      _autoplayArmed = !!_savedState.playing || recentNav;
     } else if (tracks.length) {
       _autoplayArmed = true;
     }
     updateTrackInfo();
 
-    // If admin tier switcher is present (or appears later), move player above it
+    // Admin tier switcher positioning
     function clearTierSwitcher() {
       const switcher = document.getElementById('admin-tier-switcher');
       const player   = document.getElementById('lc-music-player');
@@ -495,9 +528,36 @@
       }
     }
     clearTierSwitcher();
-    // auth.js adds it asynchronously — watch for it
     const obs = new MutationObserver(() => { clearTierSwitcher(); obs.disconnect(); });
     obs.observe(document.body, { childList: true, subtree: false });
+
+    // Try to play immediately on load
+    if (tracks.length && _autoplayArmed) {
+      const src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
+      audio.src = src;
+      audio.volume = isMuted ? 0 : userVolume;
+
+      // Attempt 1: normal autoplay
+      audio.play().then(() => {
+        setPlaying(true);
+        updateTrackInfo();
+        _cleanupAutoplay();
+      }).catch(() => {
+        // Attempt 2: muted autoplay → immediate unmute (Chrome often allows this)
+        audio.muted = true;
+        audio.play().then(() => {
+          audio.muted = false;
+          audio.volume = isMuted ? 0 : userVolume;
+          setPlaying(true);
+          updateTrackInfo();
+          _cleanupAutoplay();
+        }).catch(() => {
+          // Both blocked — pulse phonograph, wait for interaction
+          audio.muted = false;
+          document.getElementById('mp-toggle')?.classList.add('mp-pulse');
+        });
+      });
+    }
   }
 
   if (document.readyState === 'loading') {
