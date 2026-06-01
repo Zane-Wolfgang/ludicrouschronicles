@@ -68,7 +68,7 @@
       const s = document.createElement('style');
       s.id = 'ap-style';
       s.textContent = `
-        .admin-panel-tab { position:fixed; top:50%; left:0; transform:translateY(-50%); z-index:99998; display:block; }
+        .admin-panel-tab { position:fixed; top:70%; left:0; transform:translateY(-50%); z-index:99998; display:block; }
         .admin-panel-toggle { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.75rem; background:rgba(10,8,6,0.95); border:1px solid rgba(201,168,76,0.18); border-left:none; cursor:pointer; font-family:'Cinzel',serif; font-size:9px; letter-spacing:0.2em; text-transform:uppercase; color:#7a7260; transition:color 0.2s, border-color 0.2s; writing-mode:vertical-rl; text-orientation:mixed; }
         .admin-panel-toggle:hover { color:var(--gold,#c9a84c); border-color:var(--gold,#c9a84c); }
         .admin-panel-toggle svg { width:10px; height:10px; fill:currentColor; }
