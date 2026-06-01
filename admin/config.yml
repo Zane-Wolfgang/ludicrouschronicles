@@ -265,3 +265,15 @@ collections:
       - { label: "Image", name: "image", widget: "image", hint: "Upload to images/emojis/" }
       - { label: "Display Size (px)", name: "size", widget: "number", default: 32, hint: "How big it appears in reactions — 24 to 48 recommended" }
       - { label: "Active", name: "active", widget: "boolean", default: true }
+
+  - name: "music"
+    label: "Music"
+    folder: "_data/music"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string", hint: "Track name shown in the player" }
+      - { label: "Artist", name: "artist", widget: "string", required: false }
+      - { label: "Audio File", name: "audio", widget: "file", hint: "Upload MP3" }
+      - { label: "Order", name: "order", widget: "number", default: 99, hint: "Play order (1 = first)" }
+      - { label: "Active", name: "active", widget: "boolean", default: true }
