@@ -101,8 +101,15 @@
       <div class="admin-panel-toggle" id="ap-toggle">
         <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
         Comments
-      </div>
-      <div class="admin-panel-body" id="ap-body">
+      </div>`;
+    document.body.appendChild(tab);
+
+    // Panel body appended directly to body — NOT inside tab — so position:fixed
+    // is relative to the viewport, not the tab's transform stacking context
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'admin-panel-body';
+    bodyEl.id = 'ap-body';
+    bodyEl.innerHTML = `
         <div class="admin-panel-header">
           <span class="admin-panel-title">Recent Comments</span>
           <div class="admin-panel-actions">
@@ -112,20 +119,19 @@
         </div>
         <div class="admin-panel-list" id="ap-list">
           <div class="admin-panel-empty">Click refresh to load.</div>
-        </div>
-      </div>`;
-    document.body.appendChild(tab);
+        </div>`;
+    document.body.appendChild(bodyEl);
 
     let isOpen = false;
 
     function closePanel() {
       isOpen = false;
-      document.getElementById('ap-body').classList.remove('open');
+      bodyEl.classList.remove('open');
     }
 
     document.getElementById('ap-toggle').addEventListener('click', () => {
       isOpen = !isOpen;
-      document.getElementById('ap-body').classList.toggle('open', isOpen);
+      bodyEl.classList.toggle('open', isOpen);
       if (isOpen) load();
     });
     document.getElementById('ap-refresh').addEventListener('click', load);
