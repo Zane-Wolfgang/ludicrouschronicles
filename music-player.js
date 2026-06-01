@@ -23,7 +23,7 @@
       position: fixed;
       bottom: 1.5rem;
       right: 5rem;
-      z-index: 800;
+      z-index: 100000;
       display: flex;
       flex-direction: column;
       align-items: flex-end;
