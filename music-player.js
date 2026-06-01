@@ -151,8 +151,10 @@
     .mp-toggle.playing { opacity: 1; }
     .mp-toggle img { width: 44px; height: 44px; object-fit: contain; display: block; }
     @media (max-width: 768px) {
-      #lc-music-player { bottom: 1rem; right: 4.5rem; }
-      .mp-panel { width: 190px; }
+      #lc-music-player { bottom: 1rem; right: 4rem; }
+      .mp-panel { width: 175px; padding: 0.75rem; }
+      .mp-toggle { width: 36px; height: 36px; }
+      .mp-toggle img { width: 36px; height: 36px; }
     }
   `;
   document.head.appendChild(style);
@@ -328,6 +330,32 @@
   // ── Next track on end ──
   audio.addEventListener('ended', () => playTrack(currentIndex + 1));
 
+  // ── State persistence ──
+  const _SK = 'lc-music-state';
+
+  function saveState() {
+    try {
+      localStorage.setItem(_SK, JSON.stringify({
+        index:   currentIndex,
+        time:    audio.currentTime || 0,
+        playing: isPlaying
+      }));
+    } catch(e) {}
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(_SK);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch(e) { return null; }
+  }
+
+  // Save before leaving page
+  window.addEventListener('beforeunload', saveState);
+  // Also save periodically while playing
+  setInterval(() => { if (isPlaying) saveState(); }, 5000);
+
   // ── Autoplay on first user interaction ──
   let _autoplayArmed = true;
   function _tryAutoplay() {
@@ -351,7 +379,20 @@
   async function init() {
     await loadTracks();
     buildWidget();
-    if (tracks.length) loadTrack(0);
+
+    // Restore saved state if available
+    const saved = loadState();
+    if (saved && tracks.length) {
+      currentIndex = Math.min(saved.index || 0, tracks.length - 1);
+      audio.src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
+      if (saved.time > 0) audio.currentTime = saved.time;
+      updateTrackInfo();
+      // If was playing, arm autoplay to resume on first interaction
+      if (saved.playing) _autoplayArmed = true;
+    } else if (tracks.length) {
+      audio.src = tracks[0].audio || tracks[0].file || '';
+      updateTrackInfo();
+    }
 
     // If admin tier switcher is present (or appears later), move player above it
     function clearTierSwitcher() {
