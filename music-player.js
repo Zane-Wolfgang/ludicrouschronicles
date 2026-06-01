@@ -21,8 +21,8 @@
   style.textContent = `
     #lc-music-player {
       position: fixed;
-      bottom: 1.5rem;
-      right: 5rem;
+      bottom: 1rem;
+      right: 1.5rem;
       z-index: 100000;
       display: flex;
       flex-direction: column;
@@ -151,7 +151,7 @@
     .mp-toggle.playing { opacity: 1; }
     .mp-toggle img { width: 44px; height: 44px; object-fit: contain; display: block; }
     @media (max-width: 768px) {
-      #lc-music-player { bottom: 1rem; right: 4rem; }
+      #lc-music-player { bottom: 0.75rem; right: 0.75rem; }
       .mp-panel { width: 175px; padding: 0.75rem; }
       .mp-toggle { width: 36px; height: 36px; }
       .mp-toggle img { width: 36px; height: 36px; }
@@ -358,21 +358,33 @@
 
   // ── Autoplay on first user interaction ──
   let _autoplayArmed = true;
+  let _autoplayListeners = [];
+
+  function _cleanupAutoplay() {
+    _autoplayListeners.forEach(({ evt, fn }) => document.removeEventListener(evt, fn, { passive: true }));
+    _autoplayListeners = [];
+  }
+
   function _tryAutoplay() {
     if (!_autoplayArmed || !tracks.length || isPlaying) return;
     _autoplayArmed = false;
-    audio.src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
+    if (!audio.src || audio.src === window.location.href) {
+      audio.src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
+    }
     audio.volume = isMuted ? 0 : userVolume;
     audio.play().then(() => {
       setPlaying(true);
       updateTrackInfo();
-    }).catch(() => { _autoplayArmed = true; });
+      _cleanupAutoplay();
+    }).catch(() => {
+      _autoplayArmed = true; // retry on next interaction
+    });
   }
-  ['click','keydown','touchstart','scroll'].forEach(evt => {
-    document.addEventListener(evt, function _once() {
-      _tryAutoplay();
-      document.removeEventListener(evt, _once);
-    }, { once: true, passive: true });
+
+  ['click', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+    const fn = () => _tryAutoplay();
+    _autoplayListeners.push({ evt, fn });
+    document.addEventListener(evt, fn, { passive: true });
   });
 
   // ── Init ──
@@ -384,13 +396,20 @@
     const saved = loadState();
     if (saved && tracks.length) {
       currentIndex = Math.min(saved.index || 0, tracks.length - 1);
-      audio.src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
-      if (saved.time > 0) audio.currentTime = saved.time;
+      const src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
+      audio.src = src;
+      if (saved.time > 0) {
+        audio.addEventListener('loadedmetadata', function onMeta() {
+          audio.currentTime = saved.time;
+          audio.removeEventListener('loadedmetadata', onMeta);
+        });
+      }
+      audio.load();
       updateTrackInfo();
-      // If was playing, arm autoplay to resume on first interaction
       if (saved.playing) _autoplayArmed = true;
     } else if (tracks.length) {
       audio.src = tracks[0].audio || tracks[0].file || '';
+      audio.load();
       updateTrackInfo();
     }
 
