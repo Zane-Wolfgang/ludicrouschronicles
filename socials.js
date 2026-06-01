@@ -102,3 +102,11 @@ async function loadSocials() {
 }
 
 document.addEventListener('DOMContentLoaded', loadSocials);
+
+// ── Load music player on every page ──
+(function() {
+  if (document.getElementById('lc-music-player')) return;
+  const s = document.createElement('script');
+  s.src = 'music-player.js';
+  document.head.appendChild(s);
+})();
