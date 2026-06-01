@@ -332,6 +332,21 @@
   async function init() {
     await loadTracks();
     buildWidget();
+    if (tracks.length) loadTrack(0);
+
+    // If admin tier switcher is present (or appears later), move player above it
+    function clearTierSwitcher() {
+      const switcher = document.getElementById('admin-tier-switcher');
+      const player   = document.getElementById('lc-music-player');
+      if (switcher && player) {
+        const h = switcher.offsetHeight || 80;
+        player.style.bottom = (h + 16) + 'px';
+      }
+    }
+    clearTierSwitcher();
+    // auth.js adds it asynchronously — watch for it
+    const obs = new MutationObserver(() => { clearTierSwitcher(); obs.disconnect(); });
+    obs.observe(document.body, { childList: true, subtree: false });
   }
 
   if (document.readyState === 'loading') {
