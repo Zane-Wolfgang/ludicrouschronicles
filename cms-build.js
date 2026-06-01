@@ -205,6 +205,13 @@ const socials = readDataDir('_data/socials')
 fs.writeFileSync('_data/socials-index.json', JSON.stringify(socials, null, 2));
 console.log(`Socials: ${socials.length} items`);
 
+// ── Music index ──
+const music = readDataDir('_data/music')
+  .filter(m => m.active !== false && m.active !== 'false')
+  .sort((a, b) => (parseInt(a.order) || 99) - (parseInt(b.order) || 99));
+fs.writeFileSync('_data/music-index.json', JSON.stringify(music, null, 2));
+console.log(`Music: ${music.length} items`);
+
 console.log('Build complete!');
 
 // ── Newsletter ──
