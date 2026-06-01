@@ -73,7 +73,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
+      gap: 0.3rem;
       margin-bottom: 0.75rem;
     }
     .mp-btn {
@@ -88,8 +88,9 @@
       padding: 0;
     }
     .mp-btn:hover { border-color: var(--gold-dim, #8a6e2f); color: var(--gold, #c9a84c); }
-    .mp-btn-skip { width: 28px; height: 28px; }
-    .mp-btn-skip svg { width: 12px; height: 12px; fill: currentColor; }
+    .mp-btn-skip { width: 24px; height: 24px; }
+    .mp-btn-skip svg { width: 11px; height: 11px; fill: currentColor; }
+    .mp-btn-skip10 { width: 26px; height: 26px; font-family: "Cinzel", serif; font-size: 8px; letter-spacing: 0; }
     .mp-btn-play { width: 36px; height: 36px; }
     .mp-btn-play svg { width: 14px; height: 14px; fill: currentColor; }
     .mp-btn-play.playing { border-color: var(--gold-dim, #8a6e2f); color: var(--gold, #c9a84c); }
@@ -217,13 +218,15 @@
         <div class="mp-title" id="mp-title">${tracks.length ? (tracks[0].title || '—') : 'No tracks yet'}</div>
         <div class="mp-artist" id="mp-artist">${tracks.length ? (tracks[0].artist || '') : ''}</div>
         <div class="mp-controls">
-          <button class="mp-btn mp-btn-skip" id="mp-prev" title="Previous">
+          <button class="mp-btn mp-btn-skip" id="mp-prev" title="Previous track">
             <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
           </button>
+          <button class="mp-btn mp-btn-skip mp-btn-skip10" id="mp-back10" title="Back 10 seconds">−10</button>
           <button class="mp-btn mp-btn-play" id="mp-play" title="Play / Pause">
             <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
           </button>
-          <button class="mp-btn mp-btn-skip" id="mp-next" title="Next">
+          <button class="mp-btn mp-btn-skip mp-btn-skip10" id="mp-fwd10" title="Forward 10 seconds">+10</button>
+          <button class="mp-btn mp-btn-skip" id="mp-next" title="Next track">
             <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zm2.5-6l5.5 4V8l-5.5 4zm7.5-6v12h2V6h-2z"/></svg>
           </button>
         </div>
@@ -248,6 +251,9 @@
     nextBtn   = document.getElementById('mp-next');
     muteBtn   = document.getElementById('mp-mute');
     volSlider = document.getElementById('mp-vol');
+
+    const back10 = document.getElementById('mp-back10');
+    const fwd10  = document.getElementById('mp-fwd10');
 
     const panel  = document.getElementById('mp-panel');
     const toggle = document.getElementById('mp-toggle');
@@ -275,6 +281,8 @@
 
     prevBtn.addEventListener('click', () => playTrack(currentIndex - 1));
     nextBtn.addEventListener('click', () => playTrack(currentIndex + 1));
+    back10.addEventListener('click', () => { audio.currentTime = Math.max(0, audio.currentTime - 10); });
+    fwd10.addEventListener('click',  () => { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10); });
 
     // Volume
     volSlider.addEventListener('input', () => {
@@ -332,6 +340,7 @@
 
   // ── State persistence ──
   const _SK = 'lc-music-state';
+  let _savedState = null; // loaded once on init, cleared after use
 
   function saveState() {
     try {
@@ -368,17 +377,33 @@
   function _tryAutoplay() {
     if (!_autoplayArmed || !tracks.length || isPlaying) return;
     _autoplayArmed = false;
-    if (!audio.src || audio.src === window.location.href) {
-      audio.src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
-    }
+    const t = tracks[currentIndex];
+    const src = t.audio || t.file || '';
+    if (audio.src !== src) audio.src = src;
     audio.volume = isMuted ? 0 : userVolume;
-    audio.play().then(() => {
-      setPlaying(true);
-      updateTrackInfo();
-      _cleanupAutoplay();
-    }).catch(() => {
-      _autoplayArmed = true; // retry on next interaction
-    });
+    // Restore seek position from saved state if available, then clear it
+    const saved = _savedState;
+    _savedState = null;
+    const doPlay = () => {
+      audio.play().then(() => {
+        setPlaying(true);
+        updateTrackInfo();
+        _cleanupAutoplay();
+      }).catch(() => {
+        _autoplayArmed = true;
+      });
+    };
+    if (saved && saved.time > 0 && audio.readyState < 1) {
+      audio.addEventListener('loadedmetadata', function onMeta() {
+        audio.currentTime = saved.time;
+        audio.removeEventListener('loadedmetadata', onMeta);
+        doPlay();
+      }, { once: true });
+      audio.load();
+    } else {
+      if (saved && saved.time > 0 && audio.readyState >= 1) audio.currentTime = saved.time;
+      doPlay();
+    }
   }
 
   ['click', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
@@ -393,25 +418,14 @@
     buildWidget();
 
     // Restore saved state if available
-    const saved = loadState();
-    if (saved && tracks.length) {
-      currentIndex = Math.min(saved.index || 0, tracks.length - 1);
-      const src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
-      audio.src = src;
-      if (saved.time > 0) {
-        audio.addEventListener('loadedmetadata', function onMeta() {
-          audio.currentTime = saved.time;
-          audio.removeEventListener('loadedmetadata', onMeta);
-        });
-      }
-      audio.load();
-      updateTrackInfo();
-      if (saved.playing) _autoplayArmed = true;
+    _savedState = loadState();
+    if (_savedState && tracks.length) {
+      currentIndex = Math.min(_savedState.index || 0, tracks.length - 1);
+      _autoplayArmed = !!_savedState.playing;
     } else if (tracks.length) {
-      audio.src = tracks[0].audio || tracks[0].file || '';
-      audio.load();
-      updateTrackInfo();
+      _autoplayArmed = true;
     }
+    updateTrackInfo();
 
     // If admin tier switcher is present (or appears later), move player above it
     function clearTierSwitcher() {
