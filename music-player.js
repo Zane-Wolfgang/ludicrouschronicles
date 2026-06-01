@@ -134,6 +134,51 @@
       text-align: center;
       padding: 0.25rem 0;
     }
+    .mp-tracklist-toggle {
+      font-family: 'Cinzel', serif;
+      font-size: 8px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted, #7a7260);
+      cursor: pointer;
+      text-align: center;
+      padding: 0.4rem 0 0.2rem;
+      transition: color 0.2s;
+      border-top: 1px solid var(--border, rgba(201,168,76,0.18));
+      margin-top: 0.5rem;
+    }
+    .mp-tracklist-toggle:hover { color: var(--gold, #c9a84c); }
+    .mp-tracklist {
+      max-height: 160px;
+      overflow-y: auto;
+      margin-top: 0.4rem;
+      border-top: 1px solid var(--border, rgba(201,168,76,0.18));
+      padding-top: 0.4rem;
+    }
+    .mp-tracklist::-webkit-scrollbar { width: 3px; }
+    .mp-tracklist::-webkit-scrollbar-thumb { background: var(--border, rgba(201,168,76,0.18)); }
+    .mp-track-item {
+      padding: 0.3rem 0;
+      border-bottom: 1px solid rgba(201,168,76,0.07);
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .mp-track-item:last-child { border-bottom: none; }
+    .mp-track-item:hover .mp-ti-title { color: var(--gold, #c9a84c); }
+    .mp-track-item.active .mp-ti-title { color: var(--gold, #c9a84c); }
+    .mp-ti-title {
+      font-family: 'Cinzel', serif;
+      font-size: 8px;
+      letter-spacing: 0.1em;
+      color: var(--parchment, #f5f0e8);
+      transition: color 0.15s;
+    }
+    .mp-ti-artist {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 0.75rem;
+      color: var(--text-muted, #7a7260);
+    }
     .mp-toggle {
       background: none;
       border: none;
@@ -236,6 +281,8 @@
           </button>
           <input type="range" class="mp-volume-slider" id="mp-vol" min="0" max="1" step="0.02" value="${DEFAULT_VOL}">
         </div>
+        <div class="mp-tracklist-toggle" id="mp-tl-toggle">Track List ▾</div>
+        <div class="mp-tracklist" id="mp-tracklist" style="display:none;"></div>
       </div>
       <button class="mp-toggle" id="mp-toggle" title="Music Player">
         <img src="images/phonograph.png" alt="Music">
@@ -283,6 +330,29 @@
     nextBtn.addEventListener('click', () => playTrack(currentIndex + 1));
     back10.addEventListener('click', () => { audio.currentTime = Math.max(0, audio.currentTime - 10); });
     fwd10.addEventListener('click',  () => { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10); });
+
+    // Track list
+    const tlToggle  = document.getElementById('mp-tl-toggle');
+    const tlPanel   = document.getElementById('mp-tracklist');
+    let tlOpen = false;
+
+    function buildTrackList() {
+      tlPanel.innerHTML = '';
+      tracks.forEach((t, i) => {
+        const item = document.createElement('div');
+        item.className = 'mp-track-item' + (i === currentIndex ? ' active' : '');
+        item.innerHTML = `<div class="mp-ti-title">${t.title || '—'}</div>${t.artist ? `<div class="mp-ti-artist">${t.artist}</div>` : ''}`;
+        item.addEventListener('click', () => { playTrack(i); buildTrackList(); });
+        tlPanel.appendChild(item);
+      });
+    }
+
+    tlToggle.addEventListener('click', () => {
+      tlOpen = !tlOpen;
+      tlPanel.style.display = tlOpen ? 'block' : 'none';
+      tlToggle.textContent = tlOpen ? 'Track List ▴' : 'Track List ▾';
+      if (tlOpen) buildTrackList();
+    });
 
     // Volume
     volSlider.addEventListener('input', () => {
@@ -366,7 +436,7 @@
   setInterval(() => { if (isPlaying) saveState(); }, 5000);
 
   // ── Autoplay on first user interaction ──
-  let _autoplayArmed = true;
+  let _autoplayArmed = false; // init() will set this based on saved state
   let _autoplayListeners = [];
 
   function _cleanupAutoplay() {
@@ -378,32 +448,20 @@
     if (!_autoplayArmed || !tracks.length || isPlaying) return;
     _autoplayArmed = false;
     const t = tracks[currentIndex];
-    const src = t.audio || t.file || '';
-    if (audio.src !== src) audio.src = src;
+    audio.src = t.audio || t.file || '';
     audio.volume = isMuted ? 0 : userVolume;
-    // Restore seek position from saved state if available, then clear it
-    const saved = _savedState;
+    // Grab seek time now, clear saved state
+    const seekTime = _savedState ? (_savedState.time || 0) : 0;
     _savedState = null;
-    const doPlay = () => {
-      audio.play().then(() => {
-        setPlaying(true);
-        updateTrackInfo();
-        _cleanupAutoplay();
-      }).catch(() => {
-        _autoplayArmed = true;
-      });
-    };
-    if (saved && saved.time > 0 && audio.readyState < 1) {
-      audio.addEventListener('loadedmetadata', function onMeta() {
-        audio.currentTime = saved.time;
-        audio.removeEventListener('loadedmetadata', onMeta);
-        doPlay();
-      }, { once: true });
-      audio.load();
-    } else {
-      if (saved && saved.time > 0 && audio.readyState >= 1) audio.currentTime = saved.time;
-      doPlay();
-    }
+    // Call play() immediately within the gesture context — seeking after is fine
+    audio.play().then(() => {
+      setPlaying(true);
+      updateTrackInfo();
+      if (seekTime > 0) audio.currentTime = seekTime;
+      _cleanupAutoplay();
+    }).catch(() => {
+      _autoplayArmed = true;
+    });
   }
 
   ['click', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
