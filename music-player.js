@@ -328,6 +328,25 @@
   // ── Next track on end ──
   audio.addEventListener('ended', () => playTrack(currentIndex + 1));
 
+  // ── Autoplay on first user interaction ──
+  let _autoplayArmed = true;
+  function _tryAutoplay() {
+    if (!_autoplayArmed || !tracks.length || isPlaying) return;
+    _autoplayArmed = false;
+    audio.src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
+    audio.volume = isMuted ? 0 : userVolume;
+    audio.play().then(() => {
+      setPlaying(true);
+      updateTrackInfo();
+    }).catch(() => { _autoplayArmed = true; });
+  }
+  ['click','keydown','touchstart','scroll'].forEach(evt => {
+    document.addEventListener(evt, function _once() {
+      _tryAutoplay();
+      document.removeEventListener(evt, _once);
+    }, { once: true, passive: true });
+  });
+
   // ── Init ──
   async function init() {
     await loadTracks();
