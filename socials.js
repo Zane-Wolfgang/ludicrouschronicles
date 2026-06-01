@@ -127,11 +127,13 @@
     function closePanel() {
       isOpen = false;
       bodyEl.classList.remove('open');
+      tab.style.visibility = '';
     }
 
     document.getElementById('ap-toggle').addEventListener('click', () => {
       isOpen = !isOpen;
       bodyEl.classList.toggle('open', isOpen);
+      tab.style.visibility = isOpen ? 'hidden' : '';
       if (isOpen) load();
     });
     document.getElementById('ap-refresh').addEventListener('click', load);
