@@ -1,3 +1,44 @@
+// ── News dot smart re-show ──
+(function() {
+  async function checkNewsDot() {
+    const dot  = document.getElementById('news-dot');
+    const cord = document.getElementById('cord-wrap');
+    if (!dot) return;
+    const dismissedAt = localStorage.getItem('news-dismissed-at');
+    try {
+      const res = await fetch('/_data/announcements-index.json');
+      if (!res.ok) return;
+      const items = await res.json();
+      if (!Array.isArray(items) || items.length === 0) return;
+      const latest = items.reduce((a, b) => new Date(a.date) > new Date(b.date) ? a : b);
+      const latestDate = new Date(latest.date);
+      if (!dismissedAt || new Date(dismissedAt) < latestDate) {
+        dot.classList.remove('off');
+        if (cord) cord.classList.remove('pulled');
+      } else {
+        dot.classList.add('off');
+        if (cord) cord.classList.add('pulled');
+      }
+    } catch(e) {}
+  }
+
+  function wireCord() {
+    const cord = document.getElementById('cord-wrap');
+    if (cord && !cord.dataset.wired) {
+      cord.dataset.wired = '1';
+      cord.addEventListener('click', () => {
+        localStorage.setItem('news-dismissed-at', new Date().toISOString());
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { checkNewsDot(); wireCord(); });
+  } else {
+    checkNewsDot(); wireCord();
+  }
+})();
+
 // ── Load music player on every page ──
 (function() {
   if (document.getElementById('lc-music-player')) return;
@@ -19,11 +60,10 @@
 
   async function setup() {
     if (!window.waitForIdentity) { setTimeout(setup, 200); return; }
-    if (document.getElementById('ap-toggle')) return; // already mounted
+    if (document.getElementById('ap-toggle')) return;
     const user = await window.waitForIdentity();
     if (!user || !user.app_metadata?.roles?.includes('admin')) return;
 
-    // Inject CSS if not already present
     if (!document.getElementById('ap-style')) {
       const s = document.createElement('style');
       s.id = 'ap-style';
@@ -36,8 +76,10 @@
         .admin-panel-body.open { left:0; }
         .admin-panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid rgba(201,168,76,0.18); }
         .admin-panel-title { font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.25em; text-transform:uppercase; color:var(--parchment,#f5f0e8); }
-        .admin-panel-refresh { background:none; border:1px solid rgba(201,168,76,0.18); color:#7a7260; font-family:'Cinzel',serif; font-size:8px; letter-spacing:0.15em; padding:0.3em 0.6em; cursor:pointer; transition:color 0.2s, border-color 0.2s; }
+        .admin-panel-actions { display:flex; align-items:center; gap:0.5rem; }
+        .admin-panel-refresh, .admin-panel-close { background:none; border:1px solid rgba(201,168,76,0.18); color:#7a7260; font-family:'Cinzel',serif; font-size:8px; letter-spacing:0.15em; padding:0.3em 0.6em; cursor:pointer; transition:color 0.2s, border-color 0.2s; }
         .admin-panel-refresh:hover { color:var(--gold,#c9a84c); border-color:var(--gold,#c9a84c); }
+        .admin-panel-close:hover { color:#c0705a; border-color:#c0705a; }
         .admin-panel-empty { font-family:'EB Garamond',serif; font-style:italic; color:#7a7260; font-size:0.9rem; padding:0.5rem 0; }
         .admin-comment-item { padding:0.75rem 0; border-bottom:1px solid rgba(201,168,76,0.1); }
         .admin-comment-item:last-child { border-bottom:none; }
@@ -63,7 +105,10 @@
       <div class="admin-panel-body" id="ap-body">
         <div class="admin-panel-header">
           <span class="admin-panel-title">Recent Comments</span>
-          <button class="admin-panel-refresh" id="ap-refresh">↻ Refresh</button>
+          <div class="admin-panel-actions">
+            <button class="admin-panel-refresh" id="ap-refresh">↻ Refresh</button>
+            <button class="admin-panel-close" id="ap-close">✕ Close</button>
+          </div>
         </div>
         <div class="admin-panel-list" id="ap-list">
           <div class="admin-panel-empty">Click refresh to load.</div>
@@ -72,12 +117,19 @@
     document.body.appendChild(tab);
 
     let isOpen = false;
+
+    function closePanel() {
+      isOpen = false;
+      document.getElementById('ap-body').classList.remove('open');
+    }
+
     document.getElementById('ap-toggle').addEventListener('click', () => {
       isOpen = !isOpen;
       document.getElementById('ap-body').classList.toggle('open', isOpen);
       if (isOpen) load();
     });
     document.getElementById('ap-refresh').addEventListener('click', load);
+    document.getElementById('ap-close').addEventListener('click', closePanel);
 
     async function load() {
       const list = document.getElementById('ap-list');
