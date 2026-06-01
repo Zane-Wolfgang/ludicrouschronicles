@@ -2,8 +2,8 @@
 (function() {
   if (document.getElementById('lc-music-player')) return;
 
-  const DEFAULT_VOL = 0.15;
-  const DUCK_VOL    = 0.03;
+  const DEFAULT_VOL = 0.35;
+  const DUCK_VOL    = 0.05;
 
   let tracks       = [];
   let currentIndex = 0;
@@ -531,6 +531,18 @@
     const obs = new MutationObserver(() => { clearTierSwitcher(); obs.disconnect(); });
     obs.observe(document.body, { childList: true, subtree: false });
 
+    // Auto-pause on chapter/story pages so voice acting isn't interrupted
+    const path = window.location.pathname.toLowerCase();
+    const isStoryPage = /chapter|story/.test(path);
+    if (isStoryPage && isPlaying) {
+      audio.pause();
+      setPlaying(false);
+    }
+    // Also pause if music starts while already on a story page
+    if (isStoryPage) {
+      _autoplayArmed = false;
+    }
+
     // Try to play immediately on load
     if (tracks.length && _autoplayArmed) {
       const src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
@@ -543,16 +555,25 @@
         updateTrackInfo();
         _cleanupAutoplay();
       }).catch(() => {
-        // Attempt 2: muted autoplay → immediate unmute (Chrome often allows this)
+        // Attempt 2: muted autoplay → immediate unmute
         audio.muted = true;
         audio.play().then(() => {
+          // Unmute and check it's actually playing audibly
           audio.muted = false;
           audio.volume = isMuted ? 0 : userVolume;
-          setPlaying(true);
-          updateTrackInfo();
-          _cleanupAutoplay();
+          // Small delay to confirm browser didn't silently kill it
+          setTimeout(() => {
+            if (!audio.paused && audio.currentTime > 0) {
+              setPlaying(true);
+              updateTrackInfo();
+              _cleanupAutoplay();
+            } else {
+              // Browser killed it silently — pulse and wait for interaction
+              audio.pause();
+              document.getElementById('mp-toggle')?.classList.add('mp-pulse');
+            }
+          }, 300);
         }).catch(() => {
-          // Both blocked — pulse phonograph, wait for interaction
           audio.muted = false;
           document.getElementById('mp-toggle')?.classList.add('mp-pulse');
         });
