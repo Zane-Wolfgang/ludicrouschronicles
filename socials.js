@@ -1,112 +1,123 @@
-// Ludicrous Chronicles — Dynamic Socials Loader
-
-const SOCIAL_ICONS = {
-  youtube: `<path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/>`,
-  discord: `<path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/>`,
-  x: `<path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/>`,
-  ao3: `<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/>`,
-  instagram: `<path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>`,
-  tiktok: `<path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/>`,
-  twitch: `<path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>`,
-  patreon: `<path d="M14.82 2.41c3.96 0 7.18 3.24 7.18 7.21 0 3.96-3.22 7.18-7.18 7.18-3.97 0-7.19-3.22-7.19-7.18 0-3.97 3.22-7.21 7.19-7.21M2 21.6h3.5V2.41H2V21.6z"/>`,
-  bluesky: `<path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 01-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8z"/>`,
-  threads: `<path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.751-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 012.744.154l-.007-.06c-.072-.625-.37-1.134-.873-1.5-.723-.516-1.79-.777-3.174-.773l-.034.001c-1.054.007-2.058.274-2.734.731-.635.43-1.018 1.006-1.139 1.716l-2.033-.339c.197-1.167.75-2.144 1.645-2.904.996-.843 2.35-1.317 3.988-1.399a9.947 9.947 0 014.278.607c1.53.56 2.56 1.55 2.98 2.87.3.944.328 2.054.08 3.144 1.05.746 1.83 1.697 2.3 2.787.747 1.707.7 4.262-1.559 6.474-1.787 1.751-3.966 2.556-7.077 2.577z"/>`,
-  reddit: `<path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>`,
-  facebook: `<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>`,
-};
-
-// ── News dot — auto resets when new announcements are posted ──
-(function initNewsDot() {
-  const cord = document.getElementById('cord-wrap');
-  const dot = document.getElementById('news-dot');
-  if (!cord && !dot) return;
-
-  const DISMISS_KEY = 'news-dismissed-at';
-
-  async function checkNews() {
-    try {
-      const res = await fetch('/_data/announcements-index.json');
-      if (!res.ok) throw new Error();
-      const items = await res.json();
-      if (!items || items.length === 0) throw new Error();
-
-      // Get the latest announcement date
-      const latestDate = new Date(items[0].date).getTime();
-      const dismissedAt = parseInt(localStorage.getItem(DISMISS_KEY) || '0');
-
-      if (latestDate > dismissedAt) {
-        // New news since last dismiss — show dot and cord
-        if (cord) cord.classList.remove('pulled');
-        if (dot) dot.classList.remove('off');
-      } else {
-        // Already seen — keep dismissed
-        if (cord) cord.classList.add('pulled');
-        if (dot) dot.classList.add('off');
-      }
-    } catch(e) {
-      // No announcements or fetch failed — hide dot
-      if (cord) cord.classList.add('pulled');
-      if (dot) dot.classList.add('off');
-    }
-  }
-
-  // Cord click — save current timestamp as dismissed
-  if (cord) {
-    cord.addEventListener('click', () => {
-      cord.classList.add('pulled');
-      if (dot) dot.classList.add('off');
-      localStorage.setItem(DISMISS_KEY, Date.now().toString());
-    });
-  }
-
-  checkNews();
-})();
-
-async function loadSocials() {
-  const panel = document.getElementById('socials-panel');
-  if (!panel) return;
-
-  try {
-    const res = await fetch('/_data/socials-index.json');
-    if (!res.ok) throw new Error();
-    const items = await res.json();
-    if (!items || items.length === 0) throw new Error();
-
-    const title = panel.querySelector('.socials-title');
-    panel.innerHTML = '';
-    if (title) panel.appendChild(title);
-
-    items.forEach(item => {
-      if (!item.active && item.active !== undefined) return;
-      const a = document.createElement('a');
-      a.className = 'socials-link';
-      a.href = item.url || '#';
-      a.target = '_blank';
-      if (item.tooltip) a.title = item.tooltip;
-
-      let iconHTML = '';
-      if (item.icon === 'custom' && item.custom_icon) {
-        iconHTML = `<img src="${item.custom_icon}" alt="${item.title}" style="width:16px;height:16px;object-fit:contain;filter:brightness(0) saturate(100%) invert(67%) sepia(30%) saturate(500%) hue-rotate(5deg) brightness(95%);">`;
-      } else {
-        const path = SOCIAL_ICONS[item.icon] || SOCIAL_ICONS['ao3'];
-        iconHTML = `<svg class="socials-icon" viewBox="0 0 24 24">${path}</svg>`;
-      }
-
-      a.innerHTML = `${iconHTML}${item.title}`;
-      panel.appendChild(a);
-    });
-
-  } catch(e) {
-    // Silent fail — hardcoded socials in HTML stay visible
-  }
-}
-
-document.addEventListener('DOMContentLoaded', loadSocials);
-
 // ── Load music player on every page ──
 (function() {
   if (document.getElementById('lc-music-player')) return;
   const s = document.createElement('script');
   s.src = 'music-player.js';
   document.head.appendChild(s);
+})();
+
+// ── Admin Recent Comments Panel ──
+(function() {
+  const _AP_URL = 'https://stdxmneifvavkzwttbzj.supabase.co';
+  const _AP_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZHhtbmVpZnZhdmt6d3R0YnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDczNTYsImV4cCI6MjA5MTg4MzM1Nn0.jWNSXOaSw5KEoFFPHSZqFZi17d9diq2ScBWCeS2o4XU';
+  const _AP_HDR = { 'apikey': _AP_KEY, 'Authorization': 'Bearer ' + _AP_KEY };
+
+  async function apFetch(path) {
+    const res = await fetch(_AP_URL + '/rest/v1/' + path, { headers: _AP_HDR });
+    return res.json();
+  }
+
+  async function setup() {
+    if (!window.waitForIdentity) { setTimeout(setup, 200); return; }
+    if (document.getElementById('ap-toggle')) return; // already mounted
+    const user = await window.waitForIdentity();
+    if (!user || !user.app_metadata?.roles?.includes('admin')) return;
+
+    // Inject CSS if not already present
+    if (!document.getElementById('ap-style')) {
+      const s = document.createElement('style');
+      s.id = 'ap-style';
+      s.textContent = `
+        .admin-panel-tab { position:fixed; top:50%; left:0; transform:translateY(-50%); z-index:99998; display:block; }
+        .admin-panel-toggle { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.75rem; background:rgba(10,8,6,0.95); border:1px solid rgba(201,168,76,0.18); border-left:none; cursor:pointer; font-family:'Cinzel',serif; font-size:9px; letter-spacing:0.2em; text-transform:uppercase; color:#7a7260; transition:color 0.2s, border-color 0.2s; writing-mode:vertical-rl; text-orientation:mixed; }
+        .admin-panel-toggle:hover { color:var(--gold,#c9a84c); border-color:var(--gold,#c9a84c); }
+        .admin-panel-toggle svg { width:10px; height:10px; fill:currentColor; }
+        .admin-panel-body { position:fixed; top:0; left:-320px; width:300px; height:100vh; background:rgba(10,8,6,0.98); border-right:1px solid rgba(201,168,76,0.18); overflow-y:auto; transition:left 0.25s ease; z-index:99997; padding:1.5rem 1rem; box-sizing:border-box; }
+        .admin-panel-body.open { left:0; }
+        .admin-panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid rgba(201,168,76,0.18); }
+        .admin-panel-title { font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.25em; text-transform:uppercase; color:var(--parchment,#f5f0e8); }
+        .admin-panel-refresh { background:none; border:1px solid rgba(201,168,76,0.18); color:#7a7260; font-family:'Cinzel',serif; font-size:8px; letter-spacing:0.15em; padding:0.3em 0.6em; cursor:pointer; transition:color 0.2s, border-color 0.2s; }
+        .admin-panel-refresh:hover { color:var(--gold,#c9a84c); border-color:var(--gold,#c9a84c); }
+        .admin-panel-empty { font-family:'EB Garamond',serif; font-style:italic; color:#7a7260; font-size:0.9rem; padding:0.5rem 0; }
+        .admin-comment-item { padding:0.75rem 0; border-bottom:1px solid rgba(201,168,76,0.1); }
+        .admin-comment-item:last-child { border-bottom:none; }
+        .admin-comment-piece { font-family:'Cinzel',serif; font-size:8px; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold-dim,#8a6e2f); margin-bottom:0.25rem; }
+        .admin-comment-meta { display:flex; gap:0.75rem; margin-bottom:0.2rem; }
+        .admin-comment-name { font-family:'Cinzel',serif; font-size:8px; letter-spacing:0.15em; text-transform:uppercase; color:var(--parchment,#f5f0e8); }
+        .admin-comment-date { font-family:'Cinzel',serif; font-size:8px; color:#7a7260; }
+        .admin-comment-body { font-family:'EB Garamond',serif; font-size:0.88rem; color:#b0a898; line-height:1.5; margin-bottom:0.4rem; }
+        .admin-comment-delete { background:none; border:none; color:#7a7260; font-family:'Cinzel',serif; font-size:7px; letter-spacing:0.15em; text-transform:uppercase; cursor:pointer; padding:0; transition:color 0.2s; }
+        .admin-comment-delete:hover { color:#c0705a; }
+        @media (max-width:768px) { .admin-panel-body { width:100vw; left:-100vw; } .admin-panel-tab { top:auto; bottom:5rem; } }
+      `;
+      document.head.appendChild(s);
+    }
+
+    const tab = document.createElement('div');
+    tab.className = 'admin-panel-tab';
+    tab.innerHTML = `
+      <div class="admin-panel-toggle" id="ap-toggle">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+        Comments
+      </div>
+      <div class="admin-panel-body" id="ap-body">
+        <div class="admin-panel-header">
+          <span class="admin-panel-title">Recent Comments</span>
+          <button class="admin-panel-refresh" id="ap-refresh">↻ Refresh</button>
+        </div>
+        <div class="admin-panel-list" id="ap-list">
+          <div class="admin-panel-empty">Click refresh to load.</div>
+        </div>
+      </div>`;
+    document.body.appendChild(tab);
+
+    let isOpen = false;
+    document.getElementById('ap-toggle').addEventListener('click', () => {
+      isOpen = !isOpen;
+      document.getElementById('ap-body').classList.toggle('open', isOpen);
+      if (isOpen) load();
+    });
+    document.getElementById('ap-refresh').addEventListener('click', load);
+
+    async function load() {
+      const list = document.getElementById('ap-list');
+      list.innerHTML = '<div class="admin-panel-empty">Loading…</div>';
+      try {
+        const data = await apFetch('comments?order=created_at.desc&limit=50&select=*');
+        if (!Array.isArray(data) || data.length === 0) {
+          list.innerHTML = '<div class="admin-panel-empty">No comments yet.</div>'; return;
+        }
+        list.innerHTML = '';
+        data.forEach(c => {
+          const raw   = c.chapter || '';
+          const piece = raw.startsWith('gallery-') ? raw.replace('gallery-','') + ' (Gallery)'
+                      : raw.startsWith('video-')   ? raw.replace('video-','')   + ' (Video)'
+                      : raw.replace(/-/g,' ').replace(/\b\w/g, l => l.toUpperCase());
+          const date  = new Date(c.created_at).toLocaleDateString('en-US',{ month:'short', day:'numeric', year:'numeric' });
+          const div   = document.createElement('div');
+          div.className = 'admin-comment-item';
+          div.innerHTML = `
+            <div class="admin-comment-piece">${piece}</div>
+            <div class="admin-comment-meta">
+              <span class="admin-comment-name">${c.name || 'Anonymous'}</span>
+              <span class="admin-comment-date">${date}</span>
+            </div>
+            <div class="admin-comment-body">${c.message}</div>
+            <button class="admin-comment-delete" data-id="${c.id}">Delete</button>`;
+          div.querySelector('.admin-comment-delete').addEventListener('click', async function() {
+            if (!confirm('Delete this comment?')) return;
+            try {
+              await fetch(_AP_URL + '/rest/v1/comments?id=eq.' + c.id, { method:'DELETE', headers:_AP_HDR });
+              div.remove();
+              if (!list.querySelector('.admin-comment-item')) list.innerHTML = '<div class="admin-panel-empty">No comments yet.</div>';
+            } catch(e) {}
+          });
+          list.appendChild(div);
+        });
+      } catch(e) { list.innerHTML = '<div class="admin-panel-empty">Could not load.</div>'; }
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup);
+  else setup();
 })();
