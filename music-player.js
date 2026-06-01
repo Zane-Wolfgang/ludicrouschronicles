@@ -334,8 +334,8 @@
       }
     });
 
-    prevBtn.addEventListener('click', () => playTrack(currentIndex - 1));
-    nextBtn.addEventListener('click', () => playTrack(currentIndex + 1));
+    prevBtn.addEventListener('click', () => playWithCrackle(currentIndex - 1));
+    nextBtn.addEventListener('click', () => playWithCrackle(currentIndex + 1));
     back10.addEventListener('click', () => { audio.currentTime = Math.max(0, audio.currentTime - 10); });
     fwd10.addEventListener('click',  () => { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10); });
 
@@ -350,7 +350,7 @@
         const item = document.createElement('div');
         item.className = 'mp-track-item' + (i === currentIndex ? ' active' : '');
         item.innerHTML = `<div class="mp-ti-title">${t.title || '—'}</div>${t.artist ? `<div class="mp-ti-artist">${t.artist}</div>` : ''}`;
-        item.addEventListener('click', () => { playTrack(i); buildTrackList(); });
+        item.addEventListener('click', () => { playWithCrackle(i); buildTrackList(); });
         tlPanel.appendChild(item);
       });
     }
@@ -413,8 +413,19 @@
     }
   }, true);
 
+  // ── Vinyl crackle between tracks ──
+  const _crackle = new Audio('/images/sounds/vinyl-crackle.mp3');
+  _crackle.volume = 0.6;
+
+  function playWithCrackle(index) {
+    _crackle.currentTime = 0;
+    _crackle.onended = () => playTrack(index);
+    _crackle.onerror = () => playTrack(index);
+    _crackle.play().catch(() => playTrack(index));
+  }
+
   // ── Next track on end ──
-  audio.addEventListener('ended', () => playTrack(currentIndex + 1));
+  audio.addEventListener('ended', () => playWithCrackle(currentIndex + 1));
 
   // ── State persistence ──
   const _SK  = 'lc-music-state';
