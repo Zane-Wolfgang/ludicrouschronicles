@@ -835,8 +835,11 @@ document.getElementById('lb-close').addEventListener('click', e => { e.stopPropa
 document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); if (slideIndex > 0) { slideIndex--; showSlide(slideIndex); } });
 document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); if (slideIndex < slideImages.length - 1) { slideIndex++; showSlide(slideIndex); } });
 
-// Click outside card closes
+// Click outside card closes — but not when dragging to select text
+let _lbMouseDownInCard = false;
+lb.addEventListener('mousedown', e => { _lbMouseDownInCard = lbCard.contains(e.target); });
 lb.addEventListener('click', e => {
+  if (_lbMouseDownInCard) return; // drag started inside card — don't close
   if (!lbCard.contains(e.target)) closeLightbox();
 });
 
