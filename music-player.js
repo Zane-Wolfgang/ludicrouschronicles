@@ -13,6 +13,7 @@
   let isPlaying    = false;
   let isOpen       = false;
   let manuallyPaused = false;
+  let _sessionStarted = false; // true once music has played this session
 
   const audio = new Audio();
   audio.volume = DEFAULT_VOL;
@@ -314,12 +315,12 @@
     const panel  = document.getElementById('mp-panel');
     const toggle = document.getElementById('mp-toggle');
 
-    // Toggle panel — clicking phonograph always tries to start music if not playing
+    // Toggle panel — auto-starts music on first phonograph click this session
     toggle.addEventListener('click', () => {
       isOpen = !isOpen;
       panel.style.display = isOpen ? 'block' : 'none';
-      if (!isPlaying && tracks.length) {
-        manuallyPaused = false; // phonograph click overrides manual pause
+      if (!isPlaying && !_sessionStarted && tracks.length) {
+        manuallyPaused = false;
         startMusic();
       }
     });
@@ -420,6 +421,7 @@
   // Confirm actual playback via event (trust this over the promise)
   audio.addEventListener('playing', () => {
     setPlaying(true);
+    _sessionStarted = true;
     document.getElementById('mp-toggle')?.classList.remove('mp-pulse');
   });
 
