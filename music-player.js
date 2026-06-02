@@ -314,24 +314,13 @@
     const panel  = document.getElementById('mp-panel');
     const toggle = document.getElementById('mp-toggle');
 
-    // Toggle panel + auto-start if music not manually paused
+    // Toggle panel — clicking phonograph always tries to start music if not playing
     toggle.addEventListener('click', () => {
       isOpen = !isOpen;
       panel.style.display = isOpen ? 'block' : 'none';
-      // If music isn't playing and user didn't pause it themselves — start it
-      if (!isPlaying && !manuallyPaused && tracks.length) {
-        if (!audio.src || audio.src === window.location.href) {
-          audio.src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
-        }
-        audio.volume = isMuted ? 0 : userVolume;
-        audio.play().then(() => {
-          setPlaying(true);
-          updateTrackInfo();
-          toggle.classList.remove('mp-pulse'); // only remove pulse once music actually starts
-          _cleanupAutoplay();
-        }).catch(() => {
-          // Still blocked — keep pulse
-        });
+      if (!isPlaying && tracks.length) {
+        manuallyPaused = false; // phonograph click overrides manual pause
+        startMusic();
       }
     });
 
@@ -345,9 +334,9 @@
       } else {
         manuallyPaused = false;
         if (!audio.src || audio.src === window.location.href) {
-          playTrack(currentIndex);
+          startMusic();
         } else {
-          audio.play().then(() => setPlaying(true)).catch(() => {});
+          audio.play().then(() => {}).catch(() => {});
         }
       }
     });
@@ -410,6 +399,35 @@
       icon.innerHTML = `<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.8-1-3.3-2.5-4.1v8.2c1.5-.8 2.5-2.3 2.5-4.1zM14 3.2v2.1c2.9.9 5 3.6 5 6.7s-2.1 5.8-5 6.7v2.1c4-.9 7-4.5 7-8.8s-3-7.9-7-8.8z"/>`;
     }
   }
+
+  // ── Start music (central play function) ──
+  function startMusic() {
+    if (!tracks.length) return;
+    const t = tracks[currentIndex];
+    audio.src = t.audio || t.file || '';
+    audio.volume = isMuted ? 0 : userVolume;
+    const seekTo = _savedState ? (_savedState.time || 0) : 0;
+    _savedState = null;
+    audio.play().then(() => {
+      if (seekTo > 0) audio.currentTime = seekTo;
+      updateTrackInfo();
+      _cleanupAutoplay();
+    }).catch(() => {
+      // play() blocked — pulse stays, phonograph click will start it
+    });
+  }
+
+  // Confirm actual playback via event (trust this over the promise)
+  audio.addEventListener('playing', () => {
+    setPlaying(true);
+    document.getElementById('mp-toggle')?.classList.remove('mp-pulse');
+  });
+
+  // Audio load/play error — show pulse
+  audio.addEventListener('error', () => {
+    setPlaying(false);
+    if (!manuallyPaused) document.getElementById('mp-toggle')?.classList.add('mp-pulse');
+  });
 
   // ── Auto-duck on video play ──
   document.addEventListener('play', e => {
@@ -513,21 +531,7 @@
   function _tryAutoplay() {
     if (!_autoplayArmed || !tracks.length || isPlaying) return;
     _autoplayArmed = false;
-    const t = tracks[currentIndex];
-    const src = t.audio || t.file || '';
-    if (!audio.src || audio.src === window.location.href) audio.src = src;
-    audio.volume = isMuted ? 0 : userVolume;
-    const seekTime = _savedState ? (_savedState.time || 0) : 0;
-    _savedState = null;
-    audio.play().then(() => {
-      setPlaying(true);
-      updateTrackInfo();
-      if (seekTime > 0) audio.currentTime = seekTime;
-      document.getElementById('mp-toggle')?.classList.remove('mp-pulse');
-      _cleanupAutoplay();
-    }).catch(() => {
-      _autoplayArmed = true;
-    });
+    startMusic();
   }
 
   ['click', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
@@ -580,40 +584,15 @@
 
     // Try to play immediately on load
     if (tracks.length && _autoplayArmed) {
-      const src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
-      audio.src = src;
-      audio.volume = isMuted ? 0 : userVolume;
-
-      // Guaranteed pulse fallback — if still not playing after 2s, show pulse
+      // Pulse shows after 1s if music hasn't started
       const pulseGuard = setTimeout(() => {
         if (!isPlaying) document.getElementById('mp-toggle')?.classList.add('mp-pulse');
-      }, 2000);
-
-      // Attempt 1: normal autoplay
-      audio.play().then(() => {
-        clearTimeout(pulseGuard);
-        if (_savedState && _savedState.time > 0) audio.currentTime = _savedState.time;
-        _savedState = null;
-        setPlaying(true);
-        updateTrackInfo();
-        _cleanupAutoplay();
-      }).catch(() => {
-        // Attempt 2: muted autoplay → immediate unmute
-        audio.muted = true;
-        audio.play().then(() => {
-          clearTimeout(pulseGuard);
-          audio.muted = false;
-          audio.volume = isMuted ? 0 : userVolume;
-          if (_savedState && _savedState.time > 0) audio.currentTime = _savedState.time;
-          _savedState = null;
-          setPlaying(true);
-          updateTrackInfo();
-          _cleanupAutoplay();
-        }).catch(() => {
-          audio.muted = false;
-          document.getElementById('mp-toggle')?.classList.add('mp-pulse');
-        });
-      });
+      }, 1000);
+      audio.addEventListener('playing', () => clearTimeout(pulseGuard), { once: true });
+      startMusic();
+    } else if (tracks.length && !manuallyPaused) {
+      // Not armed but music should be available — show pulse so user knows to click
+      document.getElementById('mp-toggle')?.classList.add('mp-pulse');
     }
   }
 
