@@ -12,6 +12,7 @@
   let isDucked     = false;
   let isPlaying    = false;
   let isOpen       = false;
+  let manuallyPaused = false;
 
   const audio = new Audio();
   audio.volume = DEFAULT_VOL;
@@ -313,10 +314,25 @@
     const panel  = document.getElementById('mp-panel');
     const toggle = document.getElementById('mp-toggle');
 
-    // Toggle panel
+    // Toggle panel + auto-start if music not manually paused
     toggle.addEventListener('click', () => {
       isOpen = !isOpen;
       panel.style.display = isOpen ? 'block' : 'none';
+      // If music isn't playing and user didn't pause it themselves — start it
+      if (!isPlaying && !manuallyPaused && tracks.length) {
+        if (!audio.src || audio.src === window.location.href) {
+          audio.src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
+        }
+        audio.volume = isMuted ? 0 : userVolume;
+        audio.play().then(() => {
+          setPlaying(true);
+          updateTrackInfo();
+          toggle.classList.remove('mp-pulse'); // only remove pulse once music actually starts
+          _cleanupAutoplay();
+        }).catch(() => {
+          // Still blocked — keep pulse
+        });
+      }
     });
 
     // Play / pause
@@ -325,7 +341,9 @@
       if (isPlaying) {
         audio.pause();
         setPlaying(false);
+        manuallyPaused = true;
       } else {
+        manuallyPaused = false;
         if (!audio.src || audio.src === window.location.href) {
           playTrack(currentIndex);
         } else {
@@ -397,7 +415,7 @@
   document.addEventListener('play', e => {
     if (e.target.tagName === 'VIDEO' && !audio.paused) {
       isDucked = true;
-      audio.volume = DUCK_VOL;
+      audio.volume = isMuted ? 0 : DUCK_VOL;
     }
   }, true);
   document.addEventListener('pause', e => {
@@ -418,10 +436,16 @@
   _crackle.volume = 0.6;
 
   function playWithCrackle(index) {
+    manuallyPaused = false;
+    audio.pause();
+    audio.currentTime = 0;
+    // Start crackle
     _crackle.currentTime = 0;
-    _crackle.onended = () => playTrack(index);
     _crackle.onerror = () => playTrack(index);
-    _crackle.play().catch(() => playTrack(index));
+    _crackle.play().catch(() => { playTrack(index); return; });
+    // Start next track halfway through the crackle
+    const halfwayMs = (_crackle.duration > 0 ? _crackle.duration / 2 : 0.8) * 1000;
+    setTimeout(() => playTrack(index), halfwayMs);
   }
 
   // ── Next track on end ──
@@ -435,9 +459,10 @@
   function saveState() {
     try {
       localStorage.setItem(_SK, JSON.stringify({
-        index:   currentIndex,
-        time:    audio.currentTime || 0,
-        playing: isPlaying
+        index:         currentIndex,
+        time:          audio.currentTime || 0,
+        playing:       isPlaying,
+        manuallyPaused: manuallyPaused
       }));
     } catch(e) {}
   }
@@ -489,12 +514,11 @@
     if (!_autoplayArmed || !tracks.length || isPlaying) return;
     _autoplayArmed = false;
     const t = tracks[currentIndex];
-    audio.src = t.audio || t.file || '';
+    const src = t.audio || t.file || '';
+    if (!audio.src || audio.src === window.location.href) audio.src = src;
     audio.volume = isMuted ? 0 : userVolume;
-    // Grab seek time now, clear saved state
     const seekTime = _savedState ? (_savedState.time || 0) : 0;
     _savedState = null;
-    // Call play() immediately within the gesture context — seeking after is fine
     audio.play().then(() => {
       setPlaying(true);
       updateTrackInfo();
@@ -521,9 +545,9 @@
     const recentNav = wasRecentNav();
     _savedState = loadState();
     if (_savedState && tracks.length) {
-      currentIndex = Math.min(_savedState.index || 0, tracks.length - 1);
-      // Arm autoplay if was playing OR if user just clicked a nav link
-      _autoplayArmed = !!_savedState.playing || recentNav;
+      currentIndex   = Math.min(_savedState.index || 0, tracks.length - 1);
+      manuallyPaused = !!_savedState.manuallyPaused;
+      _autoplayArmed = (!!_savedState.playing || recentNav) && !manuallyPaused;
     } else if (tracks.length) {
       _autoplayArmed = true;
     }
@@ -560,8 +584,14 @@
       audio.src = src;
       audio.volume = isMuted ? 0 : userVolume;
 
+      // Guaranteed pulse fallback — if still not playing after 2s, show pulse
+      const pulseGuard = setTimeout(() => {
+        if (!isPlaying) document.getElementById('mp-toggle')?.classList.add('mp-pulse');
+      }, 2000);
+
       // Attempt 1: normal autoplay
       audio.play().then(() => {
+        clearTimeout(pulseGuard);
         setPlaying(true);
         updateTrackInfo();
         _cleanupAutoplay();
@@ -569,21 +599,12 @@
         // Attempt 2: muted autoplay → immediate unmute
         audio.muted = true;
         audio.play().then(() => {
-          // Unmute and check it's actually playing audibly
+          clearTimeout(pulseGuard);
           audio.muted = false;
           audio.volume = isMuted ? 0 : userVolume;
-          // Small delay to confirm browser didn't silently kill it
-          setTimeout(() => {
-            if (!audio.paused && audio.currentTime > 0) {
-              setPlaying(true);
-              updateTrackInfo();
-              _cleanupAutoplay();
-            } else {
-              // Browser killed it silently — pulse and wait for interaction
-              audio.pause();
-              document.getElementById('mp-toggle')?.classList.add('mp-pulse');
-            }
-          }, 300);
+          setPlaying(true);
+          updateTrackInfo();
+          _cleanupAutoplay();
         }).catch(() => {
           audio.muted = false;
           document.getElementById('mp-toggle')?.classList.add('mp-pulse');
