@@ -592,6 +592,8 @@
       // Attempt 1: normal autoplay
       audio.play().then(() => {
         clearTimeout(pulseGuard);
+        if (_savedState && _savedState.time > 0) audio.currentTime = _savedState.time;
+        _savedState = null;
         setPlaying(true);
         updateTrackInfo();
         _cleanupAutoplay();
@@ -602,6 +604,8 @@
           clearTimeout(pulseGuard);
           audio.muted = false;
           audio.volume = isMuted ? 0 : userVolume;
+          if (_savedState && _savedState.time > 0) audio.currentTime = _savedState.time;
+          _savedState = null;
           setPlaying(true);
           updateTrackInfo();
           _cleanupAutoplay();
