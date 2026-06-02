@@ -161,11 +161,17 @@ Bah, conversing was for peasants, anyway. So he let his eyes do the talking for 
 Zane could list all of the things he found conventionally attractive about her. The gentle caress of her face rounded elegantly toward her chin, the sharp gaze in her eyes that appeared too warm. Her breasts, golden frills spilling over a dark dress-shirt, that of which was concealed by a brown trenchcoat.\
 Long, black, gloves shredded at the finger which were lacking fabric drawn to the elbow, laced with small ribbons to secure them. Gray pants, leading one's eye to her boots, shark ouroboros hooked around straps brought up from said trenchcoat to her footwear, just above the knee.\
 \
-He glanced back after realization dawned on him. Those hadn’t been any kind of natural footwear.\
-Her legs were made of parts: metal plates, pistons, springs. Orange-tipped toes curled to appear as talons from a bird of prey, yellow bulbs just below the knee that gave off a soft glow.\
-They were *prosthetic.*
+He glanced back after realization dawned on him. Those hadn’t been any kind of natural footwear.
+Her legs were made of *parts:* copper plates strewn with gold, pistons, springs, here and there you could spot a gear depending on the angle. And oh, she had what appeared to be a little steam gauge along the side of her calves on each leg—why—they were running off of *steam*!
 
-*Her legs—what happened to her?*\
+Then there were her bronze-tipped toes curled to appear as talons from a bird of prey. More yet golden-hued glass bulbs just behind and rather below the knee gave off a soft, hypnotizing glow. Gazing close enough one could have sworn to see the outline of some jagged, sparkly rock, something to that of a crystal.
+
+
+But.. They were *prosthetic!*
+
+*Her legs—what happened to her?*
+
+\
 He refused to let his mind catch up on whatever he just witnessed, kicking himself into third gear to escape the situation. He had a bed to attend to.\
 “I’m—a-afraid I must get going.” Zane blurted, his brows drawn together in heaps of confusion. It was so *difficult* to de-scramble his thoughts. What was \*happening\* to him?\
 *Focus on anything but her breasts,* he begged his mind, growing dizzy from overdrive.\
