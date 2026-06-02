@@ -67,7 +67,8 @@ function parseFrontmatter(fileContent) {
         i++;
         while (i < lines.length) {
           const next = lines[i];
-          if ((next.startsWith('  ') || next.startsWith('\t')) && next.indexOf(':') === -1) {
+          const isKey = /^[a-zA-Z_][a-zA-Z0-9_-]*\s*:(\s|$)/.test(next.trim());
+          if ((next.startsWith('  ') || next.startsWith('\t')) && !isKey) {
             accumulated += ' ' + next.trim();
             i++;
           } else {
