@@ -164,7 +164,10 @@ Long, black, gloves shredded at the finger which were lacking fabric drawn to th
 He glanced back after realization dawned on him. Those hadn’t been any kind of natural footwear.
 Her legs were made of *parts:* copper plates strewn with gold, pistons, springs, here and there you could spot a gear depending on the angle. And oh, she had what appeared to be a little steam gauge along the side of her calves on each leg—why—they were running off of *steam*!
 
-Then there were her bronze-tipped toes curled to appear as talons from a bird of prey. More yet golden-hued glass bulbs just behind and rather below the knee gave off a soft, hypnotizing glow. Gazing close enough one could have sworn to see the outline of some jagged, sparkly rock, something to that of a crystal.
+Then there were her bronze-tipped toes which appeared to be claws loosely shaped like that of a bird of prey—however not detailed as the prehensile talons of such a specimen.. 
+
+More yet golden-hued glass bulbs just behind and rather below the knee gave off a soft, hypnotizing glow. Gazing close enough one could have sworn to see the outline of some jagged, sparkly rock, something to that of a crystal.
+
 
 
 But.. They were *prosthetic!*
