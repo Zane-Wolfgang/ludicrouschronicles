@@ -158,7 +158,7 @@ In a strikingly close perimeter to the first voice, followed:
 
 “***GERALD***!”
 
-Zane, despite seeing the passerby with a subtle grin they withheld over their expressions, some beckoning his friend to not-quite-whisper into another's ear: “\*It’s the Morst Twins again.. Always those two bickering, aren’t they\*”... withdrew his head from the carriage window after catching wind of the hubbub.\
+Zane, despite seeing the passerby with a subtle grin they withheld over their expressions, some beckoning his friend to not-quite-whisper into another's ear: “*It’s the Morst Twins again.. Always those two bickering, aren’t they*”... withdrew his head from the carriage window after catching wind of the hubbub.\
 “I think that’s… er—enough *fresh air* for now.” He conceded, gingerly screwing the handle to snuff out the outside world.
 
 All too soon the carriage shuddered to a halt as they’d rolled to a part in the sidewalk, the coachman guiding the horses beside the curb neatly.\
