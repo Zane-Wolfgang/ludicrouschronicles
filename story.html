@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chapter — Ludicrous Chronicles</title>
+<title>Story — Ludicrous Chronicles</title>
 <link rel="icon" type="image/png" href="images/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,6 +31,7 @@
   .chapter-nav a { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); text-decoration: none; transition: color 0.2s; }
   .chapter-nav a:hover { color: var(--gold); }
   #chapter-loading { text-align: center; padding: 6rem 0; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.3em; color: var(--gold-dim); text-transform: uppercase; }
+
   .bookmark-btn { position: fixed; top: 5rem; right: 2rem; width: 36px; height: 48px; cursor: pointer; z-index: 100; opacity: 0.5; transition: opacity 0.2s, transform 0.2s; background: none; border: none; padding: 0; }
   .bookmark-btn:hover { opacity: 1; transform: translateY(-2px); }
   .bookmark-btn.saved { opacity: 1; }
@@ -46,6 +47,7 @@
   .bookmark-context-item { padding: 0.6rem 1.2rem; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-dim); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background 0.15s, color 0.15s; }
   .bookmark-context-item:hover { background: var(--mid); color: var(--gold); }
   .chapter-body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+
   .chapter-engagement { max-width: 720px; margin: 0 auto; padding: 0 2rem 6rem; }
   .engagement-stats { display: flex; gap: 2.5rem; align-items: center; padding: 1.5rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 3rem; flex-wrap: wrap; }
   .stat-item { display: flex; align-items: center; gap: 0.6rem; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
@@ -77,24 +79,13 @@
   #comment-submit { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.8em 2em; cursor: pointer; transition: background 0.2s; }
   #comment-submit:hover { background: var(--gold-bright); }
   #comment-submit:disabled { opacity: 0.5; cursor: default; }
-  .foreign-word { color: #a8c4d8; border-bottom: 1px dotted rgba(168,196,216,0.6); cursor: help; }
+
+  /* ── Foreign word translation ── */
+  .foreign-word { color: #a8c4d8; border-bottom: 1px dotted rgba(168, 196, 216, 0.6); cursor: help; }
   .translation-tooltip { position: fixed; background: rgba(10,8,6,0.97); border: 1px solid var(--gold-dim); border-left: 2px solid var(--gold); padding: 0.45rem 0.85rem; z-index: 2000; pointer-events: none; display: none; max-width: 240px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
   .translation-tooltip.visible { display: block; }
   .tt-lang { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-dim); display: block; margin-bottom: 0.2rem; }
   .tt-text { font-family: 'EB Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
-  .audio-player { position: fixed; bottom: 0; left: 0; right: 0; z-index: 150; background: rgba(10,8,6,0.98); border-top: 1px solid var(--gold-dim); padding: 0.6rem 2rem; display: none; align-items: center; gap: 1rem; box-shadow: 0 -4px 20px rgba(0,0,0,0.6); }
-  .audio-player.active { display: flex; }
-  .ap-btn { background: none; border: 1px solid var(--border); width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s; flex-shrink: 0; padding: 0; }
-  .ap-btn:hover { border-color: var(--gold-dim); }
-  .ap-btn svg { width: 12px; height: 12px; }
-  .ap-time, .ap-duration { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.1em; color: var(--text-muted); flex-shrink: 0; min-width: 30px; text-align: center; }
-  .ap-scrub { flex: 1; min-width: 60px; height: 3px; -webkit-appearance: none; appearance: none; background: linear-gradient(90deg, var(--gold-dim) var(--pct,0%), rgba(201,168,76,0.2) var(--pct,0%)); outline: none; cursor: pointer; }
-  .ap-scrub::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: var(--gold); border-radius: 50%; cursor: pointer; }
-  .ap-scrub::-moz-range-thumb { width: 12px; height: 12px; background: var(--gold); border: none; border-radius: 50%; cursor: pointer; }
-  .ap-para { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-dim); flex-shrink: 0; white-space: nowrap; }
-  .audio-highlight { background: rgba(201,168,76,0.14) !important; border-left: 3px solid var(--gold) !important; padding-left: 0.5rem; margin-left: -0.6rem; transition: background 0.3s; }
-  body.has-audio .chapter-engagement { padding-bottom: 5rem; }
-  @media (max-width: 768px) { .audio-player { padding: 0.5rem 0.75rem; gap: 0.5rem; } .ap-btn { width: 36px; height: 36px; } .ap-para { display: none; } }
 </style>
 </head>
 <body>
@@ -133,6 +124,7 @@
 </script>
 
 <div class="chapter-wrap">
+
   <div class="bookmark-banner" id="bookmark-banner">
     <span class="bookmark-banner-text" id="bookmark-banner-text">You have a saved bookmark</span>
     <div style="display:flex;gap:0.75rem;align-items:center;">
@@ -141,7 +133,7 @@
     </div>
   </div>
 
-  <button class="bookmark-btn" id="bookmark-btn" title="Bookmark this chapter">
+  <button class="bookmark-btn" id="bookmark-btn" title="Bookmark this story">
     <svg viewBox="0 0 24 32" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M2 2h20v28l-10-7L2 30V2z" stroke="#c9a84c" stroke-width="1.5" fill="rgba(10,8,6,0.8)"/>
     </svg>
@@ -156,21 +148,28 @@
     </div>
   </div>
 
-  <div id="chapter-loading">Loading chapter...</div>
+  <div id="chapter-loading">Loading...</div>
   <div id="chapter-content" style="display:none;">
+
     <div class="chapter-header">
-      <span class="chapter-label" id="ch-label">Ghost in Me — by Mistress Spite</span>
+      <span class="chapter-label" id="ch-label">Ghost in Me — Short Story</span>
       <h1 class="chapter-title" id="ch-title"></h1>
     </div>
-    <img class="chapter-art" id="ch-art" src="" alt="Chapter Art" style="display:none;" />
+
+    <img class="chapter-art" id="ch-art" src="" alt="" style="display:none;" />
+
     <div class="chapter-divider"></div>
+
     <div class="chapter-body" id="ch-body"></div>
+
     <div class="chapter-divider"></div>
+
     <div class="chapter-nav">
       <a href="content.html">← Back to Content</a>
       <span id="ch-end" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);"></span>
-      <a href="content.html" id="ch-next">More Coming Soon →</a>
+      <a href="content.html">Back to Content →</a>
     </div>
+
   </div>
 </div>
 
@@ -208,31 +207,6 @@
   </div>
 </div>
 
-<!-- Audio Player -->
-<div class="audio-player" id="audio-player">
-  <button class="ap-btn" id="ap-prev" title="Previous paragraph">
-    <svg viewBox="0 0 12 12"><path d="M2 2h2v8H2zM10 2L4 6l6 4z" fill="var(--gold)"/></svg>
-  </button>
-  <button class="ap-btn" id="ap-play" title="Play / Pause">
-    <svg id="ap-icon-play" viewBox="0 0 12 12"><path d="M3 2l6 4-6 4z" fill="var(--gold)"/></svg>
-    <svg id="ap-icon-pause" viewBox="0 0 12 12" style="display:none"><path d="M3 3h2v6H3zm4 0h2v6H7z" fill="var(--gold)"/></svg>
-  </button>
-  <button class="ap-btn" id="ap-next" title="Next paragraph">
-    <svg viewBox="0 0 12 12"><path d="M10 2H8v8h2zM2 2l6 4-6 4z" fill="var(--gold)"/></svg>
-  </button>
-  <span class="ap-time" id="ap-time">0:00</span>
-  <input type="range" class="ap-scrub" id="ap-scrub" min="0" max="1000" value="0" step="1">
-  <span class="ap-duration" id="ap-duration">—:——</span>
-  <span class="ap-para" id="ap-para">¶ 1</span>
-  <audio id="chapter-audio" preload="none"></audio>
-</div>
-
-<!-- Translation tooltip -->
-<div class="translation-tooltip" id="translation-tooltip">
-  <span class="tt-lang" id="tt-lang"></span>
-  <span class="tt-text" id="tt-text"></span>
-</div>
-
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
   <div class="socials-panel" id="socials-panel">
@@ -245,6 +219,12 @@
   <div class="socials-arrow" id="socials-arrow"><svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg></div>
 </div>
 
+<!-- Translation tooltip -->
+<div class="translation-tooltip" id="translation-tooltip">
+  <span class="tt-lang" id="tt-lang"></span>
+  <span class="tt-text" id="tt-text"></span>
+</div>
+
 <footer>
   <span class="footer-brand">Ludicrous Chronicles</span>
   <p class="footer-copy">© 2026 Ludicrous Chronicles. All rights reserved.</p>
@@ -252,37 +232,43 @@
 </footer>
 
 <script>
-async function loadChapter() {
+let currentStorySlug = null;
+
+async function loadStory() {
   const params = new URLSearchParams(window.location.search);
-  const num = params.get('chapter');
-  if (!num) { window.location.href = 'content.html'; return; }
+  const slug = params.get('story');
+  if (!slug) { window.location.href = 'content.html'; return; }
+  currentStorySlug = slug;
 
   try {
     const res = await fetch('/_data/content-index.json');
     const items = await res.json();
-    const chapter = items.find(i =>
-      i.type === 'Chapter' && (i.number == num || (i.filename && i.filename.includes('chapter-' + num)))
+    const story = items.find(i =>
+      (i.type === 'Short Story' || i.type === 'Story') &&
+      (i.slug === slug || (i.filename && i.filename.replace('.md','') === slug))
     );
 
-    if (!chapter) { window.location.href = 'content.html'; return; }
+    if (!story) { window.location.href = 'content.html'; return; }
 
     const userTier = window.getUserTier ? await window.getUserTier() : 'free';
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-    if (tRank[chapter.tier || 'free'] > tRank[userTier]) { window.location.href = 'membership.html'; return; }
-
-    document.title = `Chapter ${chapter.number} — ${chapter.title} — Ludicrous Chronicles`;
-    document.getElementById('ch-title').textContent = `Chapter ${chapter.number}`;
-    document.getElementById('ch-label').textContent = 'Ghost in Me — by Mistress Spite';
-    document.getElementById('ch-end').textContent = `End of Chapter ${chapter.number}`;
-
-    if (chapter.art || chapter.thumbnail) {
-      const art = document.getElementById('ch-art');
-      art.src = chapter.art || chapter.thumbnail;
-      art.style.display = 'block';
-      art.alt = chapter.title;
+    if (tRank[story.tier || 'free'] > tRank[userTier]) {
+      window.location.href = 'membership.html';
+      return;
     }
 
-    const body = (chapter.body || '').replace(/\\/g, '');
+    document.title = `${story.title} — Ludicrous Chronicles`;
+    document.getElementById('ch-title').textContent = story.title;
+    document.getElementById('ch-label').textContent = 'Ghost in Me — Short Story';
+    document.getElementById('ch-end').textContent = `End of "${story.title}"`;
+
+    if (story.art || story.thumbnail) {
+      const art = document.getElementById('ch-art');
+      art.src = story.art || story.thumbnail;
+      art.style.display = 'block';
+    }
+
+    const body = (story.body || '').replace(/\\/g, '');
     const bodyEl = document.getElementById('ch-body');
     bodyEl.innerHTML = markdownToHtml(body);
 
@@ -295,38 +281,15 @@ async function loadChapter() {
 
     wrapForeignText(bodyEl);
 
-    const prevNum = parseInt(chapter.number) - 1;
-    if (prevNum >= 1) {
-      const prevLink = document.createElement('a');
-      prevLink.style.cssText = 'font-family:Cinzel,serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-dim);text-decoration:none;';
-      if (prevNum === 1) { prevLink.href = 'chapter-1.html'; prevLink.textContent = '← Chapter I'; }
-      else { prevLink.href = `chapter.html?chapter=${prevNum}`; prevLink.textContent = `← Chapter ${prevNum}`; }
-      document.querySelector('.chapter-nav').insertBefore(prevLink, document.querySelector('.chapter-nav').firstChild);
-    }
-
-    const nextChapter = items.find(i => i.type === 'Chapter' && i.number == (parseInt(chapter.number) + 1));
-    if (nextChapter) {
-      const nextLink = document.getElementById('ch-next');
-      nextLink.textContent = `Chapter ${nextChapter.number} →`;
-      nextLink.href = `chapter.html?chapter=${nextChapter.number}`;
-    } else {
-      const n = document.getElementById('ch-next');
-      n.textContent = 'More Coming Soon';
-      n.removeAttribute('href');
-      n.style.opacity = '0.4';
-      n.style.cursor = 'default';
-    }
-
     document.getElementById('chapter-loading').style.display = 'none';
     document.getElementById('chapter-content').style.display = 'block';
     document.getElementById('chapter-engagement-wrap').style.display = 'block';
 
-    if (chapter.audio) initAudioPlayer(chapter.audio);
-    if (typeof initEngagement === 'function') initEngagement('chapter-' + chapter.number);
+    if (typeof initEngagement === 'function') initEngagement('story-' + slug);
     if (typeof initBookmark === 'function') initBookmark();
 
   } catch(e) {
-    document.getElementById('chapter-loading').textContent = 'Chapter not found.';
+    document.getElementById('chapter-loading').textContent = 'Story not found.';
   }
 }
 
@@ -335,7 +298,7 @@ function markdownToHtml(md) {
   md = md.replace(/\\/g, '');
   function inlineConvert(str) {
     return str
-      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;display:block;margin:2rem auto;border:1px solid var(--border);box-shadow:0 0 20px rgba(0,0,0,0.4);">')
+      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;display:block;margin:1.5rem auto;border:1px solid var(--border);">')
       .replace(/\[(.+?)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>')
       .replace(/\*\*\*(.*?)\*\*\*/gs, '<strong><em>$1</em></strong>')
       .replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>')
@@ -390,24 +353,25 @@ async function fetchTranslation(text, lang) {
   } catch { translationCache.set(key, '—'); return '—'; }
 }
 
-const tooltip  = document.getElementById('translation-tooltip');
-const ttLang   = document.getElementById('tt-lang');
-const ttText   = document.getElementById('tt-text');
+const tooltip = document.getElementById('translation-tooltip');
+const ttLang = document.getElementById('tt-lang');
+const ttText = document.getElementById('tt-text');
 const langNames = { ru: 'Russian' };
 
 document.addEventListener('mouseover', async e => {
   const word = e.target.closest('.foreign-word');
   if (!word) { tooltip.classList.remove('visible'); return; }
-  ttLang.textContent = langNames[word.dataset.lang] || word.dataset.lang;
+  const lang = word.dataset.lang || 'ru';
+  ttLang.textContent = langNames[lang] || lang;
   ttText.textContent = '…';
   tooltip.classList.add('visible');
-  ttText.textContent = await fetchTranslation(word.textContent.trim(), word.dataset.lang || 'ru');
+  ttText.textContent = await fetchTranslation(word.textContent.trim(), lang);
 });
 
 document.addEventListener('mousemove', e => {
   if (!tooltip.classList.contains('visible')) return;
   tooltip.style.left = Math.min(e.clientX + 14, window.innerWidth - 260) + 'px';
-  tooltip.style.top  = (e.clientY - 56) + 'px';
+  tooltip.style.top = (e.clientY - 56) + 'px';
 });
 
 document.addEventListener('touchend', async e => {
@@ -418,146 +382,27 @@ document.addEventListener('touchend', async e => {
   ttLang.textContent = langNames[word.dataset.lang] || word.dataset.lang;
   ttText.textContent = '…';
   tooltip.style.left = Math.min(rect.left, window.innerWidth - 260) + 'px';
-  tooltip.style.top  = Math.max(rect.top - 64, 8) + 'px';
+  tooltip.style.top = Math.max(rect.top - 64, 8) + 'px';
   tooltip.classList.add('visible');
   ttText.textContent = await fetchTranslation(word.textContent.trim(), word.dataset.lang || 'ru');
 }, { passive: false });
-
-// ── Audio Player ──
-function getAudioTime() {
-  const el = document.getElementById('chapter-audio');
-  return (el && el.src && !isNaN(el.currentTime) && el.currentTime > 0) ? el.currentTime : undefined;
-}
-
-function initAudioPlayer(src) {
-  const audioEl   = document.getElementById('chapter-audio');
-  const player    = document.getElementById('audio-player');
-  const playBtn   = document.getElementById('ap-play');
-  const prevBtn   = document.getElementById('ap-prev');
-  const nextBtn   = document.getElementById('ap-next');
-  const scrub     = document.getElementById('ap-scrub');
-  const timeEl    = document.getElementById('ap-time');
-  const durEl     = document.getElementById('ap-duration');
-  const paraEl    = document.getElementById('ap-para');
-  const iconPlay  = document.getElementById('ap-icon-play');
-  const iconPause = document.getElementById('ap-icon-pause');
-
-  audioEl.src = src;
-  player.classList.add('active');
-  document.body.classList.add('has-audio');
-
-  const paras = Array.from(document.querySelectorAll('.chapter-body p'));
-  const chapterKey = 'bookmark_' + window.location.pathname + window.location.search;
-  let idx = 0;
-  let audioCtx, analyser, dataArray;
-  let detecting = false, tickRunning = false, inSilence = false, silenceStart = null;
-  const VOL_THRESHOLD = 8, SILENCE_MS = 600;
-
-  function fmt(s) { return Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0'); }
-
-  function goTo(i) {
-    if (paras[idx]) paras[idx].classList.remove('audio-highlight');
-    idx = Math.max(0, Math.min(i, paras.length - 1));
-    if (paras[idx]) {
-      paras[idx].classList.add('audio-highlight');
-      const r = paras[idx].getBoundingClientRect();
-      if (r.top < 100 || r.bottom > window.innerHeight - 70)
-        paras[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    paraEl.textContent = '¶ ' + (idx + 1) + ' / ' + paras.length;
-  }
-
-  window.audioGoTo = goTo;
-
-  async function ensureCtx() {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 512;
-      dataArray = new Uint8Array(analyser.frequencyBinCount);
-      audioCtx.createMediaElementSource(audioEl).connect(analyser);
-      analyser.connect(audioCtx.destination);
-    }
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-  }
-
-  function tick() {
-    if (!detecting) { tickRunning = false; return; }
-    requestAnimationFrame(tick);
-    analyser.getByteFrequencyData(dataArray);
-    const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-    if (avg < VOL_THRESHOLD) {
-      if (!inSilence) { inSilence = true; silenceStart = Date.now(); }
-    } else {
-      if (inSilence && Date.now() - silenceStart >= SILENCE_MS) goTo(idx + 1);
-      inSilence = false; silenceStart = null;
-    }
-  }
-
-  function setPlaying(p) {
-    iconPlay.style.display  = p ? 'none' : '';
-    iconPause.style.display = p ? '' : 'none';
-  }
-
-  playBtn.addEventListener('click', async () => {
-    await ensureCtx();
-    audioEl.paused ? audioEl.play().catch(() => {}) : audioEl.pause();
-  });
-
-  audioEl.addEventListener('play',  () => { detecting = true;  setPlaying(true);  if (!tickRunning) { tickRunning = true; tick(); } });
-  audioEl.addEventListener('pause', () => { detecting = false; setPlaying(false); });
-  audioEl.addEventListener('ended', () => { detecting = false; setPlaying(false); });
-
-  audioEl.addEventListener('timeupdate', () => {
-    if (!audioEl.duration) return;
-    const pct = (audioEl.currentTime / audioEl.duration) * 100;
-    scrub.value = pct * 10;
-    scrub.style.setProperty('--pct', pct + '%');
-    timeEl.textContent = fmt(audioEl.currentTime);
-  });
-
-  audioEl.addEventListener('loadedmetadata', () => { durEl.textContent = fmt(audioEl.duration); });
-
-  scrub.addEventListener('input', () => {
-    if (!audioEl.duration) return;
-    audioEl.currentTime = (scrub.value / 1000) * audioEl.duration;
-    scrub.style.setProperty('--pct', scrub.value / 10 + '%');
-  });
-
-  audioEl.addEventListener('seeked', () => {
-    if (!audioEl.duration) return;
-    inSilence = false; silenceStart = null;
-    goTo(Math.floor((audioEl.currentTime / audioEl.duration) * paras.length));
-  });
-
-  prevBtn.addEventListener('click', () => {
-    goTo(idx - 1);
-    if (audioEl.duration) { audioEl.currentTime = (idx / paras.length) * audioEl.duration; inSilence = false; silenceStart = null; }
-  });
-  nextBtn.addEventListener('click', () => {
-    goTo(idx + 1);
-    if (audioEl.duration) { audioEl.currentTime = (idx / paras.length) * audioEl.duration; inSilence = false; silenceStart = null; }
-  });
-
-  const savedBm = localStorage.getItem(chapterKey);
-  if (savedBm) {
-    try {
-      const bmData = JSON.parse(savedBm);
-      if (bmData.audioTime && bmData.index !== undefined) {
-        goTo(bmData.index);
-        audioEl.addEventListener('loadedmetadata', () => { audioEl.currentTime = bmData.audioTime; }, { once: true });
-      } else { goTo(0); }
-    } catch(e) { goTo(0); }
-  } else { goTo(0); }
-}
 </script>
 
 <script src="auth.js"></script>
 <script src="socials.js"></script>
 <script>
   const trigger = document.getElementById('socials-trigger');
-  const panel   = document.getElementById('socials-panel');
+  const panel = document.getElementById('socials-panel');
   document.getElementById('socials-arrow').addEventListener('click', () => { trigger.classList.toggle('open'); panel.classList.toggle('open'); });
+</script>
+<script>
+  (function() {
+    const cord = document.getElementById('cord-wrap');
+    const dot = document.getElementById('news-dot');
+    const dismissed = localStorage.getItem('news-dismissed');
+    if (dismissed) { if (cord) cord.classList.add('pulled'); if (dot) dot.classList.add('off'); }
+    if (cord) { cord.addEventListener('click', () => { cord.classList.add('pulled'); if (dot) dot.classList.add('off'); localStorage.setItem('news-dismissed', '1'); }); }
+  })();
 </script>
 <script>
   if (window.netlifyIdentity) {
@@ -567,19 +412,11 @@ function initAudioPlayer(src) {
   }
 </script>
 <script>
-  (function() {
-    const cord = document.getElementById('cord-wrap');
-    const dot  = document.getElementById('news-dot');
-    const dismissed = localStorage.getItem('news-dismissed');
-    if (dismissed) { if (cord) cord.classList.add('pulled'); if (dot) dot.classList.add('off'); }
-    if (cord) { cord.addEventListener('click', () => { cord.classList.add('pulled'); if (dot) dot.classList.add('off'); localStorage.setItem('news-dismissed', '1'); }); }
-  })();
-</script>
-<script>
 document.addEventListener('keydown', (e) => {
   if (e.ctrlKey && ['c','a','x','u'].includes(e.key.toLowerCase())) {
     const sel = window.getSelection();
-    if (sel && sel.anchorNode && document.querySelector('.chapter-body') &&
+    if (sel && sel.anchorNode && sel.anchorNode.closest &&
+        document.querySelector('.chapter-body') &&
         document.querySelector('.chapter-body').contains(sel.anchorNode)) {
       e.preventDefault();
     }
@@ -620,10 +457,10 @@ async function initBookmark() {
     if (local) { try { savedData = JSON.parse(local); } catch(e2) {} }
   }
 
-  const banner      = document.getElementById('bookmark-banner');
-  const bannerText  = document.getElementById('bookmark-banner-text');
-  const jumpBtn     = document.getElementById('bookmark-jump');
-  const dismissBtn  = document.getElementById('bookmark-dismiss');
+  const banner     = document.getElementById('bookmark-banner');
+  const bannerText = document.getElementById('bookmark-banner-text');
+  const jumpBtn    = document.getElementById('bookmark-jump');
+  const dismissBtn = document.getElementById('bookmark-dismiss');
   const bookmarkBtn = document.getElementById('bookmark-btn');
 
   if (savedData) {
@@ -642,13 +479,6 @@ async function initBookmark() {
     if (paras[savedData.index]) {
       paras[savedData.index].scrollIntoView({ behavior: 'smooth', block: 'center' });
       applyHighlight(savedData.index);
-    }
-    if (savedData.audioTime !== undefined) {
-      const audioEl = document.getElementById('chapter-audio');
-      if (audioEl && audioEl.src) {
-        audioEl.currentTime = savedData.audioTime;
-        if (window.audioGoTo) window.audioGoTo(savedData.index || 0);
-      }
     }
     banner.classList.remove('visible');
   });
@@ -675,8 +505,7 @@ async function initBookmark() {
       if (dist < closestDist) { closestDist = dist; closest = p; closestIdx = i; }
     });
     const text = closest ? closest.textContent.trim() : '';
-    const audioTime = getAudioTime();
-    const data = { index: closestIdx, paragraphText: text, ...(audioTime !== undefined ? { audioTime } : {}) };
+    const data = { index: closestIdx, paragraphText: text };
     savedData = data;
     localStorage.setItem(chapterKey, JSON.stringify(data));
     if (window.saveBookmarkCloud) window.saveBookmarkCloud(chapterKey, data);
@@ -744,8 +573,7 @@ async function initBookmark() {
       const paras = Array.from(document.querySelectorAll('.chapter-body p'));
       const idx = paras.indexOf(targetParagraph);
       const text = targetParagraph.textContent.trim();
-      const audioTime = getAudioTime();
-      const data = { index: idx, paragraphText: text, ...(audioTime !== undefined ? { audioTime } : {}) };
+      const data = { index: idx, paragraphText: text };
       savedData = data;
       localStorage.setItem(chapterKey, JSON.stringify(data));
       if (window.saveBookmarkCloud) window.saveBookmarkCloud(chapterKey, data);
@@ -758,6 +586,6 @@ async function initBookmark() {
 }
 </script>
 <script src="engagement.js"></script>
-<script>loadChapter();</script>
+<script>loadStory();</script>
 </body>
 </html>
