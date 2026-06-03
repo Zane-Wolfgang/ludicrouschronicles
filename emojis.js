@@ -209,7 +209,28 @@
       max-height: 26px;
     }
 
-    /* Comment emoji rendering */
+    /* Emoji hover preview tooltip */
+    .lc-emoji-tip {
+      position: fixed;
+      z-index: 99999;
+      background: rgba(10,8,6,0.98);
+      border: 1px solid var(--border, rgba(201,168,76,0.18));
+      padding: 0.5rem 0.75rem;
+      pointer-events: none;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      animation: lcPopIn 0.1s ease;
+      display: none;
+    }
+    .lc-emoji-tip img { display: block; margin: 0 auto 0.3rem; image-rendering: auto; }
+    .lc-emoji-tip-label {
+      font-family: 'Cinzel', serif;
+      font-size: 8px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted, #7a7260);
+      white-space: nowrap;
+    }
     .lb-comment-body img.lc-emoji,
     .comment-body img.lc-emoji {
       vertical-align: middle;
@@ -235,6 +256,45 @@
     }
   `;
   document.head.appendChild(style);
+
+  // ── Emoji hover preview tooltip ──
+  const _tip = document.createElement('div');
+  _tip.className = 'lc-emoji-tip';
+  _tip.innerHTML = '<img id="lc-tip-img" width="56" height="56" style="width:56px;height:56px;object-fit:contain;"><div class="lc-emoji-tip-label" id="lc-tip-label"></div>';
+  document.body.appendChild(_tip);
+
+  function showTip(emoji, anchorEl) {
+    document.getElementById('lc-tip-img').src = emoji.src;
+    document.getElementById('lc-tip-img').alt = emoji.label;
+    document.getElementById('lc-tip-label').textContent = emoji.label;
+    // Use known fixed size to avoid layout timing issue
+    const TW = 100, TH = 90;
+    const rect = anchorEl.getBoundingClientRect();
+    let left = rect.left + rect.width / 2 - TW / 2;
+    let top  = rect.top - TH - 8;
+    if (top < 8) top = rect.bottom + 8;
+    if (left < 8) left = 8;
+    if (left + TW > window.innerWidth - 8) left = window.innerWidth - TW - 8;
+    _tip.style.left = left + 'px';
+    _tip.style.top  = top  + 'px';
+    _tip.style.display = 'block';
+  }
+
+  function hideTip() { _tip.style.display = 'none'; }
+
+  // Wire hover on any element with data-emoji-id
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest('[data-emoji-id]');
+    if (!el) return;
+    loadEmojis().then(emojis => {
+      const emoji = emojis.find(em => em.id === el.dataset.emojiId);
+      if (emoji) showTip(emoji, el);
+    });
+  });
+  document.addEventListener('mouseout', e => {
+    if (!e.target.closest('[data-emoji-id]')) return;
+    hideTip();
+  });
 
   // ── State ──
   let _emojis = null;
@@ -333,7 +393,7 @@
       const emoji = emojis.find(e => e.id === id);
       if (!emoji) return match;
       const s = Math.min(emoji.size, 22);
-      return `<img src="${emoji.src}" alt="${emoji.label}" title="${emoji.label}" class="lc-emoji" width="${s}" height="${s}" style="width:${s}px;height:${s}px;object-fit:contain;vertical-align:middle;display:inline;">`;
+      return `<img src="${emoji.src}" alt="${emoji.label}" title="${emoji.label}" class="lc-emoji" data-emoji-id="${emoji.id}" width="${s}" height="${s}" style="width:${s}px;height:${s}px;object-fit:contain;vertical-align:middle;display:inline;">`;
     });
   }
 
@@ -371,6 +431,7 @@
         const chip = document.createElement('button');
         chip.className = 'lc-reaction-btn' + (reacted ? ' reacted' : '');
         chip.title = emoji.label + (reacted ? ' (click to remove)' : ' (click to add)');
+        chip.dataset.emojiId = emoji.id;
         chip.innerHTML = `<img src="${emoji.src}" alt="${emoji.label}" width="${s}" height="${s}" style="width:${s}px;height:${s}px;object-fit:contain;"><span class="lc-reaction-count">${count}</span>`;
         chip.addEventListener('click', async e => {
           e.stopPropagation();
@@ -409,6 +470,7 @@
           item.type = 'button';
           item.className = 'lc-emoji-grid-item' + (myReactions.has(emoji.id) ? ' reacted' : '');
           item.title = emoji.label;
+          item.dataset.emojiId = emoji.id;
           const s = Math.min(emoji.size, 28);
           item.innerHTML = `<img src="${emoji.src}" alt="${emoji.label}" width="${s}" height="${s}" style="width:${s}px;height:${s}px;object-fit:contain;">`;
           item.addEventListener('click', async ev => {
@@ -492,6 +554,7 @@
         item.type = 'button';
         item.className = 'lc-emoji-grid-item';
         item.title = emoji.label;
+        item.dataset.emojiId = emoji.id;
         item.innerHTML = `<img src="${emoji.src}" alt="${emoji.label}">`;
         item.addEventListener('click', e => {
           e.stopPropagation();
