@@ -263,7 +263,8 @@ collections:
     fields:
       - { label: "Name", name: "title", widget: "string", hint: "Display name, e.g. Angry Vasily" }
       - { label: "Image", name: "image", widget: "image", hint: "Upload to images/emojis/" }
-      - { label: "Display Size (px)", name: "size", widget: "number", default: 32, hint: "How big it appears in reactions — 24 to 48 recommended" }
+      - { label: "Display Size (px)", name: "size", widget: "number", default: 32, hint: "How big it appears inline in reactions — 24 to 48 recommended" }
+      - { label: "Hover Preview Size (px)", name: "preview_size", widget: "number", default: 96, min: 48, max: 256, hint: "How big it appears in the hover tooltip — go larger for detailed stickers" }
       - { label: "Active", name: "active", widget: "boolean", default: true }
 
   - name: "music"
