@@ -171,7 +171,7 @@ All too soon the carriage shuddered to a halt as they’d rolled to a part in th
 “You know where I’ll be.” Zane told Elijah flatly, casting her a glance to ensure she was listening, skipping a step and hopping straight to the curb, and slamming the door.\
 While unbeknownst to him, it earned him a touch of a glare from the coachmen, he remained unperturbed as his gaze wandered upon the paved stone steps of a finely crafted establishment…
 
-“ *‘Ashoft… Public Records Building…’* ” Confirming it was the place, he ducked his head to the carved stone staircase beyond. 
+“ *‘Ashoft… Public Records Building…’* ” Confirming it was the place, he ducked his head to face the carved stone staircase beyond. 
 
 “I don’t suppose there’s a better place suitable.” Murmured Zane under his breath, glancing this way and that to ensure he wouldn’t wander into a man or two.\
 As he trudged up the steps, he etched the columns of the place in mind—sturdy, he’ll give the artisans that. They began tapering near the end, the more profound base of keeping the roof aloft.\
