@@ -6,22 +6,22 @@
 
   // ── Hardcoded defaults (fallback until CMS index is populated) ──
   const EMOJI_DEFAULTS = [
-    { id: 'baffled-silvester',           src: '/images/emojis/Baffled_Silvester.png',            label: 'Baffled Silvester',          size: 32 },
-    { id: 'elijah-anxious',              src: '/images/emojis/Elijah_Anxious.png',               label: 'Elijah Anxious',             size: 32 },
-    { id: 'eniaz-stare',                 src: '/images/emojis/Eniaz_Stare.png',                  label: 'Eniaz Stare',                size: 32 },
-    { id: 'i-smell-desperation-vasily',  src: '/images/emojis/I_Smell_Desperation_Vasily.png',   label: 'I Smell Desperation',        size: 32 },
-    { id: 'jackson-popcorn',             src: '/images/emojis/JacksonPopcorn.png',               label: 'Jackson Popcorn',            size: 32 },
-    { id: 'jackson-dead',                src: '/images/emojis/Jackson_Dead.png',                 label: 'Jackson Dead',               size: 32 },
-    { id: 'jackson-middle-finger',       src: '/images/emojis/Jacksonmiddlefinger.png',          label: 'Jackson Middle Finger',      size: 32 },
-    { id: 'lizzie-adore',                src: '/images/emojis/Lizzie_Adore.png',                 label: 'Lizzie Adore',               size: 32 },
-    { id: 'lizzie-what',                 src: '/images/emojis/Lizzie_WHAT.png',                  label: 'Lizzie WHAT',                size: 32 },
-    { id: 'lizzle-fizzle-fire',          src: '/images/emojis/Lizzle_Fizzle_Fire.png',           label: 'Lizzle Fizzle Fire',         size: 32 },
-    { id: 'rachel-flushed',              src: '/images/emojis/Rachel_Flushed.png',               label: 'Rachel Flushed',             size: 32 },
-    { id: 'silvester-dead',              src: '/images/emojis/Silvester_dead.png',               label: 'Silvester Dead',             size: 32 },
-    { id: 'vasily-belly-laugh',          src: '/images/emojis/VasilyBellyLaugh.png',             label: 'Vasily Belly Laugh',         size: 32 },
-    { id: 'vasily-huh',                  src: '/images/emojis/Vasily_Huh.png',                   label: 'Vasily Huh',                 size: 32 },
-    { id: 'zane-annoyed',                src: '/images/emojis/Zane_Annoyed.png',                 label: 'Zane Annoyed',               size: 32 },
-    { id: 'listen-here',                 src: '/images/emojis/listenhereyoulittleshit.png',       label: 'Listen Here',                size: 32 },
+    { id: 'baffled-silvester',           src: '/images/emojis/Baffled_Silvester.png',            label: 'Baffled Silvester',          size: 32, preview_size: 96 },
+    { id: 'elijah-anxious',              src: '/images/emojis/Elijah_Anxious.png',               label: 'Elijah Anxious',             size: 32, preview_size: 96 },
+    { id: 'eniaz-stare',                 src: '/images/emojis/Eniaz_Stare.png',                  label: 'Eniaz Stare',                size: 32, preview_size: 96 },
+    { id: 'i-smell-desperation-vasily',  src: '/images/emojis/I_Smell_Desperation_Vasily.png',   label: 'I Smell Desperation',        size: 32, preview_size: 160 },
+    { id: 'jackson-popcorn',             src: '/images/emojis/JacksonPopcorn.png',               label: 'Jackson Popcorn',            size: 32, preview_size: 96 },
+    { id: 'jackson-dead',                src: '/images/emojis/Jackson_Dead.png',                 label: 'Jackson Dead',               size: 32, preview_size: 96 },
+    { id: 'jackson-middle-finger',       src: '/images/emojis/Jacksonmiddlefinger.png',          label: 'Jackson Middle Finger',      size: 32, preview_size: 160 },
+    { id: 'lizzie-adore',                src: '/images/emojis/Lizzie_Adore.png',                 label: 'Lizzie Adore',               size: 32, preview_size: 96 },
+    { id: 'lizzie-what',                 src: '/images/emojis/Lizzie_WHAT.png',                  label: 'Lizzie WHAT',                size: 32, preview_size: 160 },
+    { id: 'lizzle-fizzle-fire',          src: '/images/emojis/Lizzle_Fizzle_Fire.png',           label: 'Lizzle Fizzle Fire',         size: 32, preview_size: 96 },
+    { id: 'rachel-flushed',              src: '/images/emojis/Rachel_Flushed.png',               label: 'Rachel Flushed',             size: 32, preview_size: 96 },
+    { id: 'silvester-dead',              src: '/images/emojis/Silvester_dead.png',               label: 'Silvester Dead',             size: 32, preview_size: 96 },
+    { id: 'vasily-belly-laugh',          src: '/images/emojis/VasilyBellyLaugh.png',             label: 'Vasily Belly Laugh',         size: 32, preview_size: 96 },
+    { id: 'vasily-huh',                  src: '/images/emojis/Vasily_Huh.png',                   label: 'Vasily Huh',                 size: 32, preview_size: 160 },
+    { id: 'zane-annoyed',                src: '/images/emojis/Zane_Annoyed.png',                 label: 'Zane Annoyed',               size: 32, preview_size: 96 },
+    { id: 'listen-here',                 src: '/images/emojis/listenhereyoulittleshit.png',       label: 'Listen Here',                size: 32, preview_size: 96 },
   ];
 
   // ── Inject styles ──
@@ -267,8 +267,10 @@
     document.getElementById('lc-tip-img').src = emoji.src;
     document.getElementById('lc-tip-img').alt = emoji.label;
     document.getElementById('lc-tip-label').textContent = emoji.label;
-    // Use known fixed size to avoid layout timing issue
-    const TW = 120, TH = 140;
+    const ps = emoji.preview_size || 96;
+    const TW = ps + 24, TH = ps + 44;
+    document.getElementById('lc-tip-img').style.width  = ps + 'px';
+    document.getElementById('lc-tip-img').style.height = ps + 'px';
     const rect = anchorEl.getBoundingClientRect();
     let left = rect.left + rect.width / 2 - TW / 2;
     let top  = rect.top - TH - 8;
@@ -332,7 +334,8 @@
                 id: e.filename ? e.filename.replace('.md','') : e.title.toLowerCase().replace(/[^a-z0-9]+/g,'-'),
                 src: e.image || '',
                 label: e.title || '',
-                size: parseInt(e.size) || 32
+                size: parseInt(e.size) || 32,
+                preview_size: parseInt(e.preview_size) || 96
               }));
             return _emojis;
           }
