@@ -169,7 +169,7 @@ All too soon the carriage shuddered to a halt as they’d rolled to a part in th
 
 \
 “You know where I’ll be.” Zane told Elijah flatly, casting her a glance to ensure she was listening, skipping a step and hopping straight to the curb, and slamming the door.\
-While unbeknownst to him, it earned him a touch of a glare from the coachmen, he remained unbothered as his gaze wandered upon the paved stone steps of a finely crafted establishment…
+While unbeknownst to him, it earned him a touch of a glare from the coachmen, he remained unperturbed as his gaze wandered upon the paved stone steps of a finely crafted establishment…
 
 “ *‘Ashoft… Public Records Building…’* ” Confirming it was the place, he ducked his head to the carved stone staircase beyond. 
 
@@ -348,7 +348,7 @@ Zane felt the grind of his teeth as he tried to open his mouth to talk—\
 He hardly could even comprehend the mere fact she’d risen her face against him; that alone would have warranted his hand to fly on his own (had there been no glass barrier), but her logic had rattled him furthermore.\
 “Swallow that pride of yours, son.” She landed back in her seat, out of fumes. “Tuck the tail between your legs n’ go. Keep that head of yours. Any one object can be replaced, but not a life.”
 
-\-    **                                                        . —«——⁜——»— .**
+\-     **                                                       . —«——⁜——»— .**
 
 Zane held the copy of a document of this *Rachel* girl’s information a few minutes later, finding himself seated on one of the first few stone steps toward Ashoft’s Public Records Archive, or what other name it went by.\
 He felt as defused as the woman had, and defeated as his threads felt among the rustles of his clothes. As though the clouds felt this, they accentuated the gloomy atmosphere by swallowing up the sun as a great mythical beast would.
