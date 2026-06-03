@@ -260,7 +260,7 @@
   // ── Emoji hover preview tooltip ──
   const _tip = document.createElement('div');
   _tip.className = 'lc-emoji-tip';
-  _tip.innerHTML = '<img id="lc-tip-img" width="56" height="56" style="width:56px;height:56px;object-fit:contain;"><div class="lc-emoji-tip-label" id="lc-tip-label"></div>';
+  _tip.innerHTML = '<img id="lc-tip-img" width="96" height="96" style="width:96px;height:96px;object-fit:contain;"><div class="lc-emoji-tip-label" id="lc-tip-label"></div>';
   document.body.appendChild(_tip);
 
   function showTip(emoji, anchorEl) {
@@ -268,7 +268,7 @@
     document.getElementById('lc-tip-img').alt = emoji.label;
     document.getElementById('lc-tip-label').textContent = emoji.label;
     // Use known fixed size to avoid layout timing issue
-    const TW = 100, TH = 90;
+    const TW = 120, TH = 140;
     const rect = anchorEl.getBoundingClientRect();
     let left = rect.left + rect.width / 2 - TW / 2;
     let top  = rect.top - TH - 8;
