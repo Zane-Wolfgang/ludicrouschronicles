@@ -190,11 +190,15 @@ Zane nodded curtly.\
 \
 “Ah–” Zane found his fingers tightly capturing the painted metal handle beside the staircase with vigor.
 
-With a hiss, he managed a: “*Quiet, you*,” as he palmed his temple, ruffling what bangs rested over the bridge of his nose with his fingers.\
-“*Aigh*…” He sighed.\
+With a hiss, he managed a: “*Quiet, you*,” as he palmed his temple, ruffling what bangs rested over the bridge of his nose with his fingers.
+
+\
+“*Aigh*…” He sighed.
+
+\
 Try as he might, coaxing the voices buzzing noisily in his skull to a dull, aching whisper wasn’t quite in their best interest, and disregarded him effortlessly.
 
-*When will my efforts prevail..* He thought irritatedly, stalking towards the handle of the door and tugging towards his body with intent on being quick about the ordeal.\
+*When will my efforts prevail..* He thought irritably, stalking towards the handle of the door and tugging towards his body with intent on being quick about the ordeal.\
 Unlike the train door this one had stable, lubricated hinges, and didn’t creak noisily.
 
 \
@@ -202,7 +206,7 @@ Unlike the train door this one had stable, lubricated hinges, and didn’t creak
 
 Dim light met him, and luckily, he had no need to adjust. Immediately following he met with a lobby a short distance from the hallway littered with boards of cork with newspaper plastered all along the surface, stamped securely with nails all across the pages: corners, the middle of the some with a dozen or one.\
 \
-There, at the lobby, were several chairs lined along the walls, a collective strip or more seats settled a few paces in front of him. While he wasn’t sure what he’d been expecting, he at least assumed as much as the space loaded with customers.
+There, once at the lobby, were several chairs lined along the walls, a collective strip or more seats settled a few paces in front of him. While he wasn’t sure what he’d been expecting, he at least assumed as much as the space loaded with customers.
 
 ….
 
@@ -242,7 +246,7 @@ Now, Zane on impulse desired to usher a polite ‘sorry’ for his behavior, but
 *Uncouth for a woman, much?* He eyed the cigar with particular distaste, wrinkling his nose to the putrid scent wafting around her. Were you to inspect her any closer and you could practically make the outline of the smog.\
 And oh, it clung like *muck*, and were Zane a betting man, he’d certainly say he’d gamble a few of his gold coins to the possibility he’d be smelling like her for a few hours at most.                               
 
-*Possibly ruins the quality of those pearls practically raining down those breast of hers… what a skag.* He’d added, as if his already sour impression of her wasn’t enough.\
+*Possibly ruins the quality of those pearls practically raining down those breasts of hers… what a skag.* He’d added, as if his already sour impression of her wasn’t enough.\
 Zane admitted reluctantly of how thankful he’d been that no-one had some wire to his thoughts.
 
 Back to this sorry excuse of a woman… Don’t start him on her visage, whether carved into her was due to concentration from hours on end or loathing for her current predicament in the work force, it was difficult to differentiate. Perhaps she could have been a woman of class… though with this attitude she holstered like some kind of prize, he would have had trouble believing.
