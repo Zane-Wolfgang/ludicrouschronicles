@@ -931,7 +931,7 @@ function makeCMSGalleryItem(item, userTier, tRank) {
     const notesJson = JSON.stringify(notes);
     div.setAttribute('onclick', isSlideshow
       ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, '${item.type}', ${notesJson})`
-      : `openLightbox('${images[0]}', '${item.title}', '${item.type}', ${notesJson})`);
+      : `openLightbox(${JSON.stringify(images[0])}, ${JSON.stringify(item.title)}, ${JSON.stringify(item.type)}, ${notesJson})`);
     div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" />${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">${item.type}${isSlideshow ? ' · ' + images.length + ' pages' : ''}</div></div>`;
   }
   return div;
@@ -953,11 +953,11 @@ async function checkHardcodedLocks() {
       const slideshow = HARDCODED_SLIDESHOWS[title];
       if (slideshow) {
         const slideshowNote = HARDCODED_NOTES[title] || '';
-        item.setAttribute('onclick', `openSlideshow(${JSON.stringify(slideshow.images)}, ${JSON.stringify(slideshow.titles)}, '${slideshow.type}', ${JSON.stringify(slideshowNote)})`);
+        item.setAttribute('onclick', `openSlideshow(${JSON.stringify(slideshow.images)}, ${JSON.stringify(slideshow.titles)}, ${JSON.stringify(slideshow.type)}, ${JSON.stringify(slideshowNote)})`);
         const overlay = item.querySelector('.gallery-overlay');
         if (overlay) overlay.innerHTML = `<div class="gallery-overlay-title">${title}</div><div class="gallery-overlay-type">${slideshow.type} · ${slideshow.images.length} pages</div>`;
       } else {
-        item.setAttribute('onclick', `openLightbox('${img.getAttribute('src')}', '${title}', 'Illustration', ${JSON.stringify(HARDCODED_NOTES[title] || '')})`);
+        item.setAttribute('onclick', `openLightbox(${JSON.stringify(img.getAttribute('src'))}, ${JSON.stringify(title)}, 'Illustration', ${JSON.stringify(HARDCODED_NOTES[title] || '')})`);
       }
       item.querySelector('.gallery-lock-badge')?.remove();
       tierLabel.remove();
@@ -993,7 +993,7 @@ async function loadTraditional() {
         div.className = 'gallery-item';
         div.setAttribute('onclick', isSlideshow
           ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, 'Traditional Art${medium}', ${notesJson})`
-          : `openLightbox('${images[0]}', '${item.title}', 'Traditional Art${medium}', ${notesJson})`);
+          : `openLightbox(${JSON.stringify(images[0])}, ${JSON.stringify(item.title)}, \`Traditional Art${medium}\`, ${notesJson})`);
         div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" />${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">Traditional Art${medium}</div></div>`;
       }
       grid.appendChild(div);
@@ -1029,7 +1029,7 @@ async function loadStills() {
         div.className = 'gallery-item';
         div.setAttribute('onclick', isSlideshow
           ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, 'Stills', ${notesJson})`
-          : `openLightbox('${images[0]}', '${item.title}', 'Stills${game}', ${notesJson})`);
+          : `openLightbox(${JSON.stringify(images[0])}, ${JSON.stringify(item.title)}, \`Stills${game}\`, ${notesJson})`);
         div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" />${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">Stills${game}${isSlideshow ? ' · ' + images.length + ' shots' : ''}</div></div>`;
       }
       grid.appendChild(div);
