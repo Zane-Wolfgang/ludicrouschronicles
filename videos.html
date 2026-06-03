@@ -335,9 +335,17 @@
         // Like counts
         const likedSet = new Set();
         const likeCounts = {};
+        const likedLocalKey = `lc_liked_${visitorId}`;
         try {
-          const myLikes = await veFetch(`comment_likes?visitor_id=eq.${visitorId}&select=comment_id`);
-          if (Array.isArray(myLikes)) myLikes.forEach(l => likedSet.add(l.comment_id));
+          const localLiked = JSON.parse(localStorage.getItem(likedLocalKey) || '[]');
+          localLiked.forEach(id => likedSet.add(id));
+        } catch(e) {}
+        try {
+          const myLikes = await veFetch(`comment_likes?visitor_id=eq.${encodeURIComponent(visitorId)}&select=comment_id`);
+          if (Array.isArray(myLikes)) {
+            myLikes.forEach(l => likedSet.add(String(l.comment_id)));
+            localStorage.setItem(likedLocalKey, JSON.stringify([...likedSet]));
+          }
           const allLikes = await veFetch(`comment_likes?select=comment_id`);
           if (Array.isArray(allLikes)) allLikes.forEach(l => { likeCounts[l.comment_id] = (likeCounts[l.comment_id] || 0) + 1; });
         } catch(e) {}
@@ -348,7 +356,7 @@
           listEl.innerHTML = '';
           data.forEach(c => {
             const date = new Date(c.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-            const liked = likedSet.has(c.id);
+            const liked = likedSet.has(String(c.id));
             const likeCount = likeCounts[c.id] || 0;
             const div = document.createElement('div');
             div.className = 'lb-comment-item';
@@ -373,6 +381,8 @@
                 this.classList.add('liked');
                 const countEl = this.querySelector('.lb-clc');
                 countEl.textContent = (parseInt(countEl.textContent || 0) + 1) || 1;
+                likedSet.add(String(c.id));
+                try { localStorage.setItem(likedLocalKey, JSON.stringify([...likedSet])); } catch(e) {}
               } catch(e) {}
             });
 
