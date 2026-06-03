@@ -52,7 +52,7 @@ The roofs’ black, gritty shingles were uneven and almost thoroughly mismatched
 
 A cozy veranda was built out front, complete with hanging vines from pots chained along the outer perimeter wooden support beams of the structure, coupled with a chained swing bench along the corner.\
 The structure itself was three levels tall and rather sound, the top of the building ending in a rather grotesque shape such as the end of an acorn shell, but not quite rounded off, since it was simply the interface..\
-Zane rounded the corner to ensure every vertices of the estate bore no issue, preparing to commit any semblance of mess to memory.
+Zane rounded the corner to ensure every vertex of the estate bore no issue, preparing to commit any semblance of mess to memory.
 
 On it’s left beside the dainty house a pond rested, shrouded by ferns and tall stalks of grass. The trench had been dug out by humans, its contents—namely fish—swam placidly around in circles, occasionally blipping to the surface to snack on insects who hardly breached the water, making not so much as a quiver to disturb the stillness.                                            
 
@@ -158,7 +158,7 @@ In a strikingly close perimeter to the first voice, followed:
 
 “***GERALD***!”
 
-Zane, despite seeing the passerby with a subtle grin they withheld over their expressions, some beckoning his friend to not-quite-whisper into another's ear: “\*It’s the Morst Twins again.. Always those two bickering, aren’t they\*”... withdrew his head from the carriage window after catching wind of the hubub.\
+Zane, despite seeing the passerby with a subtle grin they withheld over their expressions, some beckoning his friend to not-quite-whisper into another's ear: “\*It’s the Morst Twins again.. Always those two bickering, aren’t they\*”... withdrew his head from the carriage window after catching wind of the hubbub.\
 “I think that’s… er—enough *fresh air* for now.” He conceded, gingerly screwing the handle to snuff out the outside world.
 
 All too soon the carriage shuddered to a halt as they’d rolled to a part in the sidewalk, the coachman guiding the horses beside the curb neatly.\
@@ -219,8 +219,6 @@ Zane’s visage contorted. A *woman*. British, a voice compellingly deeper a few
 Okay, he eased himself, some twisted glee settling in his stomach to the thought of dispatching her.
 
 \-                        ***SHhUS Hssmmm shhsh hashush hsuah…***  
-
- 
 
 *By the suns, are you incapable of being quiet?* He smacked his forehead with his palm harsher than he’d meant, and jostled his concentration for a moment.\
 Those voices, along with this foolish accent, led him to be stalled just enough to allow another awaiting recipient to come to the window.\
@@ -350,7 +348,7 @@ Zane felt the grind of his teeth as he tried to open his mouth to talk—\
 He hardly could even comprehend the mere fact she’d risen her face against him; that alone would have warranted his hand to fly on his own (had there been no glass barrier), but her logic had rattled him furthermore.\
 “Swallow that pride of yours, son.” She landed back in her seat, out of fumes. “Tuck the tail between your legs n’ go. Keep that head of yours. Any one object can be replaced, but not a life.”
 
-\-   **                                                         . —«——⁜——»— .**
+\-    **                                                        . —«——⁜——»— .**
 
 Zane held the copy of a document of this *Rachel* girl’s information a few minutes later, finding himself seated on one of the first few stone steps toward Ashoft’s Public Records Archive, or what other name it went by.\
 He felt as defused as the woman had, and defeated as his threads felt among the rustles of his clothes. As though the clouds felt this, they accentuated the gloomy atmosphere by swallowing up the sun as a great mythical beast would.
