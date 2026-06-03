@@ -703,6 +703,29 @@ window.bookmarkReady = (async function() {
   const context     = document.getElementById('bookmark-context');
   const contextItem = document.getElementById('context-bookmark');
 
+
+  // ── Long-press to bookmark on iPad / mobile ──
+  let _lpTimer = null, _lpTarget = null;
+  document.addEventListener('touchstart', e => {
+    const para = e.target.closest('.chapter-body p');
+    if (!para) return;
+    const touch = e.touches[0];
+    _lpTarget = { para, x: touch.clientX, y: touch.clientY };
+    _lpTimer = setTimeout(() => {
+      if (!_lpTarget) return;
+      targetParagraph = _lpTarget.para;
+      const isBookmarked = targetParagraph.classList.contains('paragraph-highlight');
+      const tn = Array.from(contextItem.childNodes).find(n => n.nodeType === 3 && n.nodeValue.trim().length > 0);
+      if (tn) tn.nodeValue = isBookmarked ? ' Remove bookmark' : ' Bookmark this paragraph';
+      context.style.left = Math.min(_lpTarget.x, window.innerWidth - 200) + 'px';
+      context.style.top  = Math.min(_lpTarget.y, window.innerHeight - 80) + 'px';
+      context.classList.add('visible');
+      _lpTarget = null;
+    }, 600);
+  }, { passive: true });
+  document.addEventListener('touchend',  () => { clearTimeout(_lpTimer); _lpTarget = null; }, { passive: true });
+  document.addEventListener('touchmove', () => { clearTimeout(_lpTimer); _lpTarget = null; }, { passive: true });
+
   document.addEventListener('contextmenu', (e) => {
     const para = e.target.closest('.chapter-body p');
     if (!para) { context.classList.remove('visible'); return; }
