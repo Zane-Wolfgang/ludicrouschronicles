@@ -589,10 +589,20 @@ async function loadGalleryComments(title) {
     }
 
     // Load which comments this visitor has liked
+    // Check localStorage first (instant), then verify/update from Supabase
     const likedSet = new Set();
+    const likedLocalKey = `lc_liked_${visitorId}`;
     try {
-      const myLikes = await gcFetch(`comment_likes?visitor_id=eq.${visitorId}&select=comment_id`);
-      if (Array.isArray(myLikes)) myLikes.forEach(l => likedSet.add(l.comment_id));
+      const localLiked = JSON.parse(localStorage.getItem(likedLocalKey) || '[]');
+      localLiked.forEach(id => likedSet.add(id));
+    } catch(e) {}
+    try {
+      const myLikes = await gcFetch(`comment_likes?visitor_id=eq.${encodeURIComponent(visitorId)}&select=comment_id`);
+      if (Array.isArray(myLikes)) {
+        myLikes.forEach(l => likedSet.add(String(l.comment_id)));
+        // Sync back to localStorage
+        localStorage.setItem(likedLocalKey, JSON.stringify([...likedSet]));
+      }
     } catch(e) {}
 
     // Load like counts per comment
@@ -607,7 +617,7 @@ async function loadGalleryComments(title) {
     list.innerHTML = '';
     data.forEach(c => {
       const date = new Date(c.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-      const liked = likedSet.has(c.id);
+      const liked = likedSet.has(String(c.id));
       const likeCount = likeCounts[c.id] || 0;
       const div = document.createElement('div');
       div.className = 'lb-comment-item';
@@ -634,6 +644,9 @@ async function loadGalleryComments(title) {
           this.classList.add('liked');
           const countEl = this.querySelector('.lb-clc');
           countEl.textContent = (parseInt(countEl.textContent || 0) + 1) || 1;
+          // Persist in localStorage so liked state survives lightbox close/reopen
+          likedSet.add(String(c.id));
+          try { localStorage.setItem(likedLocalKey, JSON.stringify([...likedSet])); } catch(e) {}
         } catch(e) {}
       });
 
@@ -856,7 +869,10 @@ lbImg.addEventListener('click', e => {
 });
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
-document.addEventListener('contextmenu', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
+document.addEventListener('contextmenu', e => {
+  // Only block right-click on images inside the lightbox, not sitewide
+  if (e.target.tagName === 'IMG' && lb.contains(e.target)) e.preventDefault();
+});
 document.querySelectorAll('img').forEach(img => { img.setAttribute('draggable', 'false'); img.style.userSelect = 'none'; img.style.webkitUserDrag = 'none'; });
 
 if ('ontouchstart' in window) {
