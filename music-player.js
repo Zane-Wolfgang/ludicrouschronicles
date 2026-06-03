@@ -405,7 +405,11 @@
   function startMusic() {
     if (!tracks.length) return;
     const t = tracks[currentIndex];
-    audio.src = t.audio || t.file || '';
+    const newSrc = t.audio || t.file || '';
+    // Only reset src if it is a different track — avoids restarting what is already loaded
+    if (newSrc && !audio.src.endsWith(newSrc)) {
+      audio.src = newSrc;
+    }
     audio.volume = isMuted ? 0 : userVolume;
     const seekTo = _savedState ? (_savedState.time || 0) : 0;
     _savedState = null;
