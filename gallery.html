@@ -284,8 +284,37 @@
   .lb-like-btn.liked { border-color: var(--gold); color: var(--gold); }
 
 
-  @media (max-width: 768px) {
-    .gallery-grid, .stills-grid { margin-top: 1.5rem; }
+  /* ── Section nav tab ── */
+  .gallery-section-nav {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .gallery-section-nav a {
+    display: block;
+    background: rgba(10,8,6,0.92);
+    border: 1px solid var(--border);
+    border-right: none;
+    padding: 0.5em 0.7em;
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    white-space: nowrap;
+  }
+  .gallery-section-nav a:hover { color: var(--gold); border-color: var(--gold-dim); background: rgba(201,168,76,0.07); }
+  .gallery-section-nav a.active { color: var(--gold); border-color: var(--gold-dim); }
+  @media (max-width: 768px) { .gallery-section-nav { display: none; } }
     .gallery-item:not(.locked) .gallery-overlay { opacity: 1; bottom: 0; }
     .lightbox { padding: 2rem 0 3rem; }
     .lightbox-img { max-height: 60vh; }
@@ -426,16 +455,6 @@
 
     </div>
 
-    <!-- ── Stills Section ── -->
-    <div class="stills-section" id="stills">
-      <div class="section-label">Roblox Stills</div>
-      <h2 class="section-title">Stills</h2>
-      <p class="section-body">Posed character photoshoots — composed and curated, not drawn.</p>
-      <div class="stills-grid" id="stills-grid">
-        <div class="stills-empty" id="stills-loading">Loading...</div>
-      </div>
-    </div>
-
     <!-- ── Traditional Art Section ── -->
     <div class="stills-section" id="traditional">
       <div class="section-label">On Paper</div>
@@ -443,6 +462,16 @@
       <p class="section-body">Pencil, ink, and everything in between — drawn by hand on actual paper.</p>
       <div class="stills-grid" id="traditional-grid">
         <div class="stills-empty" id="traditional-loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- ── Stills Section ── -->
+    <div class="stills-section" id="stills">
+      <div class="section-label">Roblox Stills</div>
+      <h2 class="section-title">Stills</h2>
+      <p class="section-body">Posed character photoshoots — composed and curated, not drawn.</p>
+      <div class="stills-grid" id="stills-grid">
+        <div class="stills-empty" id="stills-loading">Loading...</div>
       </div>
     </div>
 
@@ -515,6 +544,29 @@
     </div>
   </div>
 </div>
+
+<!-- Section nav tab -->
+<nav class="gallery-section-nav" id="gallery-section-nav">
+  <a href="#gallery-grid">Digital Art</a>
+  <a href="#traditional">Traditional</a>
+  <a href="#stills">Stills</a>
+</nav>
+<script>
+  // Scroll-spy: highlight active section in nav tab
+  (function() {
+    const links = document.querySelectorAll('.gallery-section-nav a');
+    const targets = ['gallery-grid', 'traditional', 'stills'].map(id => document.getElementById(id));
+    function update() {
+      let current = 0;
+      targets.forEach((t, i) => {
+        if (t && t.getBoundingClientRect().top <= window.innerHeight * 0.5) current = i;
+      });
+      links.forEach((l, i) => l.classList.toggle('active', i === current));
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+</script>
 
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
