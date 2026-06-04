@@ -55,6 +55,7 @@
     border: 1px solid var(--border);
     border-right: none;
     width: 22px;
+    overflow: hidden;
     text-decoration: none;
     box-sizing: border-box;
     transition: border-color 0.2s, background 0.2s;
@@ -565,17 +566,8 @@
 </nav>
 <script>
   (function() {
-    var nav = document.getElementById('gallery-section-nav');
     var links = document.querySelectorAll('.gallery-section-nav a');
     var targets = ['gallery-grid', 'stills', 'traditional'].map(function(id) { return document.getElementById(id); });
-    // Flush with scrollbar: detect its width and offset accordingly
-    function setOffset() {
-      var sw = window.innerWidth - document.documentElement.clientWidth;
-      nav.style.right = sw + 'px';
-    }
-    setOffset();
-    window.addEventListener('resize', setOffset, { passive: true });
-    // Scroll-spy: highlight active section
     function update() {
       var current = 0;
       targets.forEach(function(t, i) {
