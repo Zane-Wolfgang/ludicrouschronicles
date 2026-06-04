@@ -38,10 +38,11 @@
 
   /* ── Section nav tab ── */
   .gallery-section-nav {
-    position: fixed;
-    right: 0;
-    top: 55%;
-    width: 22px;
+    position: fixed !important;
+    right: 0 !important;
+    left: auto !important;
+    top: 55% !important;
+    width: 22px !important;
     z-index: 200;
     display: flex;
     flex-direction: column;
@@ -559,15 +560,21 @@
 </div>
 
 <!-- ── Section Nav Tab ── -->
-<nav class="gallery-section-nav" id="gallery-section-nav">
+<div class="gallery-section-nav" id="gallery-section-nav">
   <a href="#gallery-grid"><span>Digital Art</span></a>
   <a href="#stills"><span>Stills</span></a>
   <a href="#traditional"><span>Traditional</span></a>
-</nav>
+</div>
 <script>
   (function() {
+    var el = document.getElementById('gallery-section-nav');
     var links = document.querySelectorAll('.gallery-section-nav a');
     var targets = ['gallery-grid', 'stills', 'traditional'].map(function(id) { return document.getElementById(id); });
+    // Nudge right to sit beside scrollbar — clamped 0-20px so it can never go wrong
+    try {
+      var sw = window.innerWidth - document.documentElement.clientWidth;
+      if (sw > 0 && sw <= 20) el.style.right = sw + 'px';
+    } catch(e) {}
     function update() {
       var current = 0;
       targets.forEach(function(t, i) {
