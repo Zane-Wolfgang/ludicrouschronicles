@@ -14,8 +14,8 @@
 <style>
   .gallery-grid { columns: 3; column-gap: 12px; margin-top: 3rem; }
   .gallery-item { break-inside: avoid; margin-bottom: 12px; position: relative; overflow: hidden; cursor: pointer; display: block; border: 1px solid var(--border); transition: border-color 0.25s, transform 0.25s; }
-  .gallery-item:hover { border-color: var(--gold-dim); transform: scale(1.01); }
-  .gallery-item img { width: 100%; display: block; filter: brightness(0.92); transition: filter 0.3s; }
+  .gallery-item:hover { border-color: var(--gold-dim); transform: scale(1.01); z-index: 1; }
+  .gallery-item img { width: 100%; max-height: 420px; object-fit: cover; display: block; filter: brightness(0.92); transition: filter 0.3s; }
   .gallery-item:hover img { filter: brightness(1.05); }
   .gallery-overlay { position: absolute; bottom: -8px; left: 0; right: 0; padding: 2rem 1rem 1.2rem; background: linear-gradient(0deg, rgba(10,8,6,0.85) 0%, transparent 100%); opacity: 0; transition: opacity 0.25s; }
   .gallery-item:hover .gallery-overlay { opacity: 1; }
@@ -290,39 +290,41 @@
     right: 0;
     top: 0;
     bottom: 0;
-    width: 24px;
-    margin: auto 0;
     z-index: 200;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
     justify-content: center;
+    align-items: flex-end;
     gap: 2px;
     pointer-events: none;
   }
   .gallery-section-nav a {
     pointer-events: all;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
     background: rgba(10,8,6,0.92);
     border: 1px solid var(--border);
     border-right: none;
     width: 22px;
-    padding: 0.9em 0;
+    text-decoration: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .gallery-section-nav a span {
+    display: block;
+    padding: 0.85em 0.35em;
     font-family: 'Cinzel', serif;
     font-size: 7px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--text-muted);
-    text-decoration: none;
-    transition: color 0.2s, border-color 0.2s, background 0.2s;
-    writing-mode: vertical-rl;
     white-space: nowrap;
-    box-sizing: border-box;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    transition: color 0.2s;
   }
-  .gallery-section-nav a:hover { color: var(--gold); border-color: var(--gold-dim); background: rgba(201,168,76,0.07); }
-  .gallery-section-nav a.active { color: var(--gold); border-color: var(--gold-dim); }
+  .gallery-section-nav a:hover { border-color: var(--gold-dim); background: rgba(201,168,76,0.07); }
+  .gallery-section-nav a:hover span, .gallery-section-nav a.active span { color: var(--gold); }
+  .gallery-section-nav a.active { border-color: var(--gold-dim); }
   @media (max-width: 900px) { .gallery-section-nav { display: none; } }
     .gallery-item:not(.locked) .gallery-overlay { opacity: 1; bottom: 0; }
     .lightbox { padding: 2rem 0 3rem; }
@@ -332,7 +334,7 @@
     .lightbox-nav.prev { left: 0.25rem; }
     .lightbox-nav.next { right: 0.25rem; }
     .lightbox-caption-row { flex-direction: column; gap: 0.25rem; }
-    .stills-grid { columns: 1; }
+    .gallery-grid, .stills-grid { columns: 1; }
     .stills-section { margin-top: 3rem; padding-top: 2.5rem; }
   }
 </style>
@@ -556,15 +558,23 @@
 
 <!-- Section nav tab -->
 <nav class="gallery-section-nav" id="gallery-section-nav">
-  <a href="#gallery-grid">Digital Art</a>
-  <a href="#traditional">Traditional</a>
-  <a href="#stills">Stills</a>
+  <a href="#gallery-grid"><span>Digital Art</span></a>
+  <a href="#traditional"><span>Traditional</span></a>
+  <a href="#stills"><span>Stills</span></a>
 </nav>
 <script>
   // Scroll-spy: highlight active section in nav tab
   (function() {
+    const nav = document.getElementById('gallery-section-nav');
     const links = document.querySelectorAll('.gallery-section-nav a');
     const targets = ['gallery-grid', 'traditional', 'stills'].map(id => document.getElementById(id));
+    // Flush with scrollbar — detect its width and offset accordingly
+    function setOffset() {
+      const sw = window.innerWidth - document.documentElement.clientWidth;
+      nav.style.right = sw + 'px';
+    }
+    setOffset();
+    window.addEventListener('resize', setOffset, { passive: true });
     function update() {
       let current = 0;
       targets.forEach((t, i) => {
