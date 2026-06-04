@@ -14,8 +14,8 @@
 <style>
   .gallery-grid { columns: 3; column-gap: 12px; margin-top: 3rem; }
   .gallery-item { break-inside: avoid; margin-bottom: 12px; position: relative; overflow: hidden; cursor: pointer; display: block; border: 1px solid var(--border); transition: border-color 0.25s, transform 0.25s; }
-  .gallery-item:hover { border-color: var(--gold-dim); transform: scale(1.01); z-index: 1; }
-  .gallery-item img { width: 100%; max-height: 420px; object-fit: cover; display: block; filter: brightness(0.92); transition: filter 0.3s; }
+  .gallery-item:hover { border-color: var(--gold-dim); transform: scale(1.01); }
+  .gallery-item img { width: 100%; display: block; filter: brightness(0.92); transition: filter 0.3s; }
   .gallery-item:hover img { filter: brightness(1.05); }
   .gallery-overlay { position: absolute; bottom: -8px; left: 0; right: 0; padding: 2rem 1rem 1.2rem; background: linear-gradient(0deg, rgba(10,8,6,0.85) 0%, transparent 100%); opacity: 0; transition: opacity 0.25s; }
   .gallery-item:hover .gallery-overlay { opacity: 1; }
@@ -35,6 +35,49 @@
   .stills-section .section-label { margin-bottom: 0.5rem; }
   .stills-grid { columns: 3; column-gap: 12px; margin-top: 2rem; }
   .stills-empty { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); padding: 3rem 0; text-align: center; }
+
+  /* ── Section nav tab ── */
+  .gallery-section-nav {
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 2px;
+    pointer-events: none;
+  }
+  .gallery-section-nav a {
+    pointer-events: all;
+    display: block;
+    background: rgba(10,8,6,0.92);
+    border: 1px solid var(--border);
+    border-right: none;
+    width: 22px;
+    text-decoration: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .gallery-section-nav a span {
+    display: block;
+    padding: 0.85em 0.35em;
+    font-family: 'Cinzel', serif;
+    font-size: 7px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    transition: color 0.2s;
+  }
+  .gallery-section-nav a:hover { border-color: var(--gold-dim); background: rgba(201,168,76,0.07); }
+  .gallery-section-nav a:hover span, .gallery-section-nav a.active span { color: var(--gold); }
+  .gallery-section-nav a.active { border-color: var(--gold-dim); }
+  @media (max-width: 900px) { .gallery-section-nav { display: none; } }
 
   /* ── Lightbox ── */
   .lightbox {
@@ -284,48 +327,8 @@
   .lb-like-btn.liked { border-color: var(--gold); color: var(--gold); }
 
 
-  /* ── Section nav tab ── */
-  .gallery-section-nav {
-    position: fixed;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    z-index: 200;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-end;
-    gap: 2px;
-    pointer-events: none;
-  }
-  .gallery-section-nav a {
-    pointer-events: all;
-    display: block;
-    background: rgba(10,8,6,0.92);
-    border: 1px solid var(--border);
-    border-right: none;
-    width: 22px;
-    text-decoration: none;
-    box-sizing: border-box;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .gallery-section-nav a span {
-    display: block;
-    padding: 0.85em 0.35em;
-    font-family: 'Cinzel', serif;
-    font-size: 7px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    white-space: nowrap;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    transition: color 0.2s;
-  }
-  .gallery-section-nav a:hover { border-color: var(--gold-dim); background: rgba(201,168,76,0.07); }
-  .gallery-section-nav a:hover span, .gallery-section-nav a.active span { color: var(--gold); }
-  .gallery-section-nav a.active { border-color: var(--gold-dim); }
-  @media (max-width: 900px) { .gallery-section-nav { display: none; } }
+  @media (max-width: 768px) {
+    .gallery-grid, .stills-grid { margin-top: 1.5rem; }
     .gallery-item:not(.locked) .gallery-overlay { opacity: 1; bottom: 0; }
     .lightbox { padding: 2rem 0 3rem; }
     .lightbox-img { max-height: 60vh; }
@@ -334,7 +337,7 @@
     .lightbox-nav.prev { left: 0.25rem; }
     .lightbox-nav.next { right: 0.25rem; }
     .lightbox-caption-row { flex-direction: column; gap: 0.25rem; }
-    .gallery-grid, .stills-grid { columns: 1; }
+    .stills-grid { columns: 1; }
     .stills-section { margin-top: 3rem; padding-top: 2.5rem; }
   }
 </style>
@@ -466,16 +469,6 @@
 
     </div>
 
-    <!-- ── Traditional Art Section ── -->
-    <div class="stills-section" id="traditional">
-      <div class="section-label">On Paper</div>
-      <h2 class="section-title">Traditional Art</h2>
-      <p class="section-body">Pencil, ink, and everything in between — drawn by hand on actual paper.</p>
-      <div class="stills-grid" id="traditional-grid">
-        <div class="stills-empty" id="traditional-loading">Loading...</div>
-      </div>
-    </div>
-
     <!-- ── Stills Section ── -->
     <div class="stills-section" id="stills">
       <div class="section-label">Roblox Stills</div>
@@ -483,6 +476,16 @@
       <p class="section-body">Posed character photoshoots — composed and curated, not drawn.</p>
       <div class="stills-grid" id="stills-grid">
         <div class="stills-empty" id="stills-loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- ── Traditional Art Section ── -->
+    <div class="stills-section" id="traditional">
+      <div class="section-label">On Paper</div>
+      <h2 class="section-title">Traditional Art</h2>
+      <p class="section-body">Pencil, ink, and everything in between — drawn by hand on actual paper.</p>
+      <div class="stills-grid" id="traditional-grid">
+        <div class="stills-empty" id="traditional-loading">Loading...</div>
       </div>
     </div>
 
@@ -502,7 +505,7 @@
       <div class="lightbox-nav next hidden" id="lb-next"><svg viewBox="0 0 14 14"><path d="M5 2l5 5-5 5"/></svg></div>
     </div>
     <div class="lightbox-page-count" id="lb-pages"></div>
-    <div class="lightbox-hint" id="lb-hint">Click image to zoom · scroll for notes & comments</div>
+    <div class="lightbox-hint" id="lb-hint">Click image to zoom · scroll for notes &amp; comments</div>
 
     <!-- Below image: title, notes, comments -->
     <div class="lightbox-below" id="lb-below">
@@ -556,31 +559,31 @@
   </div>
 </div>
 
-<!-- Section nav tab -->
+<!-- ── Section Nav Tab ── -->
 <nav class="gallery-section-nav" id="gallery-section-nav">
   <a href="#gallery-grid"><span>Digital Art</span></a>
-  <a href="#traditional"><span>Traditional</span></a>
   <a href="#stills"><span>Stills</span></a>
+  <a href="#traditional"><span>Traditional</span></a>
 </nav>
 <script>
-  // Scroll-spy: highlight active section in nav tab
   (function() {
-    const nav = document.getElementById('gallery-section-nav');
-    const links = document.querySelectorAll('.gallery-section-nav a');
-    const targets = ['gallery-grid', 'traditional', 'stills'].map(id => document.getElementById(id));
-    // Flush with scrollbar — detect its width and offset accordingly
+    var nav = document.getElementById('gallery-section-nav');
+    var links = document.querySelectorAll('.gallery-section-nav a');
+    var targets = ['gallery-grid', 'stills', 'traditional'].map(function(id) { return document.getElementById(id); });
+    // Flush with scrollbar: detect its width and offset accordingly
     function setOffset() {
-      const sw = window.innerWidth - document.documentElement.clientWidth;
+      var sw = window.innerWidth - document.documentElement.clientWidth;
       nav.style.right = sw + 'px';
     }
     setOffset();
     window.addEventListener('resize', setOffset, { passive: true });
+    // Scroll-spy: highlight active section
     function update() {
-      let current = 0;
-      targets.forEach((t, i) => {
+      var current = 0;
+      targets.forEach(function(t, i) {
         if (t && t.getBoundingClientRect().top <= window.innerHeight * 0.5) current = i;
       });
-      links.forEach((l, i) => l.classList.toggle('active', i === current));
+      links.forEach(function(l, i) { l.classList.toggle('active', i === current); });
     }
     window.addEventListener('scroll', update, { passive: true });
     update();
@@ -659,8 +662,6 @@ async function loadGalleryComments(title) {
       return;
     }
 
-    // Load which comments this visitor has liked
-    // Check localStorage first (instant), then verify/update from Supabase
     const likedSet = new Set();
     const likedLocalKey = `lc_liked_${visitorId}`;
     try {
@@ -671,12 +672,10 @@ async function loadGalleryComments(title) {
       const myLikes = await gcFetch(`comment_likes?visitor_id=eq.${encodeURIComponent(visitorId)}&select=comment_id`);
       if (Array.isArray(myLikes)) {
         myLikes.forEach(l => likedSet.add(String(l.comment_id)));
-        // Sync back to localStorage
         localStorage.setItem(likedLocalKey, JSON.stringify([...likedSet]));
       }
     } catch(e) {}
 
-    // Load like counts per comment
     const likeCounts = {};
     try {
       const allLikes = await gcFetch(`comment_likes?select=comment_id`);
@@ -707,7 +706,6 @@ async function loadGalleryComments(title) {
           <button class="lb-comment-delete-btn" data-id="${c.id}">Delete</button>
         </div>`;
 
-      // Like handler
       div.querySelector('.lb-comment-like-btn').addEventListener('click', async function() {
         if (this.classList.contains('liked')) return;
         try {
@@ -715,13 +713,11 @@ async function loadGalleryComments(title) {
           this.classList.add('liked');
           const countEl = this.querySelector('.lb-clc');
           countEl.textContent = (parseInt(countEl.textContent || 0) + 1) || 1;
-          // Persist in localStorage so liked state survives lightbox close/reopen
           likedSet.add(String(c.id));
           try { localStorage.setItem(likedLocalKey, JSON.stringify([...likedSet])); } catch(e) {}
         } catch(e) {}
       });
 
-      // Delete handler (admin only)
       div.querySelector('.lb-comment-delete-btn').addEventListener('click', async function() {
         if (!confirm('Delete this comment?')) return;
         try {
@@ -788,13 +784,11 @@ document.getElementById('lb-comment-submit').addEventListener('click', async () 
     const likeEl    = document.getElementById('lb-like-count');
     const likeBtn   = document.getElementById('lb-like-btn');
 
-    // Reset UI
     if (witnessEl) witnessEl.textContent = '—';
     if (likeEl)    likeEl.textContent    = '—';
     if (likeBtn)   likeBtn.classList.remove('liked');
 
     try {
-      // Witnesses
       const witnesses = await geFetch(`witnesses?chapter=eq.${encodeURIComponent(id)}&select=id`);
       let wCount = Array.isArray(witnesses) ? witnesses.length : 0;
       if (witnessEl) witnessEl.textContent = wCount;
@@ -805,7 +799,6 @@ document.getElementById('lb-comment-submit').addEventListener('click', async () 
         if (witnessEl) witnessEl.textContent = wCount + 1;
       }
 
-      // Likes
       const likes = await geFetch(`likes?chapter=eq.${encodeURIComponent(id)}&select=id`);
       if (likeEl) likeEl.textContent = Array.isArray(likes) ? likes.length : 0;
       const myLike = await geFetch(`likes?chapter=eq.${encodeURIComponent(id)}&visitor_id=eq.${visitorId}&select=id`);
@@ -833,7 +826,7 @@ document.getElementById('lb-comment-submit').addEventListener('click', async () 
 })();
 
 let slideImages = [], slideTitles = [], slideType = '', slideIndex = 0;
-const galleryNotes = new Map(); // title → notes string
+const galleryNotes = new Map();
 
 const lb      = document.getElementById('lightbox');
 const lbCard  = document.getElementById('lb-card');
@@ -853,15 +846,12 @@ function setLightboxContent(title, type, notes) {
   }
   loadGalleryComments(title);
   if (window.loadGalleryEngagement) window.loadGalleryEngagement(title);
-  // Reactions
   const reactContainer = document.getElementById('lb-reactions-container');
   if (reactContainer && window.initReactions) window.initReactions('gallery-' + title, reactContainer);
-  // Emoji picker (only mount once)
   const pickerMount = document.getElementById('lb-emoji-picker-mount');
   if (pickerMount && !pickerMount.hasChildNodes() && window.createEmojiPicker) {
     window.createEmojiPicker(document.getElementById('lb-comment-msg'), pickerMount);
   }
-  // Reset comment form
   document.getElementById('lb-comment-name').value = '';
   document.getElementById('lb-comment-msg').value = '';
   const btn = document.getElementById('lb-comment-submit');
@@ -919,29 +909,21 @@ document.getElementById('lb-close').addEventListener('click', e => { e.stopPropa
 document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); if (slideIndex > 0) { slideIndex--; showSlide(slideIndex); } });
 document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); if (slideIndex < slideImages.length - 1) { slideIndex++; showSlide(slideIndex); } });
 
-// Click outside card closes — but not when dragging to select text
 let _lbMouseDownInCard = false;
 lb.addEventListener('mousedown', e => { _lbMouseDownInCard = lbCard.contains(e.target); });
 lb.addEventListener('click', e => {
-  if (_lbMouseDownInCard) return; // drag started inside card — don't close
+  if (_lbMouseDownInCard) return;
   if (!lbCard.contains(e.target)) closeLightbox();
 });
 
-// Zoom on image click
 lbImg.addEventListener('click', e => {
   e.stopPropagation();
-  if (!zoomed) {
-    lb.classList.add('zoomed');
-    zoomed = true;
-  } else {
-    lb.classList.remove('zoomed');
-    zoomed = false;
-  }
+  if (!zoomed) { lb.classList.add('zoomed'); zoomed = true; }
+  else { lb.classList.remove('zoomed'); zoomed = false; }
 });
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 document.addEventListener('contextmenu', e => {
-  // Only block right-click on images inside the lightbox, not sitewide
   if (e.target.tagName === 'IMG' && lb.contains(e.target)) e.preventDefault();
 });
 document.querySelectorAll('img').forEach(img => { img.setAttribute('draggable', 'false'); img.style.userSelect = 'none'; img.style.webkitUserDrag = 'none'; });
@@ -952,7 +934,6 @@ if ('ontouchstart' in window) {
 </script>
 
 <script>
-// ── Notes for hardcoded art pieces — edit these freely ──
 const HARDCODED_NOTES = {
   'Nearly There':           'Based on a song (https://www.youtube.com/watch?v=vFHBOKa_ZG0 Sleep Token Take me Back to Eden) I had long since listened to at the very beginnings of Ghost in Me. One of my first inspirations as a matter of fact. :] Finished 2/1/26',
   'The Dark Garden':        'Finished on 3/15/26 - Perhaps watching Demon Slayer reviews for hours straight altered my ability to draw backgrounds...',
@@ -970,7 +951,6 @@ const HARDCODED_NOTES = {
   'A Helping Hand':         'This piece is actually lore-heavy~ :) though if it\'ll actually appear in the main story or not I\'m not entirely sure... made on 3/5/26.',
   'In the Rain':            'My second drawing of the overall story (not counting my references). I would count this as the first because this was cannon (as much of a post as it was for fun rather than anything inheritantly meaningful it was) while the other one could be considered cannon, it was more of me just testing a brush. Finished 6/12/25.',
 };
-
 
 const HARDCODED_SLIDESHOWS = {
   'A Helping Hand': {
@@ -990,7 +970,6 @@ async function loadCMSGallery() {
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
     const grid = document.querySelector('.gallery-grid');
     if (!grid) return;
-    // Store notes for lightbox use
     items.forEach(item => { if (item.notes) galleryNotes.set(item.title, item.notes); });
     const sets = {}, singles = [];
     items.forEach(item => { if (item.set) { if (!sets[item.set]) sets[item.set] = []; sets[item.set].push(item); } else { singles.push(item); } });
