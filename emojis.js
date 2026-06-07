@@ -297,6 +297,11 @@
     if (!e.target.closest('[data-emoji-id]')) return;
     hideTip();
   });
+  // Mobile: hide on touchend or tap anywhere outside
+  document.addEventListener('touchend', () => { setTimeout(hideTip, 500); }, { passive: true });
+  document.addEventListener('touchstart', e => {
+    if (!e.target.closest('[data-emoji-id]')) hideTip();
+  }, { passive: true });
 
   // ── State ──
   let _emojis = null;
