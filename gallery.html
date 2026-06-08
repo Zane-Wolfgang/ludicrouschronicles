@@ -127,13 +127,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: auto;
     background: rgba(10,8,6,0.99);
   }
   .lightbox.zoomed .lightbox-img {
-    max-width: none;
-    max-height: none;
-    width: 150vw;
+    max-width: 95vw;
+    max-height: 95vh;
+    width: auto;
+    height: auto;
     cursor: zoom-out;
     border: none;
   }
@@ -286,7 +286,7 @@
   .lb-comment-delete-btn:hover { color: #c0705a; }
   .is-admin .lb-comment-delete-btn { display: block; }
 
-
+  .lb-engagement {
     display: flex;
     align-items: center;
     gap: 2rem;
