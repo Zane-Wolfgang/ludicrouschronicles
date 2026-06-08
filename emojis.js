@@ -264,6 +264,9 @@
   document.body.appendChild(_tip);
 
   function showTip(emoji, anchorEl) {
+    const rect = anchorEl.getBoundingClientRect();
+    // Skip if element is not visible (zero size = off-screen or hidden)
+    if (!rect.width && !rect.height) return;
     document.getElementById('lc-tip-img').src = emoji.src;
     document.getElementById('lc-tip-img').alt = emoji.label;
     document.getElementById('lc-tip-label').textContent = emoji.label;
@@ -271,12 +274,13 @@
     const TW = ps + 24, TH = ps + 44;
     document.getElementById('lc-tip-img').style.width  = ps + 'px';
     document.getElementById('lc-tip-img').style.height = ps + 'px';
-    const rect = anchorEl.getBoundingClientRect();
     let left = rect.left + rect.width / 2 - TW / 2;
     let top  = rect.top - TH - 8;
     if (top < 8) top = rect.bottom + 8;
     if (left < 8) left = 8;
     if (left + TW > window.innerWidth - 8) left = window.innerWidth - TW - 8;
+    // Final sanity check — if still out of bounds, abort
+    if (top < 0 || top > window.innerHeight || left < 0) return;
     _tip.style.left = left + 'px';
     _tip.style.top  = top  + 'px';
     _tip.style.display = 'block';
