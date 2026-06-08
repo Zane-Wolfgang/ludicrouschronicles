@@ -106,7 +106,7 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Description", name: "description", widget: "string", hint: "One line teaser shown on content page" }
+      - { label: "Description", name: "description", widget: "text", hint: "Teaser shown on the content page — supports paragraphs" }
       - { label: "Body", name: "body", widget: "markdown" }
       - { label: "Audio (optional)", name: "audio", widget: "file", required: false, hint: "Upload MP3 narration for this story. Enables the audio player with auto paragraph sync." }
       - label: "Access Tier"
@@ -127,7 +127,7 @@ collections:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Date", name: "date", widget: "datetime" }
       - { label: "Image", name: "image", widget: "image" }
-      - { label: "Note (optional)", name: "note", widget: "string", required: false, hint: "Short caption or comment" }
+      - { label: "Note (optional)", name: "note", widget: "text", required: false, hint: "Caption or comment — supports paragraphs" }
       - label: "Type"
         name: "type"
         widget: "select"
@@ -152,7 +152,7 @@ collections:
       - { label: "Title", name: "title", widget: "string", hint: "Name of the shoot, e.g. Pine Ridge — Spring Session" }
       - { label: "Date", name: "date", widget: "datetime" }
       - { label: "Game / Location", name: "game", widget: "string", required: false, hint: "e.g. Pine Ridge, Brookhaven" }
-      - { label: "Description (optional)", name: "description", widget: "string", required: false, hint: "One line caption shown below the image in the lightbox" }
+      - { label: "Description (optional)", name: "description", widget: "text", required: false, hint: "Caption shown below the image in the lightbox — supports paragraphs" }
       - { label: "Cover Image", name: "image", widget: "image", hint: "First image shown in the grid" }
       - { label: "Image 2", name: "image2", widget: "image", required: false }
       - { label: "Image 3", name: "image3", widget: "image", required: false }
