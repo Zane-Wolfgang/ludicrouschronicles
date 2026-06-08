@@ -124,16 +124,16 @@
     position: fixed;
     inset: 0;
     z-index: 9010;
+    overflow: auto;
     display: flex;
-    align-items: center;
-    justify-content: center;
     background: rgba(10,8,6,0.99);
   }
   .lightbox.zoomed .lightbox-img {
-    max-width: 95vw;
-    max-height: 95vh;
-    width: auto;
+    max-width: none;
+    max-height: none;
+    width: 150vw;
     height: auto;
+    margin: auto;
     cursor: zoom-out;
     border: none;
   }
