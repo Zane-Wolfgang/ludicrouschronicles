@@ -915,8 +915,23 @@ lb.addEventListener('click', e => {
 
 lbImg.addEventListener('click', e => {
   e.stopPropagation();
-  if (!zoomed) { lb.classList.add('zoomed'); zoomed = true; }
-  else { lb.classList.remove('zoomed'); zoomed = false; }
+  if (!zoomed) {
+    // Record where on the image they clicked (as fraction 0-1)
+    const rect = lbImg.getBoundingClientRect();
+    const fracX = (e.clientX - rect.left) / rect.width;
+    const fracY = (e.clientY - rect.top)  / rect.height;
+    lb.classList.add('zoomed');
+    zoomed = true;
+    // After layout updates, scroll so clicked spot is centered in viewport
+    requestAnimationFrame(() => {
+      const wrap = document.getElementById('lb-img-wrap');
+      wrap.scrollLeft = Math.max(0, fracX * lbImg.offsetWidth  - window.innerWidth  / 2);
+      wrap.scrollTop  = Math.max(0, fracY * lbImg.offsetHeight - window.innerHeight / 2);
+    });
+  } else {
+    lb.classList.remove('zoomed');
+    zoomed = false;
+  }
 });
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
