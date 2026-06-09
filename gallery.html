@@ -836,7 +836,7 @@ function setLightboxContent(title, type, notes) {
   const notesEl = document.getElementById('lb-notes');
   const notesTxt = document.getElementById('lb-notes-text');
   if (notes) {
-    notesTxt.textContent = notes;
+    notesTxt.innerHTML = notes.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
     notesEl.style.display = 'block';
   } else {
     notesEl.style.display = 'none';
