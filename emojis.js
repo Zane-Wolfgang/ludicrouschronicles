@@ -337,7 +337,7 @@
         if (res.ok) {
           const items = await res.json();
           if (Array.isArray(items) && items.length > 0) {
-            _emojis = items
+            const cmsEmojis = items
               .filter(e => e.active !== false && e.active !== 'false')
               .map(e => ({
                 id: e.filename ? e.filename.replace('.md','') : e.title.toLowerCase().replace(/[^a-z0-9]+/g,'-'),
@@ -346,6 +346,13 @@
                 size: parseInt(e.size) || 32,
                 preview_size: parseInt(e.preview_size) || 96
               }));
+            // Merge: hardcoded first, then CMS — CMS overrides by ID if same
+            const cmsIds = new Set(cmsEmojis.map(e => e.id));
+            const merged = [
+              ...EMOJI_DEFAULTS.filter(e => !cmsIds.has(e.id)),
+              ...cmsEmojis
+            ];
+            _emojis = merged;
             return _emojis;
           }
         }
