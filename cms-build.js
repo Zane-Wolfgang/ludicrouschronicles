@@ -17,10 +17,21 @@ function parseFrontmatter(fileContent) {
     const key = line.slice(0, colonIdx).trim();
     const val = line.slice(colonIdx + 1).trim();
     if (val === '>-' || val === '>') {
-      let block = [];
+      const block = [];
       i++;
       while (i < lines.length && (lines[i].startsWith('  ') || lines[i] === '')) { block.push(lines[i].trim()); i++; }
-      fm[key] = block.join(' ').trim();
+      // Blank lines = paragraph break (\n), consecutive lines = joined with space
+      const paragraphs = [];
+      let current = [];
+      for (const line of block) {
+        if (line === '') {
+          if (current.length) { paragraphs.push(current.join(' ')); current = []; }
+        } else {
+          current.push(line);
+        }
+      }
+      if (current.length) paragraphs.push(current.join(' '));
+      fm[key] = paragraphs.join('\n').trim();
     } else if (val === '|' || val === '|-') {
       let block = [];
       i++;
@@ -59,7 +70,12 @@ function parseFrontmatter(fileContent) {
         }
         // Unescape: '' → ' for single-quoted, \" → " for double-quoted
         if (startQuote === "'") accumulated = accumulated.replace(/''/g, "'");
-        if (startQuote === '"')  accumulated = accumulated.replace(/\\"/g, '"');
+        if (startQuote === '"') accumulated = accumulated
+          .replace(/\\n/g, '\n')
+          .replace(/\\t/g, '\t')
+          .replace(/\\r/g, '')
+          .replace(/\\"/g, '"')
+          .replace(/\\\\/g, '\\');
         fm[key] = accumulated.replace(/\uFEFF/g, '').trim();
       } else {
         // Plain scalar — collect continuation lines (indented, not a new key)
