@@ -7,6 +7,8 @@ notes: >-
   least I'd tried to make something suitable (with reference for positioning of
   course).
 
+
+
   Funnily enough this picture actually propelled me to convert Jackson to an assassin, as he had no prior use in the story otherwise.
 type: sketch
 tier: devoted
