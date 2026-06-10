@@ -277,6 +277,8 @@
     let left = rect.left + rect.width / 2 - TW / 2;
     let top  = rect.top - TH - 8;
     if (top < 8) top = rect.bottom + 8;
+    // If below also goes off screen, clamp to bottom edge
+    if (top + TH > window.innerHeight - 8) top = window.innerHeight - TH - 8;
     if (left < 8) left = 8;
     if (left + TW > window.innerWidth - 8) left = window.innerWidth - TW - 8;
     // Final sanity check — if still out of bounds, abort
@@ -289,9 +291,11 @@
   function hideTip() { _tip.style.display = 'none'; }
 
   // Wire hover on any element with data-emoji-id
+  let _tipHideTimer = null;
   document.addEventListener('mouseover', e => {
     const el = e.target.closest('[data-emoji-id]');
     if (!el) return;
+    clearTimeout(_tipHideTimer);
     loadEmojis().then(emojis => {
       const emoji = emojis.find(em => em.id === el.dataset.emojiId);
       if (emoji) showTip(emoji, el);
@@ -299,7 +303,8 @@
   });
   document.addEventListener('mouseout', e => {
     if (!e.target.closest('[data-emoji-id]')) return;
-    hideTip();
+    clearTimeout(_tipHideTimer);
+    _tipHideTimer = setTimeout(hideTip, 80);
   });
   // Mobile: hide on touchend or tap anywhere outside
   document.addEventListener('touchend', () => { setTimeout(hideTip, 500); }, { passive: true });
