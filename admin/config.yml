@@ -51,7 +51,7 @@ collections:
       - { label: "Page 2 (optional)", name: "image2", widget: "image", required: false, hint: "Second image in slideshow" }
       - { label: "Page 3 (optional)", name: "image3", widget: "image", required: false, hint: "Third image in slideshow" }
       - { label: "Page 4 (optional)", name: "image4", widget: "image", required: false, hint: "Fourth image in slideshow" }
-      - { label: "Artist's Note (optional)", name: "notes", widget: "text", required: false, hint: "Shown below the image in the lightbox — like a Tumblr artist's note." }
+      - { label: "Artist's Note (optional)", name: "notes", widget: "markdown", required: false, hint: "Shown below the image in the lightbox — supports paragraphs and formatting." }
       - label: "Type"
         name: "type"
         widget: "select"
@@ -127,7 +127,7 @@ collections:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Date", name: "date", widget: "datetime" }
       - { label: "Image", name: "image", widget: "image" }
-      - { label: "Note (optional)", name: "note", widget: "text", required: false, hint: "Caption or comment — supports paragraphs" }
+      - { label: "Note (optional)", name: "note", widget: "markdown", required: false, hint: "Caption or comment — supports paragraphs and formatting." }
       - label: "Type"
         name: "type"
         widget: "select"
@@ -231,7 +231,7 @@ collections:
       - { label: "Image 8 (optional)", name: "image8", widget: "image", required: false }
       - { label: "Image 9 (optional)", name: "image9", widget: "image", required: false }
       - { label: "Image 10 (optional)", name: "image10", widget: "image", required: false }
-      - { label: "Artist's Note (optional)", name: "notes", widget: "text", required: false, hint: "Shown below the image in the lightbox." }
+      - { label: "Artist's Note (optional)", name: "notes", widget: "markdown", required: false, hint: "Shown below the image in the lightbox — supports paragraphs and formatting." }
       - label: "Medium"
         name: "medium"
         widget: "select"
