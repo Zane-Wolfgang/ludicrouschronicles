@@ -31,7 +31,7 @@ function parseFrontmatter(fileContent) {
         }
       }
       if (current.length) paragraphs.push(current.join(' '));
-      fm[key] = paragraphs.join('\n').trim();
+      fm[key] = paragraphs.join('\n\n').trim();
     } else if (val === '|' || val === '|-') {
       let block = [];
       i++;
