@@ -1,7 +1,7 @@
 ---
 title: Doodles For Fun
 date: 2026-06-08T12:07:00.000-04:00
-image: /images/uploads/image.png
+image: /images/uploads/image-1.png
 image2: /images/uploads/image-1-.png
 image3: /images/uploads/image-2-.png
 notes: >-
