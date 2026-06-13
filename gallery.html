@@ -21,6 +21,8 @@
   .gallery-item:hover .gallery-overlay { opacity: 1; }
   .gallery-overlay-title { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--parchment); margin-bottom: 0.2rem; }
   .gallery-overlay-type { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
+  .gallery-overlay-date { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; color: var(--text-muted); margin-top: 0.2rem; }
+  .lightbox-date { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
   .gallery-item.locked { position: relative; }
   .gallery-item.locked .gallery-overlay { top: 0; bottom: auto; padding: 1rem 1rem 2rem; background: linear-gradient(180deg, rgba(10,8,6,0.85) 0%, transparent 100%); }
   .gallery-item.locked img { pointer-events: none !important; filter: brightness(0.92) blur(6px); transform: scale(1.05); }
@@ -513,6 +515,7 @@
       <div class="lightbox-caption-row">
         <span class="lightbox-title" id="lb-title"></span>
         <span class="lightbox-type" id="lb-type"></span>
+        <span class="lightbox-date" id="lb-date"></span>
       </div>
 
       <!-- Engagement row -->
@@ -830,6 +833,12 @@ const lbCard  = document.getElementById('lb-card');
 const lbImg   = document.getElementById('lb-img');
 let zoomed = false;
 
+function parseLocalDate(s) {
+  if (!s) return null;
+  const p = s.split(/[-T]/);
+  return new Date(+p[0], +p[1]-1, +p[2]);
+}
+
 function renderNotes(md) {
   if (!md) return '';
   return md
@@ -851,6 +860,9 @@ function renderNotes(md) {
 function setLightboxContent(title, type, notes) {
   document.getElementById('lb-title').textContent = title;
   document.getElementById('lb-type').textContent  = type || '';
+  const dateEl = document.getElementById('lb-date');
+  const rawDate = galleryDates.get(title) || HARDCODED_DATES[title] || '';
+  dateEl.textContent = rawDate ? parseLocalDate(rawDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
   const notesEl = document.getElementById('lb-notes');
   const notesTxt = document.getElementById('lb-notes-text');
   if (notes) {
@@ -982,6 +994,26 @@ const HARDCODED_NOTES = {
   'In the Rain':            'My second drawing of the overall story (not counting my references). I would count this as the first because this was cannon (as much of a post as it was for fun rather than anything inheritantly meaningful it was) while the other one could be considered cannon, it was more of me just testing a brush. Finished 6/12/25.',
 };
 
+const HARDCODED_DATES = {
+  'Nearly There':           '2026-02-01',
+  'The Dark Garden':        '2026-03-15',
+  'The Offer':              '2025-09-04',
+  'The Beginning':          '2025-07-10',
+  'Among Asteroids':        '2025-07-20',
+  'The Tunnel':             '2025-06-13',
+  'Fix You Up':             '2025-09-13',
+  'The Storm':              '2025-09-23',
+  'Patching Up':            '2025-10-08',
+  'Faces of the Suits':     '2025-08-24',
+  'Oh What Could Have Been':'2026-01-01',
+  'To Law And Order':       '2026-01-14',
+  "Don't You Miss Your Legs?":'2025-10-28',
+  'A Helping Hand':         '2026-03-05',
+  'In the Rain':            '2025-06-12',
+};
+
+const galleryDates = new Map();
+
 const HARDCODED_SLIDESHOWS = {
   'A Helping Hand': {
     images: ['images/art-helping-hand.png', 'images/art-nobody-special.png'],
@@ -1000,7 +1032,7 @@ async function loadCMSGallery() {
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
     const grid = document.querySelector('.gallery-grid');
     if (!grid) return;
-    items.forEach(item => { if (item.notes) galleryNotes.set(item.title, item.notes); });
+    items.forEach(item => { if (item.notes) galleryNotes.set(item.title, item.notes); if (item.date) galleryDates.set(item.title, item.date); });
     const sets = {}, singles = [];
     items.forEach(item => { if (item.set) { if (!sets[item.set]) sets[item.set] = []; sets[item.set].push(item); } else { singles.push(item); } });
     Object.values(sets).forEach(s => s.sort((a,b) => a.set_order - b.set_order));
@@ -1028,7 +1060,7 @@ function makeCMSGalleryItem(item, userTier, tRank) {
     div.setAttribute('onclick', isSlideshow
       ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, '${item.type}', ${notesJson})`
       : `openLightbox(${JSON.stringify(images[0])}, ${JSON.stringify(item.title)}, ${JSON.stringify(item.type)}, ${notesJson})`);
-    div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" />${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">${item.type}${isSlideshow ? ' · ' + images.length + ' pages' : ''}</div></div>`;
+    div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-overlay-date" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(10,8,6,0.7);padding:0.15em 0.5em;">${item.date ? parseLocalDate(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div>${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">${item.type}${isSlideshow ? ' · ' + images.length + ' pages' : ''}</div></div>`;
   }
   return div;
 }
@@ -1073,6 +1105,7 @@ async function loadTraditional() {
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
     if (loading) loading.remove();
     items.forEach(item => {
+      if (item.date) galleryDates.set(item.title, item.date);
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
       const images = item.images && item.images.length > 0 ? item.images : [item.image];
       const titles = images.map((_, i) => i === 0 ? item.title : `${item.title} (${i+1})`);
@@ -1090,7 +1123,7 @@ async function loadTraditional() {
         div.setAttribute('onclick', isSlideshow
           ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, 'Traditional Art${medium}', ${notesJson})`
           : `openLightbox(${JSON.stringify(images[0])}, ${JSON.stringify(item.title)}, \`Traditional Art${medium}\`, ${notesJson})`);
-        div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" />${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">Traditional Art${medium}</div></div>`;
+        div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-overlay-date" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(10,8,6,0.7);padding:0.15em 0.5em;">${item.date ? parseLocalDate(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div>${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">Traditional Art${medium}</div></div>`;
       }
       grid.appendChild(div);
     });
@@ -1109,6 +1142,7 @@ async function loadStills() {
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
     if (loading) loading.remove();
     items.forEach(item => {
+      if (item.date) galleryDates.set(item.title, item.date);
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
       const images = item.images && item.images.length > 0 ? item.images : [item.image];
       const titles = images.map((_, i) => i === 0 ? item.title : `${item.title} (${i+1})`);
@@ -1126,7 +1160,7 @@ async function loadStills() {
         div.setAttribute('onclick', isSlideshow
           ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, 'Stills', ${notesJson})`
           : `openLightbox(${JSON.stringify(images[0])}, ${JSON.stringify(item.title)}, \`Stills${game}\`, ${notesJson})`);
-        div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" />${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">Stills${game}${isSlideshow ? ' · ' + images.length + ' shots' : ''}</div></div>`;
+        div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-overlay-date" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(10,8,6,0.7);padding:0.15em 0.5em;">${item.date ? parseLocalDate(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div>${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">Stills${game}${isSlideshow ? ' · ' + images.length + ' shots' : ''}</div></div>`;
       }
       grid.appendChild(div);
     });
