@@ -15,14 +15,16 @@
   .gallery-grid { columns: 3; column-gap: 12px; margin-top: 3rem; }
   .gallery-item { break-inside: avoid; margin-bottom: 12px; position: relative; overflow: hidden; cursor: pointer; display: block; border: 1px solid var(--border); transition: border-color 0.25s, transform 0.25s; }
   .gallery-item:hover { border-color: var(--gold-dim); transform: scale(1.01); }
-  .gallery-item img { width: 100%; display: block; filter: brightness(0.92); transition: filter 0.3s; }
+  .gallery-item img { width: 100%; display: block; filter: brightness(0.92); transition: filter 0.3s; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; user-drag: none; pointer-events: none; }
   .gallery-item:hover img { filter: brightness(1.05); }
-  .gallery-overlay { position: absolute; bottom: -8px; left: 0; right: 0; padding: 2rem 1rem 1.2rem; background: linear-gradient(0deg, rgba(10,8,6,0.85) 0%, transparent 100%); opacity: 0; transition: opacity 0.25s; }
+  .gallery-overlay { position: absolute; bottom: -8px; left: 0; right: 0; padding: 2rem 1rem 1.2rem; background: linear-gradient(0deg, rgba(10,8,6,0.85) 0%, transparent 100%); opacity: 0; transition: opacity 0.25s; z-index: 2; }
   .gallery-item:hover .gallery-overlay { opacity: 1; }
   .gallery-overlay-title { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--parchment); margin-bottom: 0.2rem; }
   .gallery-overlay-type { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
   .gallery-overlay-date { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; color: var(--text-muted); margin-top: 0.2rem; }
   .lightbox-date { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+  /* Transparent overlay on every item — blocks Chrome Lens button from attaching to img */
+  .gallery-item::after { content: ''; position: absolute; inset: 0; z-index: 1; }
   .gallery-item.locked { position: relative; }
   .gallery-item.locked .gallery-overlay { top: 0; bottom: auto; padding: 1rem 1rem 2rem; background: linear-gradient(180deg, rgba(10,8,6,0.85) 0%, transparent 100%); }
   .gallery-item.locked img { pointer-events: none !important; filter: brightness(0.92) blur(6px); transform: scale(1.05); }
@@ -113,6 +115,8 @@
     object-fit: contain;
     margin: 0 auto;
     -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
     user-select: none;
     cursor: zoom-in;
     transition: opacity 0.2s ease;
@@ -943,7 +947,8 @@ lb.addEventListener('click', e => {
   if (!lbCard.contains(e.target)) closeLightbox();
 });
 
-lbImg.addEventListener('click', e => {
+lbImg.style.pointerEvents = 'none';
+document.getElementById('lb-img-wrap').addEventListener('click', e => {
   e.stopPropagation();
   if (!zoomed) {
     // Record where on the image they clicked (as fraction 0-1)
@@ -966,7 +971,7 @@ lbImg.addEventListener('click', e => {
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 document.addEventListener('contextmenu', e => {
-  if (e.target.tagName === 'IMG' && lb.contains(e.target)) e.preventDefault();
+  if (e.target.closest('.gallery-item, .lightbox-img-wrap, .stills-section, #traditional')) e.preventDefault();
 });
 document.querySelectorAll('img').forEach(img => { img.setAttribute('draggable', 'false'); img.style.userSelect = 'none'; img.style.webkitUserDrag = 'none'; });
 
