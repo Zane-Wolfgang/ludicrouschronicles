@@ -5,12 +5,15 @@ backend:
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
 
+editor:
+  preview: false
+
 collections:
   - name: "announcements"
     label: "Announcements"
     folder: "_data/announcements"
     create: true
-    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Date", name: "date", widget: "datetime" }
@@ -22,6 +25,8 @@ collections:
     folder: "_data/chapters"
     create: true
     slug: "chapter-{{fields.number}}"
+    media_folder: "images"
+    public_folder: "/images"
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Chapter Number", name: "number", widget: "number", value_type: "int" }
@@ -43,7 +48,9 @@ collections:
     label: "Gallery"
     folder: "_data/gallery"
     create: true
-    slug: "{{slug}}"
+    media_folder: "images"
+    public_folder: "/images"
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Date", name: "date", widget: "datetime" }
@@ -73,7 +80,9 @@ collections:
     label: "Videos"
     folder: "_data/videos"
     create: true
-    slug: "{{slug}}"
+    media_folder: "images"
+    public_folder: "/images"
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Date", name: "date", widget: "datetime" }
@@ -102,7 +111,7 @@ collections:
     label: "Short Stories"
     folder: "_data/short-stories"
     create: true
-    slug: "{{slug}}"
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Date", name: "date", widget: "datetime" }
@@ -122,7 +131,7 @@ collections:
     label: "WIPs & Sketches"
     folder: "_data/wips"
     create: true
-    slug: "{{slug}}"
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Date", name: "date", widget: "datetime" }
@@ -147,7 +156,9 @@ collections:
     label: "Stills"
     folder: "_data/stills"
     create: true
-    slug: "{{slug}}"
+    media_folder: "images"
+    public_folder: "/images"
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
     fields:
       - { label: "Title", name: "title", widget: "string", hint: "Name of the shoot, e.g. Pine Ridge — Spring Session" }
       - { label: "Date", name: "date", widget: "datetime" }
@@ -186,7 +197,7 @@ collections:
     label: "Social Links"
     folder: "_data/socials"
     create: true
-    slug: "{{slug}}"
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
     fields:
       - { label: "Platform Name", name: "title", widget: "string", hint: "e.g. YouTube, Instagram, My App" }
       - { label: "URL", name: "url", widget: "string" }
@@ -217,7 +228,9 @@ collections:
     label: "Traditional Art"
     folder: "_data/traditional-art"
     create: true
-    slug: "{{slug}}"
+    media_folder: "images"
+    public_folder: "/images"
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Date", name: "date", widget: "datetime" }
@@ -257,9 +270,9 @@ collections:
     label: "Emojis"
     folder: "_data/emojis"
     create: true
-    media_folder: "/images/emojis"
+    media_folder: "images/emojis"
     public_folder: "/images/emojis"
-    slug: "{{slug}}"
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
     fields:
       - { label: "Name", name: "title", widget: "string", hint: "Display name, e.g. Angry Vasily" }
       - { label: "Image", name: "image", widget: "image", hint: "Upload to images/emojis/" }
@@ -271,7 +284,7 @@ collections:
     label: "Music"
     folder: "_data/music"
     create: true
-    slug: "{{slug}}"
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
     fields:
       - { label: "Title", name: "title", widget: "string", hint: "Track name shown in the player" }
       - { label: "Artist", name: "artist", widget: "string", required: false }
