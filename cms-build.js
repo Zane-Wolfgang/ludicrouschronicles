@@ -122,13 +122,17 @@ function readDataDir(dir) {
   return [];
 }
 
+// Normalize image paths — strip leading slash so paths are always relative
+// (Decap CMS sometimes stores /images/x.png, we want images/x.png)
+function normImg(p) { return p ? p.replace(/^\//, '') : p; }
+
 // ── Gallery index ──
 const galleryRaw = [...readDataDir('_data/gallery'), ...readDataDir('gallery')];
 const gallery = galleryRaw.map(item => {
-  const images = [item.image].filter(Boolean);
-  if (item.image2) images.push(item.image2);
-  if (item.image3) images.push(item.image3);
-  if (item.image4) images.push(item.image4);
+  const images = [item.image].filter(Boolean).map(normImg);
+  if (item.image2) images.push(normImg(item.image2));
+  if (item.image3) images.push(normImg(item.image3));
+  if (item.image4) images.push(normImg(item.image4));
   return { ...item, images };
 });
 fs.writeFileSync('_data/gallery-index.json', JSON.stringify(gallery, null, 2));
@@ -137,9 +141,9 @@ console.log(`Gallery: ${gallery.length} items`);
 // ── Stills index ──
 const stillsRaw = readDataDir('_data/stills');
 const stills = stillsRaw.map(item => {
-  const images = [item.image].filter(Boolean);
+  const images = [item.image].filter(Boolean).map(normImg);
   for (let n = 2; n <= 20; n++) {
-    if (item[`image${n}`]) images.push(item[`image${n}`]);
+    if (item[`image${n}`]) images.push(normImg(item[`image${n}`]));
   }
   return { ...item, images };
 });
@@ -149,9 +153,9 @@ console.log(`Stills: ${stills.length} items`);
 // ── Traditional Art index ──
 const traditionalRaw = readDataDir('_data/traditional-art');
 const traditionalArt = traditionalRaw.map(item => {
-  const images = [item.image].filter(Boolean);
+  const images = [item.image].filter(Boolean).map(normImg);
   for (let n = 2; n <= 10; n++) {
-    if (item[`image${n}`]) images.push(item[`image${n}`]);
+    if (item[`image${n}`]) images.push(normImg(item[`image${n}`]));
   }
   return { ...item, images };
 });
@@ -175,34 +179,34 @@ const chapters = readDataDir('_data/chapters').map(c => ({
   is_voice: toBool(c.is_voice),
   title: c.number == 1 ? c.title : ('Chapter ' + (chapterNums[parseInt(c.number)] || c.number) + ' \u2014 ' + c.title),
   href: c.number == 1 ? 'chapter-1.html' : ('chapter.html?chapter=' + c.number),
-  thumbnail: c.art || '', body: c.body || ''
+  thumbnail: normImg(c.art) || '', body: c.body || ''
 }));
 
 const videos = readDataDir('_data/videos').map(v => ({
   ...v, type: 'Video', label: 'Video', filter_type: 'video',
   is_voice: toBool(v.is_voice), href: 'videos.html',
-  description: v.description || '', thumbnail: v.thumbnail || ''
+  description: v.description || '', thumbnail: normImg(v.thumbnail) || ''
 }));
 
 const shortStories = readDataDir('_data/short-stories').map(s => {
   const slug = s.filename ? s.filename.replace('.md','') : s.title.toLowerCase().replace(/\s+/g,'-');
   return { ...s, slug, type: 'Short Story', label: 'Short Story', filter_type: 'story',
-    href: `story.html?story=${slug}`, thumbnail: s.art || s.thumbnail || '' };
+    href: `story.html?story=${slug}`, thumbnail: normImg(s.art || s.thumbnail) || '' };
 });
 
 const wips = readDataDir('_data/wips').map(w => ({
   ...w, type: 'WIP', label: w.type || 'WIP', filter_type: 'behind',
-  href: 'membership.html', thumbnail: w.image || ''
+  href: 'membership.html', thumbnail: normImg(w.image) || ''
 }));
 
 const stills_content = stills.map(s => ({
   ...s, type: 'Stills', label: 'Stills', filter_type: 'stills',
-  href: 'gallery.html#stills', thumbnail: s.image || ''
+  href: 'gallery.html#stills', thumbnail: normImg(s.image) || ''
 }));
 
 const traditional_content = traditionalArt.map(t => ({
   ...t, type: 'Traditional Art', label: 'Traditional Art', filter_type: 'art',
-  href: 'gallery.html#traditional', thumbnail: t.image || ''
+  href: 'gallery.html#traditional', thumbnail: normImg(t.image) || ''
 }));
 
 const sortedChapters = [...chapters].sort((a,b) => parseInt(a.number||0) - parseInt(b.number||0));
