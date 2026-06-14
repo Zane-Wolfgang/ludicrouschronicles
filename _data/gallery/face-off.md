@@ -6,6 +6,6 @@ notes: |-
   I dislike it.
 
   Made on 9/10/25
-type: character
+type: Character Art
 tier: free
 ---
