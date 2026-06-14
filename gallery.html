@@ -250,6 +250,18 @@
     margin-bottom: 0.5rem;
     font-style: normal;
   }
+  .lb-note-heading {
+    font-family: 'Cinzel', serif;
+    color: var(--parchment);
+    font-weight: 600;
+    margin: 0.6em 0 0.2em;
+    font-style: normal;
+    letter-spacing: 0.05em;
+  }
+  h1.lb-note-heading { font-size: 1.3rem; }
+  h2.lb-note-heading { font-size: 1.15rem; }
+  h3.lb-note-heading { font-size: 1.05rem; }
+  h4.lb-note-heading, h5.lb-note-heading, h6.lb-note-heading { font-size: 0.95rem; }
 
   /* Comments section */
   .lightbox-comments { padding: 1rem 1.5rem 1.5rem; }
@@ -845,19 +857,25 @@ function parseLocalDate(s) {
 
 function renderNotes(md) {
   if (!md) return '';
+  const inline = s => s
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>')
+    .replace(/__(.+?)__/g,          '<strong>$1</strong>')
+    .replace(/\*([^*\n]+?)\*/g,     '<em>$1</em>')
+    .replace(/(?<![\w])_([^_\n]+?)_(?![\w])/g, '<em>$1</em>')
+    .replace(/~~(.+?)~~/g,          '<del>$1</del>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
   return md
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .split(/\n\n+/)
-    .map(para => para
-      .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-      .replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>')
-      .replace(/__(.+?)__/g,          '<strong>$1</strong>')
-      .replace(/\*([^*\n]+?)\*/g,     '<em>$1</em>')
-      .replace(/(?<![\w])_([^_\n]+?)_(?![\w])/g, '<em>$1</em>')
-      .replace(/~~(.+?)~~/g,          '<del>$1</del>')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-      .replace(/\n/g, '<br>')
-    )
+    .map(para => {
+      const h = para.match(/^(#{1,6}) +(.+)$/);
+      if (h) {
+        const lvl = Math.min(h[1].length, 6);
+        return `<h${lvl} class="lb-note-heading">${inline(h[2])}</h${lvl}>`;
+      }
+      return inline(para.replace(/\n/g,'<br>'));
+    })
     .join('<br><br>');
 }
 
