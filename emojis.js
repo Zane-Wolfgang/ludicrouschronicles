@@ -294,17 +294,19 @@
   let _tipHideTimer = null;
   document.addEventListener('mouseover', e => {
     const el = e.target.closest('[data-emoji-id]');
-    if (!el) return;
-    clearTimeout(_tipHideTimer);
-    loadEmojis().then(emojis => {
-      const emoji = emojis.find(em => em.id === el.dataset.emojiId);
-      if (emoji) showTip(emoji, el);
-    });
-  });
-  document.addEventListener('mouseout', e => {
-    if (!e.target.closest('[data-emoji-id]')) return;
-    clearTimeout(_tipHideTimer);
-    _tipHideTimer = setTimeout(hideTip, 80);
+    if (el) {
+      clearTimeout(_tipHideTimer);
+      loadEmojis().then(emojis => {
+        const emoji = emojis.find(em => em.id === el.dataset.emojiId);
+        if (emoji) showTip(emoji, el);
+      });
+    } else {
+      // Moved to a non-emoji element — schedule hide only if tip is showing
+      if (_tip.style.display !== 'none') {
+        clearTimeout(_tipHideTimer);
+        _tipHideTimer = setTimeout(hideTip, 80);
+      }
+    }
   });
   // Mobile: hide on touchend or tap anywhere outside
   document.addEventListener('touchend', () => { setTimeout(hideTip, 500); }, { passive: true });
