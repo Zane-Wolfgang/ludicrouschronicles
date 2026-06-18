@@ -858,6 +858,7 @@ function parseLocalDate(s) {
 function renderNotes(md) {
   if (!md) return '';
   const inline = s => s
+    .replace(/\\([*_~{}+\-.[\]()\\#`!])/g, (_, c) => '&#'+c.charCodeAt(0)+';')
     .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
     .replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>')
     .replace(/__(.+?)__/g,          '<strong>$1</strong>')
