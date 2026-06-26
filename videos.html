@@ -470,15 +470,23 @@
     const desc = _videoDescriptions.get(src) || '';
     const descEl = document.getElementById('video-description');
     if (desc && desc.trim()) {
+      function descInline(str) {
+        return str
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>')
+          .replace(/\*\*\*(.*?)\*\*\*/gs, '<strong><em>$1</em></strong>')
+          .replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>')
+          .replace(/__(.*?)__/gs, '<span style="text-decoration:underline;">$1</span>')
+          .replace(/~~(.*?)~~/gs, '<span style="text-decoration:line-through;">$1</span>')
+          .replace(/\^\^(.*?)\^\^/gs, '<span style="font-size:1.2em;">$1</span>')
+          .replace(/,,(.*?),,/gs, '<span style="font-size:0.85em;">$1</span>')
+          .replace(/\*(.*?)\*/gs, '<em>$1</em>');
+      }
       const descHtml = desc
         .replace(/\\/g, '')
         .split(/\n\n+/)
         .map(p => p.trim())
         .filter(p => p.length > 0)
-        .map(p => `<p>${p
-          .replace(/\n/g, '<br>')
-          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--gold);text-decoration:underline;">$1</a>')
-        }</p>`)
+        .map(p => `<p>${descInline(p).replace(/\n/g, '<br>')}</p>`)
         .join('');
       descEl.innerHTML = descHtml;
       descEl.classList.add('visible');
