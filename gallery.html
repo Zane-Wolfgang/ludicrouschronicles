@@ -507,6 +507,16 @@
       </div>
     </div>
 
+    <!-- ── WIPs & Sketches Section ── -->
+    <div class="stills-section" id="wips">
+      <div class="section-label">Behind the Scenes</div>
+      <h2 class="section-title">WIPs &amp; Sketches</h2>
+      <p class="section-body">Works in progress, rough sketches, and timelapse stills.</p>
+      <div class="stills-grid" id="wips-grid">
+        <div class="stills-empty" id="wips-loading">Loading...</div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -583,12 +593,13 @@
   <a href="#gallery-grid"><span>Digital Art</span></a>
   <a href="#stills"><span>Stills</span></a>
   <a href="#traditional"><span>Traditional</span></a>
+  <a href="#wips"><span>WIPs</span></a>
 </div>
 <script>
   (function() {
     var el = document.getElementById('gallery-section-nav');
     var links = document.querySelectorAll('.gallery-section-nav a');
-    var targets = ['gallery-grid', 'stills', 'traditional'].map(function(id) { return document.getElementById(id); });
+    var targets = ['gallery-grid', 'stills', 'traditional', 'wips'].map(function(id) { return document.getElementById(id); });
     // Nudge right to sit beside scrollbar — clamped 0-20px so it can never go wrong
     try {
       var sw = window.innerWidth - document.documentElement.clientWidth;
@@ -990,7 +1001,7 @@ document.getElementById('lb-img-wrap').addEventListener('click', e => {
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 document.addEventListener('contextmenu', e => {
-  if (e.target.closest('.gallery-item, .lightbox-img-wrap, .stills-section, #traditional')) e.preventDefault();
+  if (e.target.closest('.gallery-item, .lightbox-img-wrap, .stills-section, #traditional, #wips')) e.preventDefault();
 });
 document.querySelectorAll('img').forEach(img => { img.setAttribute('draggable', 'false'); img.style.userSelect = 'none'; img.style.webkitUserDrag = 'none'; });
 
@@ -1117,6 +1128,38 @@ async function checkHardcodedLocks() {
   });
 }
 
+async function loadWips() {
+  const grid = document.getElementById('wips-grid');
+  const loading = document.getElementById('wips-loading');
+  try {
+    const res = await fetch('/_data/wips-index.json');
+    if (!res.ok) throw new Error();
+    const items = await res.json();
+    if (!items || items.length === 0) { if (loading) loading.textContent = 'No WIPs yet.'; return; }
+    const userTier = window.getUserTier ? await window.getUserTier() : 'free';
+    const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
+    if (loading) loading.remove();
+    items.forEach(item => {
+      if (item.date) galleryDates.set(item.title, item.date);
+      const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
+      const typeLabel = item.type || 'WIP';
+      const notes = item.note || '';
+      const div = document.createElement('div');
+      if (isLocked) {
+        div.className = 'gallery-item locked';
+        div.setAttribute('onclick', "window.location.href='membership.html'");
+        div.innerHTML = `<img loading="lazy" src="${item.image}" alt="${item.title}" /><div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div><div class="gallery-tier-label">${item.tier === 'devoted' ? 'Devoted' : 'Bound'}</div><div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div></div>`;
+      } else {
+        const notesJson = JSON.stringify(notes);
+        div.className = 'gallery-item';
+        div.setAttribute('onclick', `openLightbox(${JSON.stringify(item.image)}, ${JSON.stringify(item.title)}, ${JSON.stringify(typeLabel)}, ${notesJson})`);
+        div.innerHTML = `<img loading="lazy" src="${item.image}" alt="${item.title}" /><div class="gallery-overlay-date" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(10,8,6,0.7);padding:0.15em 0.5em;">${item.date ? parseLocalDate(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div><div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">${typeLabel}</div></div>`;
+      }
+      grid.appendChild(div);
+    });
+  } catch(e) { if (loading) loading.textContent = 'No WIPs yet.'; }
+}
+
 async function loadTraditional() {
   const grid = document.getElementById('traditional-grid');
   const loading = document.getElementById('traditional-loading');
@@ -1200,6 +1243,7 @@ loadCMSGallery().then(() => checkHardcodedLocks()).then(() => {
 });
 loadStills();
 loadTraditional();
+loadWips();
 </script>
 <script>
 function openFromHash() {
