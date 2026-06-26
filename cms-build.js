@@ -162,6 +162,12 @@ const traditionalArt = traditionalRaw.map(item => {
 fs.writeFileSync('_data/traditional-art-index.json', JSON.stringify(traditionalArt, null, 2));
 console.log(`Traditional Art: ${traditionalArt.length} items`);
 
+// ── WIPs & Sketches index (standalone, for gallery.html display) ──
+const wipsRaw = readDataDir('_data/wips');
+const wipsIndex = wipsRaw.map(item => ({ ...item, image: normImg(item.image) }));
+fs.writeFileSync('_data/wips-index.json', JSON.stringify(wipsIndex, null, 2));
+console.log(`WIPs: ${wipsIndex.length} items`);
+
 // ── Emojis index ──
 const emojis = readDataDir('_data/emojis').filter(e => e.active !== false && e.active !== 'false');
 fs.writeFileSync('_data/emojis-index.json', JSON.stringify(emojis, null, 2));
@@ -196,7 +202,7 @@ const shortStories = readDataDir('_data/short-stories').map(s => {
 
 const wips = readDataDir('_data/wips').map(w => ({
   ...w, type: 'WIP', label: w.type || 'WIP', filter_type: 'behind',
-  href: 'membership.html', thumbnail: normImg(w.image) || ''
+  href: 'gallery.html#wips', thumbnail: normImg(w.image) || ''
 }));
 
 const stills_content = stills.map(s => ({
