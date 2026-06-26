@@ -206,6 +206,11 @@
     border-top: none;
   }
   .lightbox.zoomed .lightbox-below { display: none; }
+  body.lc-zoomed #admin-tier-switcher,
+  body.lc-zoomed .admin-panel-tab,
+  body.lc-zoomed #lc-music-player {
+    display: none !important;
+  }
 
   .lightbox-caption-row {
     display: flex;
@@ -929,6 +934,7 @@ function showSocials() { const t = document.getElementById('socials-trigger'); i
 function openLightbox(src, title, type, notes) {
   lbImg.src = src;
   lb.classList.add('open'); lb.classList.remove('zoomed');
+  document.body.classList.remove('lc-zoomed');
   document.body.style.overflow = 'hidden'; zoomed = false;
   lb.scrollTop = 0;
   document.getElementById('lb-prev').classList.add('hidden');
@@ -944,6 +950,7 @@ function openLightbox(src, title, type, notes) {
 function openSlideshow(images, titles, type, notes) {
   slideImages = images; slideTitles = titles; slideType = type; slideIndex = 0;
   lb.classList.add('open'); lb.classList.remove('zoomed');
+  document.body.classList.remove('lc-zoomed');
   document.body.style.overflow = 'hidden'; zoomed = false;
   lb.scrollTop = 0;
   showSlide(0);
@@ -965,6 +972,7 @@ function showSlide(index) {
 
 function closeLightbox() {
   lb.classList.remove('open', 'zoomed');
+  document.body.classList.remove('lc-zoomed');
   document.body.style.overflow = '';
   zoomed = false;
   showSocials();
@@ -990,6 +998,7 @@ document.getElementById('lb-img-wrap').addEventListener('click', e => {
     const fracX = (e.clientX - rect.left) / rect.width;
     const fracY = (e.clientY - rect.top)  / rect.height;
     lb.classList.add('zoomed');
+    document.body.classList.add('lc-zoomed');
     zoomed = true;
     // After layout updates, scroll so clicked spot is centered in viewport
     requestAnimationFrame(() => {
@@ -999,6 +1008,7 @@ document.getElementById('lb-img-wrap').addEventListener('click', e => {
     });
   } else {
     lb.classList.remove('zoomed');
+    document.body.classList.remove('lc-zoomed');
     zoomed = false;
   }
 });
