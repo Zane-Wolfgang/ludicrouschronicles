@@ -262,6 +262,8 @@
   h2.lb-note-heading { font-size: 1.15rem; }
   h3.lb-note-heading { font-size: 1.05rem; }
   h4.lb-note-heading, h5.lb-note-heading, h6.lb-note-heading { font-size: 0.95rem; }
+  .lb-note-big { font-size: 1.3em; }
+  .lb-note-small { font-size: 0.75em; }
 
   /* Comments section */
   .lightbox-comments { padding: 1rem 1.5rem 1.5rem; }
@@ -869,10 +871,12 @@ function parseLocalDate(s) {
 function renderNotes(md) {
   if (!md) return '';
   const inline = s => s
-    .replace(/\\([*_~{}+\-.[\]()\\#`!])/g, (_, c) => '&#'+c.charCodeAt(0)+';')
+    .replace(/\\([*_~{}+\-.[\]()\\#`!^,])/g, (_, c) => '&#'+c.charCodeAt(0)+';')
+    .replace(/\^\^(.+?)\^\^/g,      '<span class="lb-note-big">$1</span>')
+    .replace(/,,(.+?),,/g,          '<span class="lb-note-small">$1</span>')
     .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
     .replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>')
-    .replace(/__(.+?)__/g,          '<strong>$1</strong>')
+    .replace(/__(.+?)__/g,          '<u>$1</u>')
     .replace(/\*([^*\n]+?)\*/g,     '<em>$1</em>')
     .replace(/(?<![\w])_([^_\n]+?)_(?![\w])/g, '<em>$1</em>')
     .replace(/~~(.+?)~~/g,          '<del>$1</del>')
