@@ -1187,6 +1187,7 @@ async function loadTraditional() {
     if (loading) loading.remove();
     items.forEach(item => {
       if (item.date) galleryDates.set(item.title, item.date);
+      if (item.note) galleryNotes.set(item.title, item.note);
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
       const images = item.images && item.images.length > 0 ? item.images : [item.image];
       const titles = images.map((_, i) => i === 0 ? item.title : `${item.title} (${i+1})`);
@@ -1253,7 +1254,7 @@ async function loadStills() {
 <script src="socials.js"></script>
 <script>
 loadCMSGallery().then(() => checkHardcodedLocks()).then(() => {
-  if (window.location.hash && window.location.hash !== '#stills') openFromHash();
+  if (window.location.hash && window.location.hash !== '#stills' && window.location.hash !== '#traditional' && window.location.hash !== '#wips') openFromHash();
 });
 loadStills();
 loadTraditional();
@@ -1279,6 +1280,7 @@ window.addEventListener('load', () => {
   if (!window.location.hash) return;
   if (window.location.hash === '#stills') { document.getElementById('stills')?.scrollIntoView({ behavior: 'smooth' }); return; }
   if (window.location.hash === '#traditional') { document.getElementById('traditional')?.scrollIntoView({ behavior: 'smooth' }); return; }
+  if (window.location.hash === '#wips') { document.getElementById('wips')?.scrollIntoView({ behavior: 'smooth' }); return; }
   if (openFromHash()) return;
   [50, 200, 500, 1000].forEach(delay => { setTimeout(() => { if (!lb.classList.contains('open')) openFromHash(); }, delay); });
 });
