@@ -202,7 +202,7 @@ const shortStories = readDataDir('_data/short-stories').map(s => {
 
 const wips = readDataDir('_data/wips').map(w => ({
   ...w, type: 'WIP', label: w.type || 'WIP', filter_type: 'behind',
-  href: 'gallery.html#wips', thumbnail: normImg(w.image) || ''
+  href: 'gallery.html#' + encodeURIComponent(w.title || ''), thumbnail: normImg(w.image) || ''
 }));
 
 const stills_content = stills.map(s => ({
