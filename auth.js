@@ -195,10 +195,91 @@ window.tierFromUser    = tierFromUser;
 
 /* ── Vintage Mode ── */
 (function () {
-  fetch('/_data/site-settings.json')
-    .then(function (r) { return r.ok ? r.json() : {}; })
-    .then(function (s) {
-      if (s && s.vintage_mode) document.body.classList.add('vintage');
-    })
-    .catch(function () {});
+  var LS_KEY = 'lc_vintage_mode';
+
+  function getDefault() {
+    return fetch('/_data/site-settings.json')
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (s) { return !!(s && s.vintage_mode); })
+      .catch(function () { return false; });
+  }
+
+  function applyVintage(on) {
+    document.body.classList.toggle('vintage', on);
+    var btn = document.getElementById('lc-vintage-toggle');
+    if (btn) {
+      btn.title    = on ? 'Switch to Modern View' : 'Switch to 1920s Vintage View';
+      btn.setAttribute('aria-pressed', String(on));
+      btn.innerHTML = on ? '✓ Vintage' : '✧ Vintage';
+    }
+  }
+
+  function toggle() {
+    var isOn = document.body.classList.contains('vintage');
+    var next = !isOn;
+    localStorage.setItem(LS_KEY, next ? '1' : '0');
+    applyVintage(next);
+  }
+
+  function injectToggle() {
+    if (document.getElementById('lc-vintage-toggle')) return;
+    var isOn = document.body.classList.contains('vintage');
+    var btn = document.createElement('button');
+    btn.id = 'lc-vintage-toggle';
+    btn.className = 'lc-vintage-toggle';
+    btn.title = isOn ? 'Switch to Modern View' : 'Switch to 1920s Vintage View';
+    btn.setAttribute('aria-pressed', String(isOn));
+    btn.innerHTML = isOn ? '✓ Vintage' : '✧ Vintage';
+    btn.addEventListener('click', toggle);
+    document.body.appendChild(btn);
+  }
+
+  function init() {
+    var saved = localStorage.getItem(LS_KEY);
+    if (saved !== null) {
+      applyVintage(saved === '1');
+      injectToggle();
+    } else {
+      getDefault().then(function (def) {
+        applyVintage(def);
+        injectToggle();
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+/* ── Great Gatsby Quote Button ── */
+(function () {
+  function injectQuoteBtn() {
+    if (document.getElementById('gatsby-quote-wrap')) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'gatsby-quote-wrap';
+    wrap.id = 'gatsby-quote-wrap';
+    wrap.innerHTML =
+      '<button class="gatsby-quote-btn" aria-label="Epigraph" title="Hover for a quote">\u25C6</button>' +
+      '<div class="gatsby-quote-tooltip" role="tooltip" aria-hidden="true">' +
+        '<div class="gatsby-quote-ornament">\u25C8 \u2015 \u25C8 \u2015 \u25C8</div>' +
+        '<p class="gatsby-quote-text">' +
+          'Then wear the gold hat, if that will move her;<br>' +
+          'If you can bounce high, bounce for her too,<br>' +
+          'till she cry \u201cLover, gold-hatted,<br>' +
+          'high-bouncing lover,<br>' +
+          'I must have you!\u201d' +
+        '</p>' +
+        '<hr class="gatsby-quote-divider">' +
+        '<div class="gatsby-quote-attr">Thomas Parke D\u2019Invilliers</div>' +
+      '</div>';
+    document.body.appendChild(wrap);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectQuoteBtn);
+  } else {
+    injectQuoteBtn();
+  }
 })();
