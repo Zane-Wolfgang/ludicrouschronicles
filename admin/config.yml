@@ -1,286 +1,463 @@
 backend:
   name: git-gateway
   branch: main
-
-media_folder: "images/uploads"
-public_folder: "/images/uploads"
-
+media_folder: images/uploads
+public_folder: /images/uploads
 collections:
-  - name: "announcements"
-    label: "Announcements"
-    folder: "_data/announcements"
-    create: true
-    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
-    fields:
-      - { label: "Title", name: "title", widget: "string" }
-      - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Tag", name: "tag", widget: "string", default: "Update", hint: "e.g. Launch, Update, Chapter, Art" }
-      - { label: "Body", name: "body", widget: "markdown" }
-
-  - name: "chapters"
-    label: "Chapters"
-    folder: "_data/chapters"
-    create: true
-    slug: "chapter-{{fields.number}}"
-    media_folder: "/images"
-    public_folder: "/images"
-    fields:
-      - { label: "Title", name: "title", widget: "string" }
-      - { label: "Chapter Number", name: "number", widget: "number", value_type: "int" }
-      - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Chapter Art", name: "art", widget: "image", required: false }
-      - { label: "Body", name: "body", widget: "markdown" }
-      - { label: "Audio (optional)", name: "audio", widget: "file", required: false, hint: "Upload MP3 narration for this chapter. Enables the audio player with auto paragraph sync." }
-      - { label: "Include in Voice tab", name: "is_voice", widget: "boolean", default: false, required: false, hint: "Check this if the chapter has a voice/narration recording. It will appear in both Story and Voice tabs." }
-      - label: "Access Tier"
-        name: "tier"
-        widget: "select"
-        options:
-          - { label: "Free — visible to everyone", value: "free" }
-          - { label: "Devoted — $5 members", value: "devoted" }
-          - { label: "Bound — $12 members", value: "bound" }
-        default: "free"
-
-  - name: "gallery"
-    label: "Gallery"
-    folder: "_data/gallery"
-    create: true
-    media_folder: "/images"
-    public_folder: "/images"
-    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
-    fields:
-      - { label: "Title", name: "title", widget: "string" }
-      - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Main Image", name: "image", widget: "image" }
-      - { label: "Page 2 (optional)", name: "image2", widget: "image", required: false, hint: "Second image in slideshow" }
-      - { label: "Page 3 (optional)", name: "image3", widget: "image", required: false, hint: "Third image in slideshow" }
-      - { label: "Page 4 (optional)", name: "image4", widget: "image", required: false, hint: "Fourth image in slideshow" }
-      - { label: "Artist's Note (optional)", name: "notes", widget: "markdown", required: false, hint: "Shown below the image in the lightbox — supports paragraphs and formatting." }
-      - label: "Type"
-        name: "type"
-        widget: "select"
-        options:
-          - { label: "Chapter Art", value: "Chapter Art" }
-          - { label: "Character Art", value: "Character Art" }
-          - { label: "Illustration", value: "Illustration" }
-          - { label: "Sketch / WIP", value: "Sketch / WIP" }
-      - label: "Access Tier"
-        name: "tier"
-        widget: "select"
-        options:
-          - { label: "Free — visible to everyone", value: "free" }
-          - { label: "Devoted — $5 members", value: "devoted" }
-          - { label: "Bound — $12 members", value: "bound" }
-        default: "free"
-
-  - name: "videos"
-    label: "Videos"
-    folder: "_data/videos"
-    create: true
-    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
-    fields:
-      - { label: "Title", name: "title", widget: "string" }
-      - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Video File", name: "video", widget: "file" }
-      - { label: "Thumbnail (optional)", name: "thumbnail", widget: "image", required: false }
-      - { label: "Description / Credits", name: "description", widget: "markdown", required: false, hint: "Notes, credits, music attribution, collaborators, etc." }
-      - label: "Type"
-        name: "type"
-        widget: "select"
-        options:
-          - { label: "Animation", value: "Animation" }
-          - { label: "Behind the Scenes", value: "Behind the Scenes" }
-          - { label: "Timelapse", value: "Timelapse" }
-          - { label: "Blooper", value: "Blooper" }
-      - { label: "Include in Voice tab", name: "is_voice", widget: "boolean", default: false, required: false, hint: "Check this if the video has voice acting / narration. It will appear in both Video and Voice tabs." }
-      - label: "Access Tier"
-        name: "tier"
-        widget: "select"
-        options:
-          - { label: "Free — visible to everyone", value: "free" }
-          - { label: "Devoted — $5 members", value: "devoted" }
-          - { label: "Bound — $12 members", value: "bound" }
-        default: "devoted"
-
-  - name: "short_stories"
-    label: "Short Stories"
-    folder: "_data/short-stories"
-    create: true
-    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
-    fields:
-      - { label: "Title", name: "title", widget: "string" }
-      - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Description", name: "description", widget: "markdown", required: false, hint: "Teaser shown on the content page — supports paragraphs and formatting" }
-      - { label: "Body", name: "body", widget: "markdown" }
-      - { label: "Audio (optional)", name: "audio", widget: "file", required: false, hint: "Upload MP3 narration for this story. Enables the audio player with auto paragraph sync." }
-      - label: "Access Tier"
-        name: "tier"
-        widget: "select"
-        options:
-          - { label: "Free — visible to everyone", value: "free" }
-          - { label: "Devoted — $5 members", value: "devoted" }
-          - { label: "Bound — $12 members", value: "bound" }
-        default: "devoted"
-
-  - name: "wips"
-    label: "WIPs & Sketches"
-    folder: "_data/wips"
-    create: true
-    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
-    fields:
-      - { label: "Title", name: "title", widget: "string" }
-      - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Image", name: "image", widget: "image" }
-      - { label: "Note (optional)", name: "note", widget: "markdown", required: false, hint: "Caption or comment — supports paragraphs and formatting." }
-      - label: "Type"
-        name: "type"
-        widget: "select"
-        options:
-          - { label: "Sketch", value: "Sketch" }
-          - { label: "WIP", value: "WIP" }
-          - { label: "Timelapse Still", value: "Timelapse Still" }
-      - label: "Access Tier"
-        name: "tier"
-        widget: "select"
-        options:
-          - { label: "Devoted — $5 members", value: "devoted" }
-          - { label: "Bound — $12 members", value: "bound" }
-        default: "bound"
-
-  - name: "stills"
-    label: "Stills"
-    folder: "_data/stills"
-    create: true
-    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
-    fields:
-      - { label: "Title", name: "title", widget: "string", hint: "Name of the shoot, e.g. Pine Ridge — Spring Session" }
-      - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Game / Location", name: "game", widget: "string", required: false, hint: "e.g. Pine Ridge, Brookhaven" }
-      - { label: "Description (optional)", name: "description", widget: "text", required: false, hint: "Caption shown below the image in the lightbox — supports paragraphs" }
-      - { label: "Cover Image", name: "image", widget: "image", hint: "First image shown in the grid" }
-      - { label: "Image 2", name: "image2", widget: "image", required: false }
-      - { label: "Image 3", name: "image3", widget: "image", required: false }
-      - { label: "Image 4", name: "image4", widget: "image", required: false }
-      - { label: "Image 5", name: "image5", widget: "image", required: false }
-      - { label: "Image 6", name: "image6", widget: "image", required: false }
-      - { label: "Image 7", name: "image7", widget: "image", required: false }
-      - { label: "Image 8", name: "image8", widget: "image", required: false }
-      - { label: "Image 9", name: "image9", widget: "image", required: false }
-      - { label: "Image 10", name: "image10", widget: "image", required: false }
-      - { label: "Image 11", name: "image11", widget: "image", required: false }
-      - { label: "Image 12", name: "image12", widget: "image", required: false }
-      - { label: "Image 13", name: "image13", widget: "image", required: false }
-      - { label: "Image 14", name: "image14", widget: "image", required: false }
-      - { label: "Image 15", name: "image15", widget: "image", required: false }
-      - { label: "Image 16", name: "image16", widget: "image", required: false }
-      - { label: "Image 17", name: "image17", widget: "image", required: false }
-      - { label: "Image 18", name: "image18", widget: "image", required: false }
-      - { label: "Image 19", name: "image19", widget: "image", required: false }
-      - { label: "Image 20", name: "image20", widget: "image", required: false }
-      - label: "Access Tier"
-        name: "tier"
-        widget: "select"
-        options:
-          - { label: "Free — visible to everyone", value: "free" }
-          - { label: "Devoted — $5 members", value: "devoted" }
-          - { label: "Bound — $12 members", value: "bound" }
-        default: "free"
-
-  - name: "socials"
-    label: "Social Links"
-    folder: "_data/socials"
-    create: true
-    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
-    fields:
-      - { label: "Platform Name", name: "title", widget: "string", hint: "e.g. YouTube, Instagram, My App" }
-      - { label: "URL", name: "url", widget: "string" }
-      - label: "Icon"
-        name: "icon"
-        widget: "select"
-        options:
-          - { label: "YouTube", value: "youtube" }
-          - { label: "Discord", value: "discord" }
-          - { label: "X / Twitter", value: "x" }
-          - { label: "Instagram", value: "instagram" }
-          - { label: "TikTok", value: "tiktok" }
-          - { label: "Twitch", value: "twitch" }
-          - { label: "Patreon", value: "patreon" }
-          - { label: "AO3", value: "ao3" }
-          - { label: "Bluesky", value: "bluesky" }
-          - { label: "Threads", value: "threads" }
-          - { label: "Reddit", value: "reddit" }
-          - { label: "Facebook", value: "facebook" }
-          - { label: "Custom (upload below)", value: "custom" }
-        default: "youtube"
-      - { label: "Custom Icon (64x64 or 128x128 PNG)", name: "custom_icon", widget: "image", required: false, hint: "Only needed if you chose Custom above" }
-      - { label: "Hover Tooltip (optional)", name: "tooltip", widget: "string", required: false }
-      - { label: "Order (1 = top)", name: "order", widget: "number", default: 99 }
-      - { label: "Active", name: "active", widget: "boolean", default: true, hint: "Turn off to hide without deleting" }
-
-  - name: "traditional_art"
-    label: "Traditional Art"
-    folder: "_data/traditional-art"
-    create: true
-    media_folder: "/images"
-    public_folder: "/images"
-    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
-    fields:
-      - { label: "Title", name: "title", widget: "string" }
-      - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Main Image", name: "image", widget: "image", hint: "Scan or photo of the piece" }
-      - { label: "Image 2 (optional)", name: "image2", widget: "image", required: false }
-      - { label: "Image 3 (optional)", name: "image3", widget: "image", required: false }
-      - { label: "Image 4 (optional)", name: "image4", widget: "image", required: false }
-      - { label: "Image 5 (optional)", name: "image5", widget: "image", required: false }
-      - { label: "Image 6 (optional)", name: "image6", widget: "image", required: false }
-      - { label: "Image 7 (optional)", name: "image7", widget: "image", required: false }
-      - { label: "Image 8 (optional)", name: "image8", widget: "image", required: false }
-      - { label: "Image 9 (optional)", name: "image9", widget: "image", required: false }
-      - { label: "Image 10 (optional)", name: "image10", widget: "image", required: false }
-      - { label: "Artist's Note (optional)", name: "notes", widget: "markdown", required: false, hint: "Shown below the image in the lightbox — supports paragraphs and formatting." }
-      - label: "Medium"
-        name: "medium"
-        widget: "select"
-        required: false
-        options:
-          - { label: "Pencil", value: "Pencil" }
-          - { label: "Ink", value: "Ink" }
-          - { label: "Watercolour", value: "Watercolour" }
-          - { label: "Charcoal", value: "Charcoal" }
-          - { label: "Coloured Pencil", value: "Coloured Pencil" }
-          - { label: "Mixed Media", value: "Mixed Media" }
-          - { label: "Other", value: "Other" }
-      - label: "Access Tier"
-        name: "tier"
-        widget: "select"
-        options:
-          - { label: "Free — visible to everyone", value: "free" }
-          - { label: "Devoted — $5 members", value: "devoted" }
-          - { label: "Bound — $12 members", value: "bound" }
-        default: "free"
-
-  - name: "emojis"
-    label: "Emojis"
-    folder: "_data/emojis"
-    create: true
-    media_folder: "/images/emojis"
-    public_folder: "/images/emojis"
-    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
-    fields:
-      - { label: "Name", name: "title", widget: "string", hint: "Display name, e.g. Angry Vasily" }
-      - { label: "Image", name: "image", widget: "image", hint: "Upload to images/emojis/" }
-      - { label: "Display Size (px)", name: "size", widget: "number", default: 32, hint: "How big it appears inline in reactions — 24 to 48 recommended" }
-      - { label: "Hover Preview Size (px)", name: "preview_size", widget: "number", default: 96, min: 48, max: 256, hint: "How big it appears in the hover tooltip — go larger for detailed stickers" }
-      - { label: "Active", name: "active", widget: "boolean", default: true }
-
-  - name: "music"
-    label: "Music"
-    folder: "_data/music"
-    create: true
-    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}"
-    fields:
-      - { label: "Title", name: "title", widget: "string", hint: "Track name shown in the player" }
-      - { label: "Artist", name: "artist", widget: "string", required: false }
-      - { label: "Audio File", name: "audio", widget: "file", hint: "Upload MP3" }
-      - { label: "Order", name: "order", widget: "number", default: 99, hint: "Play order (1 = first)" }
-      - { label: "Active", name: "active", widget: "boolean", default: true }
+- name: announcements
+  label: Announcements
+  folder: _data/announcements
+  create: true
+  slug: '{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}'
+  fields:
+  - label: Title
+    name: title
+    widget: string
+  - label: Date
+    name: date
+    widget: datetime
+  - label: Tag
+    name: tag
+    widget: string
+    default: Update
+    hint: e.g. Launch, Update, Chapter, Art
+  - label: Body
+    name: body
+    widget: markdown
+- name: chapters
+  label: Chapters
+  folder: _data/chapters
+  create: true
+  slug: chapter-{{fields.number}}
+  media_folder: /images
+  public_folder: /images
+  fields:
+  - label: Title
+    name: title
+    widget: string
+  - label: Chapter Number
+    name: number
+    widget: number
+    value_type: int
+  - label: Date
+    name: date
+    widget: datetime
+  - label: Chapter Art
+    name: art
+    widget: image
+    required: false
+  - label: Body
+    name: body
+    widget: markdown
+  - label: Audio (optional)
+    name: audio
+    widget: file
+    required: false
+    hint: Upload MP3 narration for this chapter. Enables the audio player with auto
+      paragraph sync.
+  - label: Include in Voice tab
+    name: is_voice
+    widget: boolean
+    default: false
+    required: false
+    hint: Check this if the chapter has a voice/narration recording. It will appear
+      in both Story and Voice tabs.
+  - label: Access Tier
+    name: tier
+    widget: select
+    options:
+    - label: Free — visible to everyone
+      value: free
+    - label: Devoted — $5 members
+      value: devoted
+    - label: Bound — $12 members
+      value: bound
+    default: free
+- name: gallery
+  label: Gallery
+  folder: _data/gallery
+  create: true
+  media_folder: /images
+  public_folder: /images
+  slug: '{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}'
+  fields:
+  - label: Title
+    name: title
+    widget: string
+  - label: Date
+    name: date
+    widget: datetime
+  - label: Images
+    name: images
+    widget: multi-image
+    hint: Select multiple images at once — they will be numbered automatically
+  - label: Artist's Note (optional)
+    name: notes
+    widget: markdown
+    required: false
+    hint: Shown below the image in the lightbox — supports paragraphs and formatting.
+  - label: Type
+    name: type
+    widget: select
+    options:
+    - label: Chapter Art
+      value: Chapter Art
+    - label: Character Art
+      value: Character Art
+    - label: Illustration
+      value: Illustration
+    - label: Sketch / WIP
+      value: Sketch / WIP
+  - label: Access Tier
+    name: tier
+    widget: select
+    options:
+    - label: Free — visible to everyone
+      value: free
+    - label: Devoted — $5 members
+      value: devoted
+    - label: Bound — $12 members
+      value: bound
+    default: free
+- name: videos
+  label: Videos
+  folder: _data/videos
+  create: true
+  slug: '{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}'
+  fields:
+  - label: Title
+    name: title
+    widget: string
+  - label: Date
+    name: date
+    widget: datetime
+  - label: Video File
+    name: video
+    widget: file
+  - label: Thumbnail (optional)
+    name: thumbnail
+    widget: image
+    required: false
+  - label: Description / Credits
+    name: description
+    widget: markdown
+    required: false
+    hint: Notes, credits, music attribution, collaborators, etc.
+  - label: Type
+    name: type
+    widget: select
+    options:
+    - label: Animation
+      value: Animation
+    - label: Behind the Scenes
+      value: Behind the Scenes
+    - label: Timelapse
+      value: Timelapse
+    - label: Blooper
+      value: Blooper
+  - label: Include in Voice tab
+    name: is_voice
+    widget: boolean
+    default: false
+    required: false
+    hint: Check this if the video has voice acting / narration. It will appear in
+      both Video and Voice tabs.
+  - label: Access Tier
+    name: tier
+    widget: select
+    options:
+    - label: Free — visible to everyone
+      value: free
+    - label: Devoted — $5 members
+      value: devoted
+    - label: Bound — $12 members
+      value: bound
+    default: devoted
+- name: short_stories
+  label: Short Stories
+  folder: _data/short-stories
+  create: true
+  slug: '{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}'
+  fields:
+  - label: Title
+    name: title
+    widget: string
+  - label: Date
+    name: date
+    widget: datetime
+  - label: Description
+    name: description
+    widget: markdown
+    required: false
+    hint: Teaser shown on the content page — supports paragraphs and formatting
+  - label: Body
+    name: body
+    widget: markdown
+  - label: Audio (optional)
+    name: audio
+    widget: file
+    required: false
+    hint: Upload MP3 narration for this story. Enables the audio player with auto
+      paragraph sync.
+  - label: Access Tier
+    name: tier
+    widget: select
+    options:
+    - label: Free — visible to everyone
+      value: free
+    - label: Devoted — $5 members
+      value: devoted
+    - label: Bound — $12 members
+      value: bound
+    default: devoted
+- name: wips
+  label: WIPs & Sketches
+  folder: _data/wips
+  create: true
+  slug: '{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}'
+  fields:
+  - label: Title
+    name: title
+    widget: string
+  - label: Date
+    name: date
+    widget: datetime
+  - label: Image
+    name: image
+    widget: image
+  - label: Note (optional)
+    name: note
+    widget: markdown
+    required: false
+    hint: Caption or comment — supports paragraphs and formatting.
+  - label: Type
+    name: type
+    widget: select
+    options:
+    - label: Sketch
+      value: Sketch
+    - label: WIP
+      value: WIP
+    - label: Timelapse Still
+      value: Timelapse Still
+  - label: Access Tier
+    name: tier
+    widget: select
+    options:
+    - label: Devoted — $5 members
+      value: devoted
+    - label: Bound — $12 members
+      value: bound
+    default: bound
+- name: stills
+  label: Stills
+  folder: _data/stills
+  create: true
+  slug: '{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}'
+  fields:
+  - label: Title
+    name: title
+    widget: string
+    hint: Name of the shoot, e.g. Pine Ridge — Spring Session
+  - label: Date
+    name: date
+    widget: datetime
+  - label: Images
+    name: images
+    widget: multi-image
+    hint: Select multiple images at once — they will be numbered automatically
+  - label: Game / Location
+    name: game
+    widget: string
+    required: false
+    hint: e.g. Pine Ridge, Brookhaven
+  - label: Description (optional)
+    name: description
+    widget: text
+    required: false
+    hint: Caption shown below the image in the lightbox — supports paragraphs
+  - label: Access Tier
+    name: tier
+    widget: select
+    options:
+    - label: Free — visible to everyone
+      value: free
+    - label: Devoted — $5 members
+      value: devoted
+    - label: Bound — $12 members
+      value: bound
+    default: free
+- name: socials
+  label: Social Links
+  folder: _data/socials
+  create: true
+  slug: '{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}'
+  fields:
+  - label: Platform Name
+    name: title
+    widget: string
+    hint: e.g. YouTube, Instagram, My App
+  - label: URL
+    name: url
+    widget: string
+  - label: Icon
+    name: icon
+    widget: select
+    options:
+    - label: YouTube
+      value: youtube
+    - label: Discord
+      value: discord
+    - label: X / Twitter
+      value: x
+    - label: Instagram
+      value: instagram
+    - label: TikTok
+      value: tiktok
+    - label: Twitch
+      value: twitch
+    - label: Patreon
+      value: patreon
+    - label: AO3
+      value: ao3
+    - label: Bluesky
+      value: bluesky
+    - label: Threads
+      value: threads
+    - label: Reddit
+      value: reddit
+    - label: Facebook
+      value: facebook
+    - label: Custom (upload below)
+      value: custom
+    default: youtube
+  - label: Custom Icon (64x64 or 128x128 PNG)
+    name: custom_icon
+    widget: image
+    required: false
+    hint: Only needed if you chose Custom above
+  - label: Hover Tooltip (optional)
+    name: tooltip
+    widget: string
+    required: false
+  - label: Order (1 = top)
+    name: order
+    widget: number
+    default: 99
+  - label: Active
+    name: active
+    widget: boolean
+    default: true
+    hint: Turn off to hide without deleting
+- name: traditional_art
+  label: Traditional Art
+  folder: _data/traditional-art
+  create: true
+  media_folder: /images
+  public_folder: /images
+  slug: '{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}'
+  fields:
+  - label: Title
+    name: title
+    widget: string
+  - label: Date
+    name: date
+    widget: datetime
+  - label: Images
+    name: images
+    widget: multi-image
+    hint: Select multiple images at once — they will be numbered automatically
+  - label: Artist's Note (optional)
+    name: notes
+    widget: markdown
+    required: false
+    hint: Shown below the image in the lightbox — supports paragraphs and formatting.
+  - label: Medium
+    name: medium
+    widget: select
+    required: false
+    options:
+    - label: Pencil
+      value: Pencil
+    - label: Ink
+      value: Ink
+    - label: Watercolour
+      value: Watercolour
+    - label: Charcoal
+      value: Charcoal
+    - label: Coloured Pencil
+      value: Coloured Pencil
+    - label: Mixed Media
+      value: Mixed Media
+    - label: Other
+      value: Other
+  - label: Access Tier
+    name: tier
+    widget: select
+    options:
+    - label: Free — visible to everyone
+      value: free
+    - label: Devoted — $5 members
+      value: devoted
+    - label: Bound — $12 members
+      value: bound
+    default: free
+- name: emojis
+  label: Emojis
+  folder: _data/emojis
+  create: true
+  media_folder: /images/emojis
+  public_folder: /images/emojis
+  slug: '{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}'
+  fields:
+  - label: Name
+    name: title
+    widget: string
+    hint: Display name, e.g. Angry Vasily
+  - label: Image
+    name: image
+    widget: image
+    hint: Upload to images/emojis/
+  - label: Display Size (px)
+    name: size
+    widget: number
+    default: 32
+    hint: How big it appears inline in reactions — 24 to 48 recommended
+  - label: Hover Preview Size (px)
+    name: preview_size
+    widget: number
+    default: 96
+    min: 48
+    max: 256
+    hint: How big it appears in the hover tooltip — go larger for detailed stickers
+  - label: Active
+    name: active
+    widget: boolean
+    default: true
+- name: music
+  label: Music
+  folder: _data/music
+  create: true
+  slug: '{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}-{{second}}'
+  fields:
+  - label: Title
+    name: title
+    widget: string
+    hint: Track name shown in the player
+  - label: Artist
+    name: artist
+    widget: string
+    required: false
+  - label: Audio File
+    name: audio
+    widget: file
+    hint: Upload MP3
+  - label: Order
+    name: order
+    widget: number
+    default: 99
+    hint: Play order (1 = first)
+  - label: Active
+    name: active
+    widget: boolean
+    default: true
