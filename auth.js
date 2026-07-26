@@ -192,3 +192,13 @@ window.canAccess       = canAccess;
 window.tierRank        = tierRank;
 window.waitForIdentity = waitForIdentity;
 window.tierFromUser    = tierFromUser;
+
+/* ── Vintage Mode ── */
+(function () {
+  fetch('/_data/site-settings.json')
+    .then(function (r) { return r.ok ? r.json() : {}; })
+    .then(function (s) {
+      if (s && s.vintage_mode) document.body.classList.add('vintage');
+    })
+    .catch(function () {});
+})();
