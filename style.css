@@ -318,14 +318,19 @@ footer { padding: 3rem 2rem; border-top: 1px solid var(--border); text-align: ce
 .admin-comment-delete:hover { color: #c0705a; }
 
 /* ── GREAT GATSBY QUOTE BUTTON ── */
-.gatsby-quote-wrap {
+/* ═══════════════════════════════════════════════════════
+   COMBINED BUTTON — hover = quote, click = vintage toggle
+   ═══════════════════════════════════════════════════════ */
+.lc-btn-wrap {
   position: fixed;
   bottom: 1.75rem;
   left: 1.75rem;
   z-index: 850;
 }
 
-.gatsby-quote-btn {
+/* The circle button */
+.lc-btn-circle {
+  position: relative;
   width: 46px;
   height: 46px;
   border-radius: 50%;
@@ -340,17 +345,10 @@ footer { padding: 3rem 2rem; border-top: 1px solid var(--border); text-align: ce
   justify-content: center;
   transition: border-color 0.4s, background 0.4s, box-shadow 0.4s, color 0.4s;
   box-shadow: 0 2px 16px rgba(0,0,0,0.5), 0 0 0 4px rgba(201,168,76,0.04);
-  position: relative;
-  z-index: 2;
   padding: 0;
 }
-.gatsby-quote-btn:focus-visible {
-  outline: 2px solid var(--gold);
-  outline-offset: 4px;
-}
-
-/* Outer ring — decorative only */
-.gatsby-quote-btn::before {
+/* Outer ring */
+.lc-btn-circle::before {
   content: '';
   position: absolute;
   inset: -4px;
@@ -359,9 +357,24 @@ footer { padding: 3rem 2rem; border-top: 1px solid var(--border); text-align: ce
   transition: border-color 0.4s, transform 0.4s;
   pointer-events: none;
 }
+.lc-btn-circle:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
+/* Vintage ON state */
+.lc-btn-wrap.vintage-on .lc-btn-circle {
+  border-color: var(--gold);
+  color: var(--gold-bright);
+  background: rgba(201,168,76,0.1);
+  box-shadow: 0 4px 28px rgba(201,168,76,0.25), 0 0 0 4px rgba(201,168,76,0.08);
+}
+.lc-btn-wrap.vintage-on .lc-btn-circle::before {
+  border-color: rgba(201,168,76,0.35);
+  transform: scale(1.08);
+}
 
-/* Tooltip */
-.gatsby-quote-tooltip {
+/* Quote tooltip — hidden by default */
+.lc-btn-tooltip {
   position: absolute;
   bottom: calc(100% + 12px);
   left: 0;
@@ -378,21 +391,16 @@ footer { padding: 3rem 2rem; border-top: 1px solid var(--border); text-align: ce
   pointer-events: none;
   box-shadow:
     0 16px 48px rgba(0,0,0,0.75),
-    0 0 0 1px rgba(201,168,76,0.06) inset,
-    0 0 80px rgba(201,168,76,0.015) inset;
+    0 0 0 1px rgba(201,168,76,0.06) inset;
 }
-
-/* Inner Art Deco border */
-.gatsby-quote-tooltip::before {
+.lc-btn-tooltip::before {
   content: '';
   position: absolute;
   inset: 5px;
   border: 1px solid rgba(201,168,76,0.07);
   pointer-events: none;
 }
-
-/* Corner ornament — top left */
-.gatsby-quote-tooltip::after {
+.lc-btn-tooltip::after {
   content: '';
   position: absolute;
   top: 3px; left: 3px;
@@ -401,28 +409,31 @@ footer { padding: 3rem 2rem; border-top: 1px solid var(--border); text-align: ce
   border-left: 1px solid var(--gold-dim);
   pointer-events: none;
 }
-
-/* Desktop hover — only where pointer hover is real */
+/* Desktop hover shows tooltip */
 @media (hover: hover) {
-  .gatsby-quote-wrap:hover .gatsby-quote-btn {
+  .lc-btn-wrap:hover .lc-btn-circle {
     border-color: var(--gold);
     background: rgba(201,168,76,0.07);
     box-shadow: 0 4px 28px rgba(201,168,76,0.2), 0 0 0 4px rgba(201,168,76,0.07);
     color: var(--gold-bright);
   }
-  .gatsby-quote-wrap:hover .gatsby-quote-btn::before {
+  .lc-btn-wrap:hover .lc-btn-circle::before {
     border-color: rgba(201,168,76,0.28);
     transform: scale(1.08);
   }
-  .gatsby-quote-wrap:hover .gatsby-quote-tooltip {
+  .lc-btn-wrap:hover .lc-btn-tooltip {
     opacity: 1;
     visibility: visible;
     transform: translateY(0) scale(1);
     pointer-events: auto;
   }
+  /* Keep vintage-on glow even on hover */
+  .lc-btn-wrap.vintage-on:hover .lc-btn-circle {
+    box-shadow: 0 4px 28px rgba(201,168,76,0.35), 0 0 0 4px rgba(201,168,76,0.12);
+  }
 }
 
-.gatsby-quote-ornament {
+.lc-btn-ornament {
   font-family: 'Cinzel', serif;
   font-size: 9px;
   letter-spacing: 0.45em;
@@ -431,8 +442,7 @@ footer { padding: 3rem 2rem; border-top: 1px solid var(--border); text-align: ce
   margin-bottom: 1rem;
   opacity: 0.75;
 }
-
-.gatsby-quote-text {
+.lc-btn-quote-text {
   font-family: 'EB Garamond', Georgia, serif;
   font-style: italic;
   font-size: 1.02rem;
@@ -440,14 +450,12 @@ footer { padding: 3rem 2rem; border-top: 1px solid var(--border); text-align: ce
   color: var(--text-body);
   letter-spacing: 0.015em;
 }
-
-.gatsby-quote-divider {
+.lc-btn-divider {
   border: none;
   border-top: 1px solid var(--border);
   margin: 1rem 0 0.8rem;
 }
-
-.gatsby-quote-attr {
+.lc-btn-attr {
   font-family: 'Cinzel', serif;
   font-size: 8px;
   letter-spacing: 0.22em;
@@ -456,145 +464,24 @@ footer { padding: 3rem 2rem; border-top: 1px solid var(--border); text-align: ce
   text-align: right;
   opacity: 0.75;
 }
+.lc-btn-hint {
+  font-family: 'Cinzel', serif;
+  font-size: 7.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  text-align: center;
+  margin-top: 0.9rem;
+  opacity: 0.55;
+  border-top: 1px solid var(--border);
+  padding-top: 0.6rem;
+}
 
-/* ── MOBILE & RESPONSIVE ── */
+/* Mobile */
 @media (max-width: 768px) {
-  .gatsby-quote-wrap { bottom: 1.25rem; left: 1.25rem; }
-  .gatsby-quote-btn  { width: 40px; height: 40px; font-size: 14px; }
-  nav { padding: 0 1.25rem; height: 56px; }
-  .nav-brand { font-size: 12px; }
-  .nav-links {
-    display: none; position: fixed; top: 56px; left: 0; right: 0;
-    background: rgba(10,8,6,0.98); border-bottom: 1px solid var(--border);
-    flex-direction: column; gap: 0; padding: 0.5rem 0;
-    z-index: 99; max-height: calc(100vh - 56px); overflow-y: auto;
-  }
-  .nav-links.open { display: flex; }
-  .nav-links li { width: 100%; }
-  .nav-links a {
-    display: flex; align-items: center;
-    padding: 0.9rem 1.5rem; font-size: 10px;
-    border-bottom: 1px solid var(--border); min-height: 44px;
-  }
-  .nav-links li:last-child a { border-bottom: none; }
-  .nav-hamburger {
-    display: flex; flex-direction: column; gap: 5px; cursor: pointer;
-    padding: 8px; background: none; border: none;
-    min-width: 44px; min-height: 44px; align-items: center; justify-content: center;
-  }
-  .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--gold); transition: all 0.3s; }
-  .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-  .nav-hamburger.open span:nth-child(2) { opacity: 0; }
-  .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-  .nav-cord-wrap { display: none; }
-  .page-header { padding: 7rem 1.25rem 3rem; }
-  section { padding: 3rem 1.25rem; }
-  .section-body { max-width: 100%; }
-  .section-title { font-size: clamp(1.3rem, 5vw, 1.8rem); }
-  .page-header .section-title { font-size: clamp(1.6rem, 6vw, 2.4rem); }
-  .btn-primary, .btn-ghost { padding: 0.85em 2em; font-size: 10px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
-  .filter-bar { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 1rem; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-  .filter-bar::-webkit-scrollbar { display: none; }
-  .socials-trigger { top: 65%; }
-  .socials-panel  { top: 65%; max-height: 70vh; overflow-y: auto; }
-  .socials-arrow  { top: 65%; }
-  .members-cta { padding: 2rem 1rem; }
-  footer { padding: 2rem 1.25rem; }
-  .footer-copy { font-size: 0.75rem; }
-  .admin-panel-body { width: 100vw; max-height: 60vh; top: auto; bottom: 0; border-radius: 8px 8px 0 0; border-left: 1px solid var(--border); transform: translateY(100%); }
-  .admin-panel-body.open { transform: translateY(0); }
-  .admin-panel-tab { top: auto; bottom: 4rem; }
-  .admin-panel-toggle { border-left: 1px solid var(--gold-dim); border-radius: 3px; }
+  .lc-btn-wrap { bottom: 1.25rem; left: 1.25rem; }
+  .lc-btn-circle { width: 40px; height: 40px; font-size: 14px; }
 }
-
-@media (max-width: 900px) and (orientation: landscape) {
-  nav { height: 52px; padding: 0 1rem; }
-  .nav-brand { font-size: 12px; }
-  .nav-links {
-    display: none; position: fixed; top: 52px; left: 0; right: 0;
-    background: rgba(10,8,6,0.98); border-bottom: 1px solid var(--border);
-    flex-direction: column; gap: 0; padding: 0.5rem 0;
-    z-index: 99; max-height: calc(100vh - 52px); overflow-y: auto;
-  }
-  .nav-links.open { display: flex; }
-  .nav-links li { width: 100%; }
-  .nav-links a { display: flex; align-items: center; padding: 0.65rem 1.5rem; font-size: 10px; border-bottom: 1px solid var(--border); min-height: 44px; }
-  .nav-hamburger { display: flex; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; background: none; border: none; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
-  .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--gold); transition: all 0.3s; }
-  .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-  .nav-hamburger.open span:nth-child(2) { opacity: 0; }
-  .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-}
-
-@media (max-width: 480px) { .nav-brand { font-size: 11px; } }
-
-
-/* ── Vintage Mode Toggle Button ── */
-/* Vintage toggle — wrapper holds the fixed position, button holds relative (for ::before ring) */
-.lc-vintage-wrap {
-  position: fixed;
-  bottom: 5.5rem;
-  left: 1.75rem;
-  z-index: 850;
-}
-.lc-vintage-toggle {
-  position: relative;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: rgba(10,8,6,0.92);
-  border: 1px solid var(--gold-dim);
-  color: var(--text-muted);
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.4s, background 0.4s, box-shadow 0.4s, color 0.4s;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.5), 0 0 0 4px rgba(201,168,76,0.04);
-  padding: 0;
-}
-.lc-vintage-toggle::before {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 1px solid rgba(201,168,76,0.12);
-  transition: border-color 0.4s, transform 0.4s;
-  pointer-events: none;
-}
-.lc-vintage-toggle:focus-visible {
-  outline: 2px solid var(--gold);
-  outline-offset: 4px;
-}
-.lc-vintage-toggle[aria-pressed="true"] {
-  border-color: var(--gold);
-  color: var(--gold);
-  background: rgba(201,168,76,0.1);
-  box-shadow: 0 4px 28px rgba(201,168,76,0.25), 0 0 0 4px rgba(201,168,76,0.08);
-}
-.lc-vintage-toggle[aria-pressed="true"]::before {
-  border-color: rgba(201,168,76,0.3);
-  transform: scale(1.08);
-}
-@media (hover: hover) {
-  .lc-vintage-toggle:hover {
-    border-color: var(--gold);
-    background: rgba(201,168,76,0.07);
-    box-shadow: 0 4px 28px rgba(201,168,76,0.2), 0 0 0 4px rgba(201,168,76,0.07);
-    color: var(--gold);
-  }
-  .lc-vintage-toggle:hover::before {
-    border-color: rgba(201,168,76,0.28);
-    transform: scale(1.08);
-  }
-}
-@media (max-width: 768px) {
-  .lc-vintage-wrap { bottom: 4.5rem; left: 1.25rem; }
-  .lc-vintage-toggle { width: 40px; height: 40px; font-size: 14px; }
-}
-
 
 /* ══════════════════════════════════════════════════════════════════════
    1920s VINTAGE MODE  ·  body.vintage activates all of this
