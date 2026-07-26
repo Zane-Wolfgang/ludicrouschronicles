@@ -208,9 +208,10 @@ window.tierFromUser    = tierFromUser;
     document.body.classList.toggle('vintage', on);
     var btn = document.getElementById('lc-vintage-toggle');
     if (btn) {
-      btn.title    = on ? 'Switch to Modern View' : 'Switch to 1920s Vintage View';
+      btn.title = on ? 'Switch to Modern View' : 'Switch to 1920s Vintage View';
       btn.setAttribute('aria-pressed', String(on));
-      btn.innerHTML = on ? '✓ Vintage' : '✧ Vintage';
+      /* ◈ = hollow diamond (off), ✓ = check (on) — same size as Gatsby ◆ */
+      btn.innerHTML = on ? '✓' : '◈';
     }
   }
 
@@ -222,16 +223,22 @@ window.tierFromUser    = tierFromUser;
   }
 
   function injectToggle() {
-    if (document.getElementById('lc-vintage-toggle')) return;
+    if (document.getElementById('lc-vintage-wrap')) return;
     var isOn = document.body.classList.contains('vintage');
+    /* Wrapper holds position:fixed — button holds position:relative (for ::before ring) */
+    var wrap = document.createElement('div');
+    wrap.id = 'lc-vintage-wrap';
+    wrap.className = 'lc-vintage-wrap';
     var btn = document.createElement('button');
     btn.id = 'lc-vintage-toggle';
     btn.className = 'lc-vintage-toggle';
+    btn.type = 'button';
     btn.title = isOn ? 'Switch to Modern View' : 'Switch to 1920s Vintage View';
     btn.setAttribute('aria-pressed', String(isOn));
-    btn.innerHTML = isOn ? '✓ Vintage' : '✧ Vintage';
+    btn.innerHTML = isOn ? '✓' : '◈';
     btn.addEventListener('click', toggle);
-    document.body.appendChild(btn);
+    wrap.appendChild(btn);
+    document.body.appendChild(wrap);
   }
 
   function init() {
