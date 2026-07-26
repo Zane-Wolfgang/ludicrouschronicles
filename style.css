@@ -751,3 +751,72 @@ footer {
   .admin-panel-tab { top: auto; bottom: 4rem; }
   .admin-panel-toggle { border-left: 1px solid var(--gold-dim); border-radius: 3px; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   1920s VINTAGE MODE — paste at the very END of style.css
+   Activated by adding class "vintage" to <body>
+   ═══════════════════════════════════════════════════════════ */
+
+body.vintage {
+  --gold:        #b8975a;
+  --gold-dim:    #8a6e3a;
+  --gold-bright: #d4aa6a;
+  --parchment:   #e8dcc0;
+  --text-body:   #c4b090;
+  --text-muted:  #9a8868;
+}
+
+/* Sepia filter on all images except UI elements */
+body.vintage img:not(.nav-cord-img):not(.socials-icon) {
+  filter: sepia(0.75) contrast(0.88) brightness(0.88);
+  transition: filter 0.4s;
+}
+body.vintage .gallery-item:hover img {
+  filter: sepia(0.5) contrast(0.92) brightness(0.96);
+}
+/* Exempt emoji tip previews and social icons */
+body.vintage .lc-emoji-tip img,
+body.vintage .socials-icon {
+  filter: none;
+}
+
+/* Art Deco diamond dividers between sections */
+body.vintage .section-inner::before,
+body.vintage .page-header::after {
+  content: '\25C6\2014\2014\2014\25C6\2014\2014\2014\25C6';
+  display: block;
+  text-align: center;
+  color: var(--gold-dim);
+  letter-spacing: 0.3em;
+  font-size: 0.7rem;
+  margin: 1.5rem 0;
+  opacity: 0.7;
+}
+
+/* Geometric corner accent on gallery cards */
+body.vintage .gallery-item::before {
+  content: '';
+  position: absolute;
+  top: 4px; left: 4px; right: 4px; bottom: 4px;
+  border: 1px solid rgba(184,151,90,0.2);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Cinzel Decorative for major headings */
+body.vintage .section-title,
+body.vintage .lightbox-title,
+body.vintage .content-title {
+  font-family: 'Cinzel Decorative', serif;
+  letter-spacing: 0.08em;
+}
+
+/* Warm sepia page tint — below nav and lightbox */
+body.vintage::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(60, 40, 10, 0.06);
+  pointer-events: none;
+  z-index: 2;
+}
