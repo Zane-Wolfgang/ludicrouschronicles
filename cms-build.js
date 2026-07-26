@@ -158,7 +158,8 @@ function readDataDir(dir) {
 // (Decap CMS sometimes stores /images/x.png, we want images/x.png)
 function normImg(p) { return p ? p.replace(/^\//, '') : p; }
 
-// Handles both new list format {images:[...]} and legacy {image, image2, image3...} format
+// Collect images from individual fields (image, image2..imageN)
+// Also handles legacy array format {images:[...]} for backward compat
 function getImages(item, maxLegacy) {
   if (Array.isArray(item.images) && item.images.length > 0) {
     return item.images.map(i => normImg(typeof i === 'object' ? i.image : i)).filter(Boolean);
@@ -169,6 +170,28 @@ function getImages(item, maxLegacy) {
   }
   return imgs;
 }
+
+// ── Site settings ──
+function buildSiteSettings() {
+  try {
+    const path = '_data/site-settings.yml';
+    if (!fs.existsSync(path)) {
+      fs.writeFileSync('_data/site-settings.json', JSON.stringify({ vintage_mode: false }, null, 2));
+      return;
+    }
+    const raw = fs.readFileSync(path, 'utf8');
+    const raw2 = '---\n' + raw.trim() + '\n---';
+    const settings = parseFrontmatter(raw2);
+    const out = {
+      vintage_mode: settings.vintage_mode === 'true' || settings.vintage_mode === true
+    };
+    fs.writeFileSync('_data/site-settings.json', JSON.stringify(out, null, 2));
+    console.log('Site settings:', out);
+  } catch(e) {
+    fs.writeFileSync('_data/site-settings.json', JSON.stringify({ vintage_mode: false }, null, 2));
+  }
+}
+buildSiteSettings();
 
 // ── Gallery index ──
 const galleryRaw = [...readDataDir('_data/gallery'), ...readDataDir('gallery')];
