@@ -530,12 +530,15 @@ footer { padding: 3rem 2rem; border-top: 1px solid var(--border); text-align: ce
 
 
 /* ── Vintage Mode Toggle Button ── */
-/* Vintage toggle — identical circle style to gatsby-quote-btn */
-.lc-vintage-toggle {
+/* Vintage toggle — wrapper holds the fixed position, button holds relative (for ::before ring) */
+.lc-vintage-wrap {
   position: fixed;
   bottom: 5.5rem;
   left: 1.75rem;
   z-index: 850;
+}
+.lc-vintage-toggle {
+  position: relative;
   width: 46px;
   height: 46px;
   border-radius: 50%;
@@ -550,7 +553,6 @@ footer { padding: 3rem 2rem; border-top: 1px solid var(--border); text-align: ce
   justify-content: center;
   transition: border-color 0.4s, background 0.4s, box-shadow 0.4s, color 0.4s;
   box-shadow: 0 2px 16px rgba(0,0,0,0.5), 0 0 0 4px rgba(201,168,76,0.04);
-  position: relative;
   padding: 0;
 }
 .lc-vintage-toggle::before {
@@ -566,7 +568,6 @@ footer { padding: 3rem 2rem; border-top: 1px solid var(--border); text-align: ce
   outline: 2px solid var(--gold);
   outline-offset: 4px;
 }
-/* Active state — vintage ON */
 .lc-vintage-toggle[aria-pressed="true"] {
   border-color: var(--gold);
   color: var(--gold);
@@ -589,9 +590,9 @@ footer { padding: 3rem 2rem; border-top: 1px solid var(--border); text-align: ce
     transform: scale(1.08);
   }
 }
-/* Toggle mobile — placed AFTER base style so cascade is correct */
 @media (max-width: 768px) {
-  .lc-vintage-toggle { bottom: 4.5rem; left: 1.25rem; width: 40px; height: 40px; font-size: 14px; }
+  .lc-vintage-wrap { bottom: 4.5rem; left: 1.25rem; }
+  .lc-vintage-toggle { width: 40px; height: 40px; font-size: 14px; }
 }
 
 
