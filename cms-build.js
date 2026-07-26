@@ -16,6 +16,38 @@ function parseFrontmatter(fileContent) {
     if (colonIdx === -1) { i++; continue; }
     const key = line.slice(0, colonIdx).trim();
     const val = line.slice(colonIdx + 1).trim();
+
+    // ── YAML block sequence  (val is empty, following lines start with '  - ') ──
+    if (val === '') {
+      const seq = [];
+      let j = i + 1;
+      while (j < lines.length && /^[ \t]*-/.test(lines[j]) && !lines[j].match(/^[a-zA-Z_][a-zA-Z0-9_-]*\s*:/)) {
+        const itemRaw = lines[j].replace(/^[ \t]*-\s*/, '');
+        // Is this a sub-key:value? e.g. "image: /path"
+        const subCol = itemRaw.indexOf(':');
+        if (subCol > 0 && !/^['"]/.test(itemRaw)) {
+          const obj = {};
+          obj[itemRaw.slice(0, subCol).trim()] = itemRaw.slice(subCol + 1).trim().replace(/^['"]|['"]$/g, '');
+          seq.push(obj);
+        } else {
+          seq.push(itemRaw.replace(/^['"]|['"]$/g, ''));
+        }
+        j++;
+      }
+      if (seq.length > 0) { fm[key] = seq; i = j; continue; }
+      // No sequence items — fall through to handle as empty/continuation value
+    }
+
+    // ── YAML flow sequence  e.g. images: [/path1, /path2] ──
+    if (val.startsWith('[')) {
+      const closed = val.lastIndexOf(']');
+      if (closed !== -1) {
+        const inner = val.slice(1, closed).trim();
+        fm[key] = inner.length === 0 ? [] : inner.split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
+        i++; continue;
+      }
+    }
+
     if (val === '>-' || val === '>') {
       const block = [];
       i++;
@@ -126,39 +158,33 @@ function readDataDir(dir) {
 // (Decap CMS sometimes stores /images/x.png, we want images/x.png)
 function normImg(p) { return p ? p.replace(/^\//, '') : p; }
 
+// Handles both new list format {images:[...]} and legacy {image, image2, image3...} format
+function getImages(item, maxLegacy) {
+  if (Array.isArray(item.images) && item.images.length > 0) {
+    return item.images.map(i => normImg(typeof i === 'object' ? i.image : i)).filter(Boolean);
+  }
+  const imgs = [item.image].filter(Boolean).map(normImg);
+  for (let n = 2; n <= (maxLegacy || 20); n++) {
+    if (item[`image${n}`]) imgs.push(normImg(item[`image${n}`]));
+  }
+  return imgs;
+}
+
 // ── Gallery index ──
 const galleryRaw = [...readDataDir('_data/gallery'), ...readDataDir('gallery')];
-const gallery = galleryRaw.map(item => {
-  const images = [item.image].filter(Boolean).map(normImg);
-  if (item.image2) images.push(normImg(item.image2));
-  if (item.image3) images.push(normImg(item.image3));
-  if (item.image4) images.push(normImg(item.image4));
-  return { ...item, images };
-});
+const gallery = galleryRaw.map(item => ({ ...item, images: getImages(item, 4) }));
 fs.writeFileSync('_data/gallery-index.json', JSON.stringify(gallery, null, 2));
 console.log(`Gallery: ${gallery.length} items`);
 
 // ── Stills index ──
 const stillsRaw = readDataDir('_data/stills');
-const stills = stillsRaw.map(item => {
-  const images = [item.image].filter(Boolean).map(normImg);
-  for (let n = 2; n <= 20; n++) {
-    if (item[`image${n}`]) images.push(normImg(item[`image${n}`]));
-  }
-  return { ...item, images };
-});
+const stills = stillsRaw.map(item => ({ ...item, images: getImages(item, 20) }));
 fs.writeFileSync('_data/stills-index.json', JSON.stringify(stills, null, 2));
 console.log(`Stills: ${stills.length} items`);
 
 // ── Traditional Art index ──
 const traditionalRaw = readDataDir('_data/traditional-art');
-const traditionalArt = traditionalRaw.map(item => {
-  const images = [item.image].filter(Boolean).map(normImg);
-  for (let n = 2; n <= 10; n++) {
-    if (item[`image${n}`]) images.push(normImg(item[`image${n}`]));
-  }
-  return { ...item, images };
-});
+const traditionalArt = traditionalRaw.map(item => ({ ...item, images: getImages(item, 10) }));
 fs.writeFileSync('_data/traditional-art-index.json', JSON.stringify(traditionalArt, null, 2));
 console.log(`Traditional Art: ${traditionalArt.length} items`);
 
