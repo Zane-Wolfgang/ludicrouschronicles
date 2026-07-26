@@ -501,6 +501,7 @@ footer { padding: 3rem 2rem; border-top: 1px solid var(--border); text-align: ce
   .members-cta { padding: 2rem 1rem; }
   footer { padding: 2rem 1.25rem; }
   .footer-copy { font-size: 0.75rem; }
+  .lc-vintage-toggle { bottom: 4.5rem; left: 1.25rem; font-size: 8px; padding: 0.4em 0.8em; min-height: 44px; }
   .admin-panel-body { width: 100vw; max-height: 60vh; top: auto; bottom: 0; border-radius: 8px 8px 0 0; border-left: 1px solid var(--border); transform: translateY(100%); }
   .admin-panel-body.open { transform: translateY(0); }
   .admin-panel-tab { top: auto; bottom: 4rem; }
@@ -527,6 +528,53 @@ footer { padding: 3rem 2rem; border-top: 1px solid var(--border); text-align: ce
 }
 
 @media (max-width: 480px) { .nav-brand { font-size: 11px; } }
+
+
+/* ── Vintage Mode Toggle Button ── */
+.lc-vintage-toggle {
+  position: fixed;
+  bottom: 5.5rem;
+  left: 1.75rem;
+  z-index: 850;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45em 0.9em;
+  min-height: 32px;
+  background: rgba(10,8,6,0.88);
+  border: 1px solid var(--gold-dim);
+  border-radius: 2rem;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.3s, border-color 0.3s, color 0.3s, box-shadow 0.3s;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  white-space: nowrap;
+}
+
+.lc-vintage-toggle:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(201,168,76,0.07);
+  box-shadow: 0 4px 18px rgba(201,168,76,0.15);
+}
+
+.lc-vintage-toggle:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* Active / pressed state — vintage is ON */
+.lc-vintage-toggle[aria-pressed="true"] {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(201,168,76,0.1);
+  box-shadow: 0 0 0 1px rgba(201,168,76,0.2), 0 4px 18px rgba(201,168,76,0.15);
+}
+
 
 /* ══════════════════════════════════════════════════════════
    1920s VINTAGE MODE  ·  body.vintage activates all of this
