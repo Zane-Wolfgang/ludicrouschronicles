@@ -561,20 +561,45 @@ body.vintage .content-title {
 }
 
 /* ── Vintage: Images ── */
-body.vintage img:not(.nav-cord-img):not(.socials-icon) {
-  filter: sepia(1) contrast(0.80) brightness(0.78) saturate(0.6);
+/* Images inside high-z-index contexts (lightbox at z-index 9000+) are
+   above the backdrop-filter overlay, so they need their own filter */
+body.vintage .lightbox-img,
+body.vintage .lightbox-img-wrap img {
+  filter: sepia(0.85) saturate(0.6) brightness(0.84) contrast(0.9);
   transition: filter 0.4s;
 }
-body.vintage .gallery-item:hover img {
-  filter: sepia(0.7) contrast(0.85) brightness(0.90) saturate(0.7);
+
+/* Fixed elements above the overlay (z-index > 2) bypass backdrop-filter
+   and need their own direct filter where applicable */
+body.vintage #lc-music-player img {
+  filter: sepia(0.8) saturate(0.6) brightness(0.85) contrast(0.9);
 }
-body.vintage .lc-emoji-tip img,
-body.vintage .socials-icon { filter: none; }
+
+/* Gallery hover: backdrop-filter is always on, give a subtle brightness lift on hover
+   so the card feels interactive even in vintage mode */
+body.vintage .gallery-item:hover img {
+  filter: brightness(1.12) saturate(1.1);
+}
+
+/* ── @supports fallback: browsers without backdrop-filter get direct img sepia ── */
+@supports not (backdrop-filter: sepia(1)) {
+  body.vintage img:not(.nav-cord-img):not(.socials-icon):not(.lc-emoji-tip *) {
+    filter: sepia(0.85) saturate(0.62) brightness(0.84) contrast(0.92);
+    transition: filter 0.4s;
+  }
+  body.vintage .gallery-item:hover img {
+    filter: sepia(0.65) saturate(0.75) brightness(0.9) contrast(0.94);
+  }
+}
 
 /* ── Vintage: Warm sepia page overlay ── */
 body.vintage::before {
   content: ''; position: fixed; inset: 0;
-  background: rgba(60,40,10,0.18);
+  /* backdrop-filter hits EVERYTHING behind it: img, background-image, canvas, video
+     regardless of how the image is rendered — this is the only truly global approach */
+  -webkit-backdrop-filter: sepia(0.82) saturate(0.62) brightness(0.85) contrast(0.92);
+  backdrop-filter:          sepia(0.82) saturate(0.62) brightness(0.85) contrast(0.92);
+  background: rgba(60,40,10,0.05);
   pointer-events: none; z-index: 2;
 }
 
