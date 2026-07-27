@@ -1,3 +1,13 @@
+/* ── Preload 1920s vintage fonts (Limelight + Josefin Sans via Google Fonts) ── */
+(function () {
+  if (document.getElementById('lc-vintage-fonts')) return;
+  var link = document.createElement('link');
+  link.id   = 'lc-vintage-fonts';
+  link.rel  = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?family=Limelight&family=Josefin+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap';
+  document.head.appendChild(link);
+})();
+
 // Ludicrous Chronicles — Auth Helper
 // Checks Netlify Identity for user role and gates content accordingly
 const tierRank = { free: 0, devoted: 1, bound: 2 };
