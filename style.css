@@ -532,32 +532,51 @@ body.vintage {
 }
 
 /* ── Vintage: Fonts ── */
-/* Major display headings → Warszawa Deco (Art Deco geometric) */
+/* Display / major headings → Limelight (authentic 1920s Art Deco geometric) */
 body.vintage .section-title,
 body.vintage .page-header .section-title,
 body.vintage .lightbox-title,
-body.vintage .nav-brand {
-  font-family: 'Warszawa Deco', 'Josefin Sans', 'Cinzel Decorative', serif;
-  letter-spacing: 0.12em;
+body.vintage .content-title,
+body.vintage .chapter-title,
+body.vintage .nav-brand,
+body.vintage .footer-brand {
+  font-family: 'Limelight', 'Warszawa Deco', 'Futura', 'Century Gothic', sans-serif;
+  letter-spacing: 0.1em;
+  font-style: normal;
 }
 
-/* Sub-labels, uppercase caps → Indentia (stylised Art Deco caps) */
+/* Body text, labels, nav → Josefin Sans (geometric, period-appropriate) */
+
+/* Labels, overlay types, footer copy — light and elegant */
 body.vintage .section-label,
 body.vintage .gallery-overlay-type,
 body.vintage .lightbox-type,
-body.vintage .footer-copy,
+body.vintage .footer-copy {
+  font-family: 'Josefin Sans', 'Indentia', 'Trebuchet MS', sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+}
+
+/* Section body is italic in base CSS — only italic 300 is loaded, must specify weight */
+body.vintage .section-body {
+  font-family: 'Josefin Sans', 'Trebuchet MS', sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.05em;
+}
+
+/* Nav links — 400 for readability at 11px */
 body.vintage .nav-links a {
-  font-family: 'Indentia', 'Josefin Sans', 'Cinzel', serif;
+  font-family: 'Josefin Sans', 'Trebuchet MS', sans-serif;
+  font-weight: 400;
   letter-spacing: 0.22em;
 }
 
-/* Decorative feature headings → Park Lane NF (curly 1920s elegance) */
-body.vintage .footer-brand,
-body.vintage .chapter-title,
-body.vintage .content-title {
-  font-family: 'Park Lane NF', 'Cormorant Garamond', 'EB Garamond', serif;
-  font-style: italic;
-  letter-spacing: 0.06em;
+/* Buttons — 600 for visual weight, Art Deco boldness */
+body.vintage .btn-primary,
+body.vintage .btn-ghost {
+  font-family: 'Josefin Sans', 'Trebuchet MS', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.22em;
 }
 
 /* ── Vintage: Images ── */
