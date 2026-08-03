@@ -165,13 +165,14 @@
   .lightbox-nav {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-50%) translateZ(0);
     width: 40px; height: 40px;
     background: rgba(10,8,6,0.7);
     border: 1px solid var(--border-bright);
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; z-index: 20;
+    cursor: pointer; z-index: 9020;
     transition: border-color 0.2s;
+    will-change: transform;
   }
   .lightbox-nav:hover { border-color: var(--gold); }
   .lightbox-nav svg { width: 14px; height: 14px; fill: var(--gold); }
@@ -939,7 +940,12 @@ function setLightboxContent(title, type, notes) {
 function hideSocials() { const t = document.getElementById('socials-trigger'); if (t) t.style.visibility = 'hidden'; }
 function showSocials() { const t = document.getElementById('socials-trigger'); if (t) t.style.visibility = ''; }
 
+/* Track the hash that was active before opening the lightbox (section anchor) */
+var _prevHash = '';
+
 function openLightbox(src, title, type, notes) {
+  _prevHash = location.hash;
+  history.replaceState(null, '', '#' + encodeURIComponent(title));
   lbImg.src = src;
   lb.classList.add('open'); lb.classList.remove('zoomed');
   document.body.classList.remove('lc-zoomed');
@@ -956,6 +962,8 @@ function openLightbox(src, title, type, notes) {
 }
 
 function openSlideshow(images, titles, type, notes) {
+  _prevHash = location.hash;
+  history.replaceState(null, '', '#' + encodeURIComponent(titles[0]));
   slideImages = images; slideTitles = titles; slideType = type; slideIndex = 0;
   lb.classList.add('open'); lb.classList.remove('zoomed');
   document.body.classList.remove('lc-zoomed');
@@ -967,6 +975,8 @@ function openSlideshow(images, titles, type, notes) {
 }
 
 function showSlide(index) {
+  if (slideTitles && slideTitles[index])
+    history.replaceState(null, '', '#' + encodeURIComponent(slideTitles[index]));
   lbImg.style.opacity = '0.2';
   const incoming = new Image();
   incoming.onload = () => { lbImg.src = slideImages[index]; lbImg.style.opacity = '1'; };
@@ -983,6 +993,8 @@ function closeLightbox() {
   document.body.classList.remove('lc-zoomed');
   document.body.style.overflow = '';
   zoomed = false;
+  /* Restore the section hash (e.g. #stills) or clear if we came from root */
+  history.replaceState(null, '', _prevHash || location.pathname);
   showSocials();
 }
 
@@ -1093,9 +1105,11 @@ async function loadCMSGallery() {
     const sets = {}, singles = [];
     items.forEach(item => { if (item.set) { if (!sets[item.set]) sets[item.set] = []; sets[item.set].push(item); } else { singles.push(item); } });
     Object.values(sets).forEach(s => s.sort((a,b) => a.set_order - b.set_order));
-    const firstHardcoded = grid.firstChild;
-    singles.forEach(item => { grid.insertBefore(makeCMSGalleryItem(item, userTier, tRank), firstHardcoded); });
-    Object.entries(sets).forEach(([, items]) => { grid.insertBefore(makeCMSGalleryItem(items[0], userTier, tRank), grid.firstChild); });
+    /* Sort ascending (oldest → newest) so new posts append to the end instead of top-left */
+    singles.sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
+    singles.forEach(item => { grid.appendChild(makeCMSGalleryItem(item, userTier, tRank)); });
+    const setEntries = Object.entries(sets).sort((a,b) => new Date(a[1][0].date||0) - new Date(b[1][0].date||0));
+    setEntries.forEach(([, s]) => { grid.appendChild(makeCMSGalleryItem(s[0], userTier, tRank)); });
   } catch(e) {}
 }
 
@@ -1193,6 +1207,7 @@ async function loadTraditional() {
     const userTier = window.getUserTier ? await window.getUserTier() : 'free';
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
     if (loading) loading.remove();
+    items.sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
     items.forEach(item => {
       if (item.date) galleryDates.set(item.title, item.date);
       if (item.note) galleryNotes.set(item.title, item.note);
@@ -1231,6 +1246,7 @@ async function loadStills() {
     const userTier = window.getUserTier ? await window.getUserTier() : 'free';
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
     if (loading) loading.remove();
+    items.sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
     items.forEach(item => {
       if (item.date) galleryDates.set(item.title, item.date);
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
