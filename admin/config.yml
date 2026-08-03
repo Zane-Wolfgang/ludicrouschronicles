@@ -49,7 +49,7 @@ collections:
   - label: Body
     name: body
     widget: markdown
-  - label: Audio (optional)
+  - label: Audio
     name: audio
     widget: file
     required: false
@@ -90,22 +90,22 @@ collections:
   - label: Main Image
     name: image
     widget: image
-  - label: Page 2 (optional)
+  - label: Page 2
     name: image2
     widget: image
     required: false
     hint: Second image in slideshow
-  - label: Page 3 (optional)
+  - label: Page 3
     name: image3
     widget: image
     required: false
     hint: Third image in slideshow
-  - label: Page 4 (optional)
+  - label: Page 4
     name: image4
     widget: image
     required: false
     hint: Fourth image in slideshow
-  - label: Artist's Note (optional)
+  - label: Artist's Note
     name: notes
     widget: markdown
     required: false
@@ -148,7 +148,7 @@ collections:
   - label: Video File
     name: video
     widget: file
-  - label: Thumbnail (optional)
+  - label: Thumbnail
     name: thumbnail
     widget: image
     required: false
@@ -207,7 +207,7 @@ collections:
   - label: Body
     name: body
     widget: markdown
-  - label: Audio (optional)
+  - label: Audio
     name: audio
     widget: file
     required: false
@@ -239,7 +239,7 @@ collections:
   - label: Image
     name: image
     widget: image
-  - label: Note (optional)
+  - label: Note
     name: note
     widget: markdown
     required: false
@@ -280,79 +280,79 @@ collections:
     name: image
     widget: image
     hint: First image shown in the grid
-  - label: Image 2 (optional)
+  - label: Image 2
     name: image2
     widget: image
     required: false
-  - label: Image 3 (optional)
+  - label: Image 3
     name: image3
     widget: image
     required: false
-  - label: Image 4 (optional)
+  - label: Image 4
     name: image4
     widget: image
     required: false
-  - label: Image 5 (optional)
+  - label: Image 5
     name: image5
     widget: image
     required: false
-  - label: Image 6 (optional)
+  - label: Image 6
     name: image6
     widget: image
     required: false
-  - label: Image 7 (optional)
+  - label: Image 7
     name: image7
     widget: image
     required: false
-  - label: Image 8 (optional)
+  - label: Image 8
     name: image8
     widget: image
     required: false
-  - label: Image 9 (optional)
+  - label: Image 9
     name: image9
     widget: image
     required: false
-  - label: Image 10 (optional)
+  - label: Image 10
     name: image10
     widget: image
     required: false
-  - label: Image 11 (optional)
+  - label: Image 11
     name: image11
     widget: image
     required: false
-  - label: Image 12 (optional)
+  - label: Image 12
     name: image12
     widget: image
     required: false
-  - label: Image 13 (optional)
+  - label: Image 13
     name: image13
     widget: image
     required: false
-  - label: Image 14 (optional)
+  - label: Image 14
     name: image14
     widget: image
     required: false
-  - label: Image 15 (optional)
+  - label: Image 15
     name: image15
     widget: image
     required: false
-  - label: Image 16 (optional)
+  - label: Image 16
     name: image16
     widget: image
     required: false
-  - label: Image 17 (optional)
+  - label: Image 17
     name: image17
     widget: image
     required: false
-  - label: Image 18 (optional)
+  - label: Image 18
     name: image18
     widget: image
     required: false
-  - label: Image 19 (optional)
+  - label: Image 19
     name: image19
     widget: image
     required: false
-  - label: Image 20 (optional)
+  - label: Image 20
     name: image20
     widget: image
     required: false
@@ -361,7 +361,7 @@ collections:
     widget: string
     required: false
     hint: e.g. Pine Ridge, Brookhaven
-  - label: Description (optional)
+  - label: Description
     name: description
     widget: text
     required: false
@@ -426,7 +426,7 @@ collections:
     widget: image
     required: false
     hint: Only needed if you chose Custom above
-  - label: Hover Tooltip (optional)
+  - label: Hover Tooltip
     name: tooltip
     widget: string
     required: false
@@ -457,43 +457,43 @@ collections:
     name: image
     widget: image
     hint: Scan or photo of the piece
-  - label: Image 2 (optional)
+  - label: Image 2
     name: image2
     widget: image
     required: false
-  - label: Image 3 (optional)
+  - label: Image 3
     name: image3
     widget: image
     required: false
-  - label: Image 4 (optional)
+  - label: Image 4
     name: image4
     widget: image
     required: false
-  - label: Image 5 (optional)
+  - label: Image 5
     name: image5
     widget: image
     required: false
-  - label: Image 6 (optional)
+  - label: Image 6
     name: image6
     widget: image
     required: false
-  - label: Image 7 (optional)
+  - label: Image 7
     name: image7
     widget: image
     required: false
-  - label: Image 8 (optional)
+  - label: Image 8
     name: image8
     widget: image
     required: false
-  - label: Image 9 (optional)
+  - label: Image 9
     name: image9
     widget: image
     required: false
-  - label: Image 10 (optional)
+  - label: Image 10
     name: image10
     widget: image
     required: false
-  - label: Artist's Note (optional)
+  - label: Artist's Note
     name: notes
     widget: markdown
     required: false
