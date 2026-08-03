@@ -70,6 +70,50 @@
 <body>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
+  <!-- ── Blob cache: fixes broken image widget previews for newly uploaded files ── -->
+  <script>
+  (function () {
+    /* Map: filename → blob object URL (survives Decap re-renders) */
+    window._lcBlobCache = window._lcBlobCache || {};
+
+    /* Capture blob URL the moment ANY file input changes — covers Decap's own picker */
+    document.addEventListener('change', function (e) {
+      var el = e.target;
+      if (!el || el.type !== 'file') return;
+      Array.from(el.files || []).forEach(function (file) {
+        if (!file.type.startsWith('image/')) return;
+        window._lcBlobCache[file.name] = URL.createObjectURL(file);
+      });
+    }, true); /* capture phase — before Decap processes the event */
+
+    /* When any img errors, check our cache by filename */
+    function fixImg(img) {
+      if (img._lcPatched) return;
+      img._lcPatched = true;
+      img.addEventListener('error', function () {
+        var src = (img.getAttribute('src') || '').split('?')[0];
+        var name = src.split('/').pop();
+        /* Try exact match first, then strip timestamp prefix (our multi-upload format) */
+        var blob = window._lcBlobCache[name]
+          || window._lcBlobCache[name.replace(/^\d+_\d+_/, '')];
+        if (blob) { img.src = blob; img.style.opacity = '1'; }
+      });
+    }
+
+    /* Watch for new img elements added by Decap's React renders */
+    var obs = new MutationObserver(function (mutations) {
+      mutations.forEach(function (m) {
+        m.addedNodes.forEach(function (node) {
+          if (node.nodeType !== 1) return;
+          if (node.tagName === 'IMG') { fixImg(node); return; }
+          node.querySelectorAll('img').forEach(fixImg);
+        });
+      });
+    });
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+  })();
+  </script>
+
   <!-- ── Multi-Image Upload Helper ── -->
   <button id="lc-multi-trigger" title="Select multiple images at once">+</button>
 
@@ -106,7 +150,10 @@
       if (!show) panel.classList.remove('open');
     }
     window.addEventListener('hashchange', checkRoute);
-    setInterval(checkRoute, 800); /* fallback for Decap's internal navigation */
+    /* MutationObserver catches React SPA navigation Decap does without hash changes */
+    new MutationObserver(function() { checkRoute(); })
+      .observe(document.body, { childList: true, subtree: false });
+    checkRoute(); /* run once on load */
 
     trigger.addEventListener('click', function () { panel.classList.toggle('open'); });
     closeBtn.addEventListener('click', function () { panel.classList.remove('open'); });
@@ -147,6 +194,10 @@
 
           if (file.size > 10 * 1024 * 1024) throw new Error(file.name + ' exceeds 10 MB \u2014 compress first.');
 
+          /* Cache blob URL now, before upload — fixes widget preview immediately */
+          var blobUrl = URL.createObjectURL(file);
+          window._lcBlobCache[file.name] = blobUrl;
+
           var b64 = await new Promise(function (res, rej) {
             var fr = new FileReader();
             fr.onload  = function (ev) { res(ev.target.result.split(',')[1]); };
@@ -166,6 +217,7 @@
             var txt = await resp.text().catch(function(){ return ''; });
             throw new Error('Upload failed (' + resp.status + ') for ' + file.name + (txt ? ': ' + txt.slice(0,100) : ''));
           }
+          window._lcBlobCache[fname] = blobUrl; /* prefixed name → same blob URL */
           paths.push('/images/uploads/' + fname);
         }
 
