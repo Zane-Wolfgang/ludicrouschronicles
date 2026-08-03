@@ -207,6 +207,129 @@
   })();
   </script>
 
+  <!-- ── Preview Templates: image shows immediately via getAsset blob URL ── -->
+  <script>
+  (function () {
+    function registerPreviews() {
+      if (!window.CMS || !window.React) return setTimeout(registerPreviews, 150);
+      var R = window.React;
+
+      /* Safely get a value — handles Immutable.js Map or plain object */
+      function get(obj, key) {
+        if (!obj) return undefined;
+        return typeof obj.get === 'function' ? obj.get(key) : obj[key];
+      }
+
+      /* Safely get nested value — uses entry.getIn if available (Decap 3.x) */
+      function getField(entry, field) {
+        try {
+          if (typeof entry.getIn === 'function') return entry.getIn(['data', field]);
+          return get(get(entry, 'data'), field);
+        } catch(e) { return undefined; }
+      }
+
+      /* Resolve image to URL:
+         - blob URL  if just uploaded this session (via AssetProxy.toString / .url)
+         - CDN URL   if already deployed
+         - raw path  as last resort */
+      function imgSrc(props, key) {
+        var val = getField(props.entry, key);
+        if (!val || typeof val !== 'string') return null;
+        try {
+          var asset = props.getAsset(val);
+          if (!asset) return val;
+          /* AssetProxy.toString() is the canonical way — but guard against bare object */
+          var str = asset.toString();
+          if (str && str !== '[object Object]') return str;
+          /* Fallback: plain object with .url or .path */
+          if (asset.url) return asset.url;
+          if (typeof asset.get === 'function') {
+            return asset.get('url') || asset.get('path') || val;
+          }
+          return val;
+        } catch(e) { return val; }
+      }
+
+      var s = {
+        wrap:  { padding: '1rem', fontFamily: 'Georgia, serif', background: '#111', minHeight: '100vh', color: '#c9a84c' },
+        title: { fontSize: '1.4rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8c96a' },
+        meta:  { fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#7a7260', marginBottom: '1rem' },
+        grid:  { display: 'flex', flexWrap: 'wrap', gap: '6px' },
+        img:   { maxWidth: '180px', maxHeight: '180px', objectFit: 'cover', border: '1px solid rgba(201,168,76,0.3)' },
+        img1:  { maxWidth: '100%', maxHeight: '260px', objectFit: 'contain', border: '1px solid rgba(201,168,76,0.3)', marginBottom: '8px' }
+      };
+
+      /* ── Gallery ── */
+      CMS.registerPreviewTemplate('gallery', function(props) {
+        var title = getField(props.entry, 'title');
+        var type  = getField(props.entry, 'type');
+        var tier  = getField(props.entry, 'tier');
+        var imgs  = ['image','image2','image3','image4']
+          .map(function(k){ return imgSrc(props, k); }).filter(Boolean);
+        return R.createElement('div', { style: s.wrap },
+          title && R.createElement('h2', { style: s.title }, title),
+          R.createElement('div', { style: s.meta }, [type, tier].filter(Boolean).join(' · ')),
+          imgs.length > 0 && R.createElement('div', null,
+            R.createElement('img', { src: imgs[0], style: s.img1 }),
+            imgs.length > 1 && R.createElement('div', { style: s.grid },
+              imgs.slice(1).map(function(src,i){ return R.createElement('img',{key:i,src:src,style:s.img}); })
+            )
+          )
+        );
+      });
+
+      /* ── Stills ── */
+      CMS.registerPreviewTemplate('stills', function(props) {
+        var title = getField(props.entry, 'title');
+        var game  = getField(props.entry, 'game');
+        var fields = ['image'];
+        for (var n=2; n<=20; n++) fields.push('image'+n);
+        var imgs = fields.map(function(k){ return imgSrc(props, k); }).filter(Boolean);
+        return R.createElement('div', { style: s.wrap },
+          title && R.createElement('h2', { style: s.title }, title),
+          game && R.createElement('div', { style: s.meta }, game),
+          imgs.length > 0 && R.createElement('div', null,
+            R.createElement('img', { src: imgs[0], style: s.img1 }),
+            imgs.length > 1 && R.createElement('div', { style: s.grid },
+              imgs.slice(1).map(function(src,i){ return R.createElement('img',{key:i,src:src,style:s.img}); })
+            )
+          )
+        );
+      });
+
+      /* ── Traditional Art ── */
+      CMS.registerPreviewTemplate('traditional_art', function(props) {
+        var title = getField(props.entry, 'title');
+        var fields = ['image'];
+        for (var n=2; n<=10; n++) fields.push('image'+n);
+        var imgs = fields.map(function(k){ return imgSrc(props, k); }).filter(Boolean);
+        return R.createElement('div', { style: s.wrap },
+          title && R.createElement('h2', { style: s.title }, title),
+          imgs.length > 0 && R.createElement('div', null,
+            R.createElement('img', { src: imgs[0], style: s.img1 }),
+            imgs.length > 1 && R.createElement('div', { style: s.grid },
+              imgs.slice(1).map(function(src,i){ return R.createElement('img',{key:i,src:src,style:s.img}); })
+            )
+          )
+        );
+      });
+
+      /* ── WIPs & Sketches ── */
+      CMS.registerPreviewTemplate('wips', function(props) {
+        var title = getField(props.entry, 'title');
+        var src   = imgSrc(props, 'image');
+        return R.createElement('div', { style: s.wrap },
+          title && R.createElement('h2', { style: s.title }, title),
+          src && R.createElement('img', { src: src, style: s.img1 })
+        );
+      });
+
+      console.log('[LC Admin] preview templates registered (gallery, stills, traditional_art, wips)');
+    }
+    registerPreviews();
+  })();
+  </script>
+
   <!-- Markdown Help Button -->
   <button id="md-help-btn" title="Markdown formatting guide">?</button>
   <div id="md-help-overlay">
