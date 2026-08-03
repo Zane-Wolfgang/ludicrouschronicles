@@ -237,11 +237,19 @@ const chapters = readDataDir('_data/chapters').map(c => ({
   thumbnail: normImg(c.art) || '', body: c.body || ''
 }));
 
-const videos = readDataDir('_data/videos').map(v => ({
-  ...v, type: 'Video', label: 'Video', filter_type: 'video',
-  is_voice: toBool(v.is_voice), href: 'videos.html',
-  description: v.description || '', thumbnail: normImg(v.thumbnail) || ''
-}));
+const videos = readDataDir('_data/videos').map(v => {
+  /* Auto-generate thumbnail from YouTube/Vimeo URL if no manual thumbnail */
+  let thumb = normImg(v.thumbnail) || '';
+  if (!thumb && v.video) {
+    const ytMatch = v.video.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/);
+    if (ytMatch) thumb = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+    const vmMatch = !ytMatch && v.video.match(/vimeo\.com\/(\d+)/);
+    if (vmMatch) thumb = `https://vumbnail.com/${vmMatch[1]}.jpg`; // Vumbnail proxy
+  }
+  return { ...v, type: 'Video', label: 'Video', filter_type: 'video',
+    is_voice: toBool(v.is_voice), href: 'videos.html',
+    description: v.description || '', thumbnail: thumb };
+});
 
 const shortStories = readDataDir('_data/short-stories').map(s => {
   const slug = s.filename ? s.filename.replace('.md','') : s.title.toLowerCase().replace(/\s+/g,'-');
@@ -264,8 +272,15 @@ const traditional_content = traditionalArt.map(t => ({
   href: 'gallery.html#traditional', thumbnail: normImg(t.image) || ''
 }));
 
+/* Gallery art — uses first image as thumbnail so no double-upload needed */
+const gallery_content = gallery.map(g => ({
+  ...g, type: g.type || 'Character Art', label: g.type || 'Character Art', filter_type: 'art',
+  href: 'gallery.html#' + encodeURIComponent(g.title || ''),
+  thumbnail: (g.images && g.images[0]) ? normImg(g.images[0]) : normImg(g.image) || ''
+}));
+
 const sortedChapters = [...chapters].sort((a,b) => parseInt(a.number||0) - parseInt(b.number||0));
-const sortedOther = [...videos, ...shortStories, ...wips, ...stills_content, ...traditional_content]
+const sortedOther = [...videos, ...shortStories, ...wips, ...stills_content, ...traditional_content, ...gallery_content]
   .sort((a,b) => new Date(b.date) - new Date(a.date));
 const contentIndex = [...sortedChapters, ...sortedOther];
 
