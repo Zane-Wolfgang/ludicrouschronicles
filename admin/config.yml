@@ -24,6 +24,15 @@ collections:
   - label: Body
     name: body
     widget: markdown
+  sortable_fields:
+    default:
+      field: title
+      direction: Ascending
+    fields:
+    - field: title
+    - field: date
+    - field: commit_date
+    - field: commit_author
 - name: chapters
   label: Chapters
   folder: _data/chapters
@@ -73,6 +82,15 @@ collections:
     - label: Bound — $12 members
       value: bound
     default: free
+  sortable_fields:
+    default:
+      field: date
+      direction: Ascending
+    fields:
+    - field: title
+    - field: date
+    - field: commit_date
+    - field: commit_author
 - name: gallery
   label: Gallery
   folder: _data/gallery
@@ -133,6 +151,15 @@ collections:
     - label: Bound — $12 members
       value: bound
     default: free
+  sortable_fields:
+    default:
+      field: title
+      direction: Ascending
+    fields:
+    - field: title
+    - field: date
+    - field: commit_date
+    - field: commit_author
 - name: videos
   label: Videos
   folder: _data/videos
@@ -187,6 +214,15 @@ collections:
     - label: Bound — $12 members
       value: bound
     default: devoted
+  sortable_fields:
+    default:
+      field: title
+      direction: Ascending
+    fields:
+    - field: title
+    - field: date
+    - field: commit_date
+    - field: commit_author
 - name: short_stories
   label: Short Stories
   folder: _data/short-stories
@@ -224,6 +260,15 @@ collections:
     - label: Bound — $12 members
       value: bound
     default: devoted
+  sortable_fields:
+    default:
+      field: title
+      direction: Ascending
+    fields:
+    - field: title
+    - field: date
+    - field: commit_date
+    - field: commit_author
 - name: wips
   label: WIPs & Sketches
   folder: _data/wips
@@ -263,6 +308,15 @@ collections:
     - label: Bound — $12 members
       value: bound
     default: bound
+  sortable_fields:
+    default:
+      field: title
+      direction: Ascending
+    fields:
+    - field: title
+    - field: date
+    - field: commit_date
+    - field: commit_author
 - name: stills
   label: Stills
   folder: _data/stills
@@ -377,6 +431,15 @@ collections:
     - label: Bound — $12 members
       value: bound
     default: free
+  sortable_fields:
+    default:
+      field: title
+      direction: Ascending
+    fields:
+    - field: title
+    - field: date
+    - field: commit_date
+    - field: commit_author
 - name: socials
   label: Social Links
   folder: _data/socials
@@ -439,6 +502,15 @@ collections:
     widget: boolean
     default: true
     hint: Turn off to hide without deleting
+  sortable_fields:
+    default:
+      field: title
+      direction: Ascending
+    fields:
+    - field: title
+    - field: date
+    - field: commit_date
+    - field: commit_author
 - name: traditional_art
   label: Traditional Art
   folder: _data/traditional-art
@@ -528,6 +600,15 @@ collections:
     - label: Bound — $12 members
       value: bound
     default: free
+  sortable_fields:
+    default:
+      field: title
+      direction: Ascending
+    fields:
+    - field: title
+    - field: date
+    - field: commit_date
+    - field: commit_author
 - name: emojis
   label: Emojis
   folder: _data/emojis
@@ -560,6 +641,15 @@ collections:
     name: active
     widget: boolean
     default: true
+  sortable_fields:
+    default:
+      field: title
+      direction: Ascending
+    fields:
+    - field: title
+    - field: date
+    - field: commit_date
+    - field: commit_author
 - name: music
   label: Music
   folder: _data/music
@@ -587,6 +677,15 @@ collections:
     name: active
     widget: boolean
     default: true
+  sortable_fields:
+    default:
+      field: title
+      direction: Ascending
+    fields:
+    - field: title
+    - field: date
+    - field: commit_date
+    - field: commit_author
 - name: settings
   label: Site Settings
   files:
