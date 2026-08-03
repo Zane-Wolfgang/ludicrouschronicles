@@ -59,6 +59,8 @@ async function initEngagement(chapterId) {
       const count = Array.isArray(data) ? data.length : 0;
       const el = document.getElementById('witness-count');
       if (el) el.textContent = count;
+      // Don't record admin visits — editing shouldn't inflate witness counts
+      if (_engIsAdmin) return;
       const seen = localStorage.getItem('witnessed_' + chapterId);
       if (!seen) {
         await sb('witnesses', { method: 'POST', body: { chapter: chapterId, visitor_id: visitorId }, prefer: 'return=minimal' });
@@ -309,7 +311,7 @@ async function initEngagement(chapterId) {
               <span class="admin-comment-name">${c.name || 'Anonymous'}</span>
               <span class="admin-comment-date">${date}</span>
             </div>
-            <div class="admin-comment-body">${c.message}</div>
+            <div class="admin-comment-body">${window.renderEmojiShortcodes ? window.renderEmojiShortcodes(c.message) : c.message}</div>
             <button class="admin-comment-delete" data-id="${c.id}">Delete</button>`;
           div.querySelector('.admin-comment-delete').addEventListener('click', async function() {
             if (!confirm('Delete this comment?')) return;
