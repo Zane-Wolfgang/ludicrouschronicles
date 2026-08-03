@@ -891,13 +891,20 @@ function renderNotes(md) {
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .split(/\n\n+/)
     .map(para => {
+      /* Lone backslash paragraph = Decap blank-line artefact, discard */
+      if (/^\s*\\\s*$/.test(para)) return '';
+      /* Hard line breaks within paragraph:
+         Decap 3.x: backslash + optional horiz-space + newline (NOT \s* — that eats para breaks)
+         Standard:  two spaces + newline */
+      para = para
+        .replace(/\\[ \t]*\n/g, '\x00')   /* backslash hard break */
+        .replace(/  \n/g,       '\x00')   /* two-space hard break */
+        .replace(/\\[ \t]*$/,   '');      /* trailing backslash at para end — discard */
       const h = para.match(/^(#{1,6}) +(.+)$/);
-      if (h) {
-        const lvl = Math.min(h[1].length, 6);
-        return `<h${lvl} class="lb-note-heading">${inline(h[2])}</h${lvl}>`;
-      }
-      return inline(para.replace(/\n/g,'<br>'));
+      if (h) { const lvl=Math.min(h[1].length,6); return `<h${lvl} class="lb-note-heading">${inline(h[2])}</h${lvl}>`; }
+      return inline(para.replace(/\n/g,'<br>').replace(/\x00/g,'<br>'));
     })
+    .filter(p => p !== '')
     .join('<br><br>');
 }
 
