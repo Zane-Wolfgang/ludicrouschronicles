@@ -62,8 +62,8 @@ collections:
     name: audio
     widget: file
     required: false
-    hint: Upload MP3 narration for this chapter. Enables the audio player with auto
-      paragraph sync.
+    hint: 'Upload MP3 narration for this chapter. Enables the audio player with auto
+      paragraph sync Max direct upload: ~25 MB.'
   - label: Include in Voice tab
     name: is_voice
     widget: boolean
@@ -175,6 +175,8 @@ collections:
   - label: Video File
     name: video
     widget: file
+    hint: 'Direct upload limit: ~25 MB (GitHub API cap). For larger videos, paste
+      a YouTube or Vimeo URL instead — thumbnails will be generated automatically.'
   - label: Thumbnail
     name: thumbnail
     widget: image
@@ -247,8 +249,8 @@ collections:
     name: audio
     widget: file
     required: false
-    hint: Upload MP3 narration for this story. Enables the audio player with auto
-      paragraph sync.
+    hint: 'Upload MP3 narration for this story. Enables the audio player with auto
+      paragraph sync Max direct upload: ~25 MB.'
   - label: Access Tier
     name: tier
     widget: select
@@ -667,7 +669,7 @@ collections:
   - label: Audio File
     name: audio
     widget: file
-    hint: Upload MP3
+    hint: 'Upload MP3 Max direct upload: ~25 MB.'
   - label: Order
     name: order
     widget: number
