@@ -70,47 +70,126 @@
 <body>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
-  <!-- ── Blob cache: fixes broken image widget previews for newly uploaded files ── -->
+  <!-- ── Image fix: fetches from GitHub when Decap commits before Netlify deploys ── -->
   <script>
   (function () {
-    /* Map: filename → blob object URL (survives Decap re-renders) */
     window._lcBlobCache = window._lcBlobCache || {};
+    /* Promise singleton — concurrent calls share one request, never retries if failed */
+    var _repoPromise = null;
 
-    /* Capture blob URL the moment ANY file input changes — covers Decap's own picker */
+    function getRepo() {
+      if (_repoPromise) return _repoPromise;
+      _repoPromise = (async function () {
+        try {
+          var b = window.CMS && window.CMS.backend;
+          if (b && b.api) {
+            var found = b.api.repo
+              || (b.api.repoURL && b.api.repoURL.match(/repos\/([^/]+\/[^/]+)/)?.[1]);
+            if (found) return found;
+          }
+        } catch (_) {}
+        try {
+          var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+          if (!user) return null;
+          var tok = await user.jwt();
+          var res = await fetch('/.netlify/git/github', { headers: { Authorization: 'Bearer ' + tok } });
+          if (res.ok) { var d = await res.json(); return d.repo || d.full_name || null; }
+        } catch (_) {}
+        return null;
+      })();
+      return _repoPromise;
+    }
+    /* Capture files from standard file inputs (backup path) */
     document.addEventListener('change', function (e) {
       var el = e.target;
       if (!el || el.type !== 'file') return;
       Array.from(el.files || []).forEach(function (file) {
-        if (!file.type.startsWith('image/')) return;
-        window._lcBlobCache[file.name] = URL.createObjectURL(file);
+        if (file.type.startsWith('image/')) {
+          window._lcBlobCache[file.name] = URL.createObjectURL(file);
+        }
       });
-    }, true); /* capture phase — before Decap processes the event */
+    }, true);
 
-    /* When any img errors, check our cache by filename */
+    /* Get GitHub repo path via Decap internals or git-gateway API */
+
+
+    /* Fetch an image directly from GitHub as a blob URL */
+    async function fetchFromGitHub(filePath) {
+      try {
+        var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+        if (!user) return null;
+        var token = await user.jwt();
+        var repo  = await getRepo();
+        if (!repo) return null;
+
+        var resp = await fetch(
+          '/.netlify/git/github/repos/' + repo + '/contents/' + filePath.replace(/^\//, ''),
+          { headers: { Authorization: 'Bearer ' + token } }
+        );
+        if (!resp.ok) return null;
+
+        var data = await resp.json();
+        if (!data.content) return null;
+
+        /* Decode base64 → Blob → object URL */
+        var b64   = data.content.replace(/\n/g, '');
+        var bin   = atob(b64);
+        var bytes = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        var ext  = filePath.split('.').pop().toLowerCase();
+        var mime = { jpg: 'jpeg', jpeg: 'jpeg', png: 'png', gif: 'gif', webp: 'webp' }[ext] || 'png';
+        var blob = new Blob([bytes], { type: 'image/' + mime });
+        return URL.createObjectURL(blob);
+      } catch (_) { return null; }
+    }
+
+    /* Fix a broken img: cache → GitHub fetch → give up gracefully */
     function fixImg(img) {
       if (img._lcPatched) return;
       img._lcPatched = true;
-      img.addEventListener('error', function () {
-        var src = (img.getAttribute('src') || '').split('?')[0];
+
+      async function tryFix() {
+        var rawSrc = img.getAttribute('src') || '';
+        /* Extract path only — rawSrc may be absolute (https://site.app/images/...) or relative */
+        var src = rawSrc.split('?')[0];
+        try { src = new URL(rawSrc, location.href).pathname; } catch (_) {}
         var name = src.split('/').pop();
-        /* Try exact match first, then strip timestamp prefix (our multi-upload format) */
-        var blob = window._lcBlobCache[name]
+        if (!name) return;
+
+        /* 1. Blob cache (captured from file input) */
+        var cached = window._lcBlobCache[name]
           || window._lcBlobCache[name.replace(/^\d+_\d+_/, '')];
-        if (blob) { img.src = blob; img.style.opacity = '1'; }
-      });
+        if (cached) { img.src = cached; return; }
+
+        /* 2. Fetch directly from GitHub (handles Decap's immediate-commit flow) */
+        if (src.includes('images/')) {
+          var blobUrl = await fetchFromGitHub(src);
+          if (blobUrl) {
+            window._lcBlobCache[name] = blobUrl;
+            img.src = blobUrl;
+          }
+        }
+      }
+
+      img.addEventListener('error', tryFix);
+
+      /* Race condition: also fire immediately if already broken */
+      if (img.complete && img.naturalWidth === 0 && img.getAttribute('src')) {
+        tryFix();
+      }
     }
 
-    /* Watch for new img elements added by Decap's React renders */
-    var obs = new MutationObserver(function (mutations) {
-      mutations.forEach(function (m) {
+    /* Patch all current and future img elements */
+    document.querySelectorAll('img').forEach(fixImg);
+    new MutationObserver(function (muts) {
+      muts.forEach(function (m) {
         m.addedNodes.forEach(function (node) {
-          if (node.nodeType !== 1) return;
+          if (!node || node.nodeType !== 1) return;
           if (node.tagName === 'IMG') { fixImg(node); return; }
           node.querySelectorAll('img').forEach(fixImg);
         });
       });
-    });
-    obs.observe(document.documentElement, { childList: true, subtree: true });
+    }).observe(document.documentElement, { childList: true, subtree: true });
   })();
   </script>
 
