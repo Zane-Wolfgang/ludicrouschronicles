@@ -66,6 +66,28 @@
     #lc-multi-trigger:hover { background: #3a3020; }
     #lc-multi-close { float:right; background:none; border:none; color:#8a6e2f; cursor:pointer; font-size:16px; padding:0; line-height:1; }
   </style>
+  <!-- Suppress browser autocomplete in CMS form fields (prevents history dropdown + replace-on-type) -->
+  <script>
+  (function() {
+    function suppressAutocomplete(root) {
+      if (!root || root.nodeType !== 1) return;
+      var inputs = root.querySelectorAll ? root.querySelectorAll('input[type="text"], input[type="search"], input:not([type])') : [];
+      for (var i = 0; i < inputs.length; i++) {
+        if (!inputs[i].getAttribute('autocomplete')) {
+          inputs[i].setAttribute('autocomplete', 'off');
+        }
+      }
+      if (root.matches && root.matches('input[type="text"], input:not([type])') && !root.getAttribute('autocomplete')) {
+        root.setAttribute('autocomplete', 'off');
+      }
+    }
+    new MutationObserver(function(muts) {
+      muts.forEach(function(m) {
+        m.addedNodes.forEach(suppressAutocomplete);
+      });
+    }).observe(document.documentElement, { childList: true, subtree: true });
+  })();
+  </script>
 </head>
 <body>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
@@ -91,15 +113,7 @@
         ];
         for(var p of paths){try{var r=p();if(r&&r.includes('/'))return r;}catch(_){}}
 
-        /* 3. One-time prompt — saved so user is never asked again */
-        var typed = window.prompt(
-          'Multi-upload needs your GitHub repo name once.\nFormat: username/repo-name\n(e.g. MistressSpite/ludicrous-chronicles):'
-        );
-        if(typed && typed.includes('/')) {
-          var clean = typed.trim();
-          localStorage.setItem('_lc_gh_repo', clean);
-          return clean;
-        }
+        /* 3. Silent fail — no prompt (prompt blocks UI on every form re-render) */
         return null;
       })();
       return _repoP;
@@ -215,204 +229,217 @@
   })();
   </script>
 
-  <!-- ── Multi-Image Upload: funnels selected files into image fields one at a time ── -->
+  <!-- ── Multi-Image Upload ── -->
   <button id="lc-multi-trigger" title="Select multiple images at once">+</button>
-
   <script>
   (function () {
     var trigger = document.getElementById('lc-multi-trigger');
 
-    /* Show + only on stills/gallery/traditional_art entry pages */
     function checkRoute() {
-      var hash = window.location.hash || '';
-      var show = /\/collections\/(stills|gallery|traditional_art)\/(new$|entries\/)/.test(hash);
-      trigger.style.display = show ? 'flex' : 'none';
+      var h = window.location.hash || '';
+      trigger.style.display = /\/collections\/(stills|gallery|traditional_art)\/(new$|entries\/)/.test(h) ? 'flex' : 'none';
     }
     window.addEventListener('hashchange', checkRoute);
     new MutationObserver(checkRoute).observe(document.body, { childList: true, subtree: false });
     checkRoute();
 
-    /* Status overlay */
-    var _statusEl = null;
-    function showStatus(msg) {
-      if (!_statusEl) {
-        _statusEl = document.createElement('div');
-        _statusEl.style.cssText = 'position:fixed;bottom:5rem;left:1.5rem;background:#1a1710;border:1px solid #c9a84c;color:#c9a84c;padding:.5rem .9rem;font-family:Georgia,serif;font-size:12px;border-radius:4px;z-index:9999;max-width:240px;line-height:1.4;';
-        document.body.appendChild(_statusEl);
+    /* ── Status overlay ── */
+    var _s = null;
+    function status(msg) {
+      if (!_s) {
+        _s = document.createElement('div');
+        _s.style.cssText = 'position:fixed;bottom:5rem;left:1.5rem;background:#1a1710;border:1px solid #c9a84c;color:#c9a84c;padding:.5rem .9rem;font-family:Georgia,serif;font-size:12px;border-radius:4px;z-index:9999;max-width:280px;line-height:1.5;white-space:pre-line;';
+        document.body.appendChild(_s);
       }
-      _statusEl.textContent = msg;
-      _statusEl.style.display = msg ? 'block' : 'none';
+      _s.textContent = msg; _s.style.display = msg ? 'block' : 'none';
     }
-
     function sleep(ms) { return new Promise(function(r){ setTimeout(r, ms); }); }
 
-    /* Wait for element matching selector to appear in DOM */
-    function waitFor(sel, ms) {
-      ms = ms || 8000;
-      return new Promise(function(resolve, reject) {
-        var found = document.querySelector(sel);
-        if (found) { resolve(found); return; }
-        var t = setTimeout(function(){ obs.disconnect(); reject(new Error('timeout: ' + sel)); }, ms);
-        var obs = new MutationObserver(function() {
-          var el = document.querySelector(sel);
-          if (el) { clearTimeout(t); obs.disconnect(); resolve(el); }
+    /* ── Wait for new visible modal ── */
+    function waitForModal(snap, ms) {
+      ms = ms || 10000;
+      return new Promise(function(res, rej) {
+        function fresh() {
+          return Array.from(document.querySelectorAll('[role="dialog"],[aria-modal="true"]'))
+            .find(function(el) {
+              return !snap.has(el) && !el.hidden &&
+                el.style.display !== 'none' &&
+                el.getAttribute('aria-hidden') !== 'true';
+            }) || null;
+        }
+        var found = fresh();
+        if (found) { res(found); return; }
+        var t = setTimeout(function() { ob.disconnect(); rej(new Error('modal never opened')); }, ms);
+        var ob = new MutationObserver(function() {
+          var el = fresh();
+          if (el) { clearTimeout(t); ob.disconnect(); res(el); }
         });
-        obs.observe(document.documentElement, { childList: true, subtree: true });
+        ob.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['role','aria-modal','aria-hidden','style','hidden'] });
       });
     }
 
-    /* Wait for selector to vanish */
-    function waitGone(sel, ms) {
-      ms = ms || 20000;
-      return new Promise(function(resolve) {
-        if (!document.querySelector(sel)) { resolve(); return; }
-        var t = setTimeout(resolve, ms);
-        var obs = new MutationObserver(function() {
-          if (!document.querySelector(sel)) { clearTimeout(t); obs.disconnect(); resolve(); }
+    /* ── Wait for modal to disappear ── */
+    function waitGone(modal, ms) {
+      ms = ms || 25000;
+      return new Promise(function(res) {
+        function gone() {
+          return !document.contains(modal) || modal.hidden ||
+            modal.style.display === 'none' ||
+            modal.getAttribute('aria-hidden') === 'true';
+        }
+        if (gone()) { res(); return; }
+        var t = setTimeout(res, ms);
+        var ob = new MutationObserver(function() {
+          if (gone()) { clearTimeout(t); ob.disconnect(); res(); }
         });
-        obs.observe(document.documentElement, { childList: true, subtree: true });
+        ob.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['style','class','hidden','aria-hidden'] });
       });
     }
 
-    /* Inject one file into Decap's upload flow, then click to confirm */
-    async function injectFile(file) {
-      /* Remember any file inputs that existed BEFORE we opened the library */
-      var existingInputs = new Set(Array.from(document.querySelectorAll('input[type="file"]')));
-
-      /* Click the Upload button inside the media library (if it exists) */
-      var btns = Array.from(document.querySelectorAll('button, label[for]'));
-      var uploadBtn = btns.find(function(b) {
-        var t = (b.textContent || b.getAttribute('aria-label') || '').trim().toLowerCase();
-        return t === 'upload' || t === 'upload new' || t === 'upload file' || t === 'upload media';
-      });
-      if (uploadBtn) uploadBtn.click();
-
-      /* Wait for a NEW file input (not one that existed before) */
-      var fileInput = null;
-      try {
-        fileInput = await new Promise(function(resolve, reject) {
-          var t = setTimeout(function(){ obs.disconnect(); reject(new Error('no new file input')); }, 5000);
-          /* Check immediately for a pre-existing hidden upload input */
-          var inputs = document.querySelectorAll('input[type="file"]');
-          for (var inp of inputs) {
-            if (!existingInputs.has(inp) || inp.style.display === 'none' || inp.hidden) {
-              clearTimeout(t); resolve(inp); return;
-            }
-          }
-          var obs = new MutationObserver(function() {
-            var inputs2 = document.querySelectorAll('input[type="file"]');
-            for (var inp of inputs2) {
-              if (!existingInputs.has(inp)) { clearTimeout(t); obs.disconnect(); resolve(inp); return; }
-            }
-          });
-          obs.observe(document.documentElement, { childList: true, subtree: true });
-        });
-      } catch(_) {
-        /* Fallback: use any file input */
-        fileInput = document.querySelector('input[type="file"]');
-      }
-
-      if (!fileInput) throw new Error('Could not find upload input in media library');
-
-      /* Inject file using DataTransfer */
+    /* ── Inject file: try every known React-compatible method ── */
+    function injectFile(file, modal) {
+      /* Build DataTransfer with our file */
       var dt = new DataTransfer();
       dt.items.add(file);
-      fileInput.files = dt.files;
-      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-      fileInput.dispatchEvent(new Event('input',  { bubbles: true }));
 
-      /* Wait for upload processing, then click the item in the library to select it */
-      await sleep(1800);
+      /* Find upload file input - prefer inside modal, fallback to page */
+      var inp = (modal && modal.querySelector('input[type="file"]'))
+              || document.querySelector('input[type="file"]');
 
-      /* Try to click the newly uploaded file in the library grid */
-      var clicked = false;
-      for (var attempt = 0; attempt < 12; attempt++) {
-        /* Look for media library grid items (try multiple Decap class patterns) */
-        var candidates = document.querySelectorAll(
-          '[class*="GridCard"] button, [class*="MediaCard"] button, ' +
-          '[class*="LibraryItem"] button, [class*="media-card"] button, ' +
-          '[class*="MediaLibrary"] ul li button, [class*="media-library"] li button'
-        );
-        if (candidates.length > 0) {
-          candidates[candidates.length - 1].click(); /* click last = most recently uploaded */
-          clicked = true;
-          break;
-        }
-        /* Also look for an explicit "Choose selected" / "Insert" confirm button */
-        var confirmBtn = Array.from(document.querySelectorAll('button')).find(function(b) {
-          var t = b.textContent.trim().toLowerCase();
-          return t === 'choose selected' || t === 'insert' || t === 'select' || t === 'use';
-        });
-        if (confirmBtn) { confirmBtn.click(); clicked = true; break; }
-        await sleep(500);
+      if (inp) {
+        /* Method 1: Object.defineProperty — React reads nativeEvent.target.files via the descriptor */
+        try {
+          Object.defineProperty(inp, 'files', { value: dt.files, writable: false, configurable: true });
+        } catch(_) { try { inp.files = dt.files; } catch(__) {} }
+        inp.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+        inp.dispatchEvent(new Event('input',  { bubbles: true, cancelable: true }));
+        return true;
       }
 
-      if (!clicked) {
-        /* Last resort: press Escape to close modal without selecting — field stays empty */
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      /* Method 2: Drag-and-drop zone (some Decap builds use drop events instead) */
+      var zone = modal && (
+        modal.querySelector('[data-testid*="drop"], [class*="drop" i], [class*="upload" i]') ||
+        modal
+      );
+      if (zone) {
+        try {
+          var ev = new DragEvent('drop', { bubbles: true, cancelable: true });
+          Object.defineProperty(ev, 'dataTransfer', { value: dt });
+          zone.dispatchEvent(ev);
+          return true;
+        } catch(_) {}
       }
+      return false;
     }
 
-    /* Main: loop through files, clicking each field's choose button in order */
-    async function processFiles(files) {
-      showStatus('Starting…');
+    /* ── After upload: click the newest item in the library to select it ── */
+    async function selectFile(modal) {
+      /* Poll — upload can take several seconds */
+      for (var i = 0; i < 20; i++) {
+        await sleep(600);
+        var ctx = modal || document;
+
+        /* Try every reasonable selector for a media library grid item */
+        var imgs = Array.from(ctx.querySelectorAll('img[src*="uploads"], img[src*="images"]'));
+        if (imgs.length > 0) {
+          var target = imgs[imgs.length - 1]; /* newest = last */
+          /* Walk up to a clickable ancestor */
+          var clickable = target;
+          for (var p = target; p && p !== ctx; p = p.parentElement) {
+            if (p.tagName === 'BUTTON' || p.getAttribute('role') === 'button' ||
+                p.getAttribute('role') === 'option' || p.getAttribute('tabindex') != null) {
+              clickable = p; break;
+            }
+          }
+          clickable.click();
+          await sleep(400);
+
+          /* Check for an explicit confirm button */
+          var btns = Array.from(ctx.querySelectorAll('button'));
+          var ok = btns.find(function(b) {
+            var t = b.textContent.trim().toLowerCase();
+            return t === 'choose selected' || t === 'insert' || t === 'select' || t === 'use';
+          });
+          if (ok) ok.click();
+          return true;
+        }
+
+        /* Also look for confirm button even if images not visible yet */
+        var btns2 = Array.from((modal || document).querySelectorAll('button'));
+        var ok2 = btns2.find(function(b) {
+          var t = b.textContent.trim().toLowerCase();
+          return t === 'choose selected' || t === 'insert';
+        });
+        if (ok2) { ok2.click(); return true; }
+      }
+
+      /* Give up gracefully — press Escape */
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+      return false;
+    }
+
+    /* ── Main loop ── */
+    async function run(files) {
+      status('Starting — ' + files.length + ' image(s)…');
+      var done = 0;
 
       for (var i = 0; i < files.length; i++) {
         var file = files[i];
-        showStatus('Image ' + (i+1) + ' of ' + files.length + ': opening picker…');
+        status((i+1) + '/' + files.length + ': opening…');
 
-        /* Find Choose buttons — ONLY "Choose an image" / "Choose different image" text, nothing else */
-        var chooseBtns = Array.from(document.querySelectorAll('button')).filter(function(b) {
+        var btns = Array.from(document.querySelectorAll('button')).filter(function(b) {
           var t = b.textContent.trim();
           return t === 'Choose an image' || t === 'Choose different image';
         });
 
-        if (i >= chooseBtns.length) {
-          showStatus('⚠ Only ' + chooseBtns.length + ' image field(s) — stopped at ' + i + ' images.');
-          break;
+        if (i >= btns.length) {
+          status('⚠ Only ' + btns.length + ' field(s) — stopped.'); break;
         }
 
-        chooseBtns[i].click();
+        /* Snapshot visible modals NOW */
+        var snap = new Set(
+          Array.from(document.querySelectorAll('[role="dialog"],[aria-modal="true"]'))
+          .filter(function(el) {
+            return !el.hidden && el.style.display !== 'none' && el.getAttribute('aria-hidden') !== 'true';
+          })
+        );
+
+        btns[i].click();
 
         try {
-          /* Wait for media library modal — use a specific Decap-like selector */
-          await waitFor('[class*="MediaLibrary"], [class*="media-library"], [class*="MediaWrapper"]', 6000);
-          showStatus('Image ' + (i+1) + ' of ' + files.length + ': uploading…');
+          var modal = await waitForModal(snap, 8000);
+          await sleep(600); /* let modal fully render */
+          status((i+1) + '/' + files.length + ': uploading…');
 
-          await injectFile(file);
+          var ok = injectFile(file, modal);
+          if (!ok) throw new Error('no upload input found');
 
-          /* Wait for modal to close */
-          showStatus('Image ' + (i+1) + ' of ' + files.length + ': confirming…');
-          await waitGone('[class*="MediaLibrary"], [class*="media-library"], [class*="MediaWrapper"]', 20000);
-          await sleep(350);
+          status((i+1) + '/' + files.length + ': selecting…');
+          await selectFile(modal);
 
-        } catch(err) {
-          showStatus('⚠ Image ' + (i+1) + ' skipped: ' + err.message);
-          /* Close any lingering modal */
-          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-          await sleep(700);
+          await waitGone(modal, 25000);
+          await sleep(500);
+          done++;
+        } catch(e) {
+          status('Image ' + (i+1) + ' failed: ' + e.message + '\nTrying next…');
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+          await sleep(1000);
         }
       }
 
-      showStatus('Done ✓');
-      setTimeout(function(){ showStatus(''); }, 3000);
+      status(done + '/' + files.length + ' done ✓');
+      setTimeout(function(){ status(''); }, 4000);
     }
 
-    /* + button click: open OS file picker with multi-select */
     trigger.addEventListener('click', function () {
-      var input = document.createElement('input');
-      input.type     = 'file';
-      input.multiple = true;
-      input.accept   = 'image/*';
-      input.onchange = function () {
-        if (input.files && input.files.length) {
-          processFiles(Array.from(input.files));
-        }
-      };
-      input.click();
+      var inp = document.createElement('input');
+      inp.type = 'file'; inp.multiple = true; inp.accept = 'image/*';
+      inp.onchange = function () { if (inp.files && inp.files.length) run(Array.from(inp.files)); };
+      inp.click();
     });
   })();
   </script>
+
 
   <!-- ── Preview Templates: image shows immediately via getAsset blob URL ── -->
   <script>
