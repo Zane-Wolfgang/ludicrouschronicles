@@ -1179,6 +1179,8 @@ async function loadWips() {
     items.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
     items.forEach(item => {
       if (item.date) galleryDates.set(item.title, item.date);
+      const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
+      const typeLabel = item.type || 'WIP';
       const notes = item.note || '';
       const div = document.createElement('div');
       if (isLocked) {
@@ -1280,9 +1282,10 @@ async function loadStills() {
 loadCMSGallery().then(() => checkHardcodedLocks()).then(() => {
   if (window.location.hash && window.location.hash !== '#stills' && window.location.hash !== '#traditional' && window.location.hash !== '#wips') openFromHash();
 });
-loadStills();
-loadTraditional();
-loadWips();
+function tryOpenFromHash() { if (!lb.classList.contains('open')) openFromHash(); }
+loadStills().then(tryOpenFromHash);
+loadTraditional().then(tryOpenFromHash);
+loadWips().then(tryOpenFromHash);
 </script>
 <script>
 function openFromHash() {
