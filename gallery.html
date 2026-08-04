@@ -1105,11 +1105,12 @@ async function loadCMSGallery() {
     const sets = {}, singles = [];
     items.forEach(item => { if (item.set) { if (!sets[item.set]) sets[item.set] = []; sets[item.set].push(item); } else { singles.push(item); } });
     Object.values(sets).forEach(s => s.sort((a,b) => a.set_order - b.set_order));
-    /* Sort ascending (oldest → newest) so new posts append to the end instead of top-left */
-    singles.sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
-    singles.forEach(item => { grid.appendChild(makeCMSGalleryItem(item, userTier, tRank)); });
-    const setEntries = Object.entries(sets).sort((a,b) => new Date(a[1][0].date||0) - new Date(b[1][0].date||0));
-    setEntries.forEach(([, s]) => { grid.appendChild(makeCMSGalleryItem(s[0], userTier, tRank)); });
+    /* Sort descending (newest first) — most recently posted appears first */
+    singles.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
+    const firstHardcoded = grid.firstChild;
+    singles.forEach(item => { grid.insertBefore(makeCMSGalleryItem(item, userTier, tRank), firstHardcoded); });
+    const setEntries = Object.entries(sets).sort((a,b) => new Date(b[1][0].date||0) - new Date(a[1][0].date||0));
+    setEntries.forEach(([, s]) => { grid.insertBefore(makeCMSGalleryItem(s[0], userTier, tRank), firstHardcoded); });
   } catch(e) {}
 }
 
@@ -1175,10 +1176,9 @@ async function loadWips() {
     const userTier = window.getUserTier ? await window.getUserTier() : 'free';
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
     if (loading) loading.remove();
+    items.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
     items.forEach(item => {
       if (item.date) galleryDates.set(item.title, item.date);
-      const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
-      const typeLabel = item.type || 'WIP';
       const notes = item.note || '';
       const div = document.createElement('div');
       if (isLocked) {
@@ -1207,7 +1207,7 @@ async function loadTraditional() {
     const userTier = window.getUserTier ? await window.getUserTier() : 'free';
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
     if (loading) loading.remove();
-    items.sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
+    items.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
     items.forEach(item => {
       if (item.date) galleryDates.set(item.title, item.date);
       if (item.note) galleryNotes.set(item.title, item.note);
@@ -1246,7 +1246,7 @@ async function loadStills() {
     const userTier = window.getUserTier ? await window.getUserTier() : 'free';
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
     if (loading) loading.remove();
-    items.sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
+    items.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
     items.forEach(item => {
       if (item.date) galleryDates.set(item.title, item.date);
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
