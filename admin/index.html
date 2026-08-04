@@ -68,21 +68,6 @@
   </style>
 </head>
 <body>
-  <!-- ── Passively capture GitHub repo from Decap's own API calls ── -->
-  <script>
-  (function () {
-    window._lcRepo = null;
-    var _orig = window.fetch;
-    window.fetch = function (url) {
-      if (typeof url === 'string' && !window._lcRepo) {
-        var m = url.match(/\/\.netlify\/git\/github\/repos\/([^\/]+\/[^\/\s]+)\//);
-        if (m) { window._lcRepo = m[1]; console.log('[LC Admin] repo captured:', window._lcRepo); }
-      }
-      return _orig.apply(window, arguments);
-    };
-  })();
-  </script>
-
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
   <!-- ── Custom image widget: uses getAsset (correct blob URL) + GitHub fallback ── -->
@@ -93,26 +78,28 @@
     function getRepo() {
       if (_repoP) return _repoP;
       _repoP = (async function () {
-        /* First: use repo captured from Decap's own fetch calls (most reliable) */
-        if (window._lcRepo) return window._lcRepo;
-        var t=[
+        /* 1. localStorage (set on first successful prompt — never asks again) */
+        var saved = localStorage.getItem('_lc_gh_repo');
+        if (saved && saved.includes('/')) return saved;
+
+        /* 2. Decap backend object paths (works in some Decap versions) */
+        var paths = [
           function(){return window.CMS.backend.api.repo;},
           function(){return window.CMS.backend.implementation.api.repo;},
-          function(){var u=window.CMS.backend.api.repoURL;var m=u&&new RegExp('repos/([^\\s/]+/[^\\s/]+)').exec(u);return m&&m[1]||null;},
-          function(){var u=window.CMS.backend.implementation.api.repoURL;var m=u&&new RegExp('repos/([^\\s/]+/[^\\s/]+)').exec(u);return m&&m[1]||null;},
+          function(){var u=window.CMS.backend.api.repoURL;return u&&(/repos\/([^\/\s]+\/[^\/\s]+)/.exec(u)||[])[1]||null;},
+          function(){var u=window.CMS.backend.implementation.api.repoURL;return u&&(/repos\/([^\/\s]+\/[^\/\s]+)/.exec(u)||[])[1]||null;},
         ];
-        for(var fn of t){try{var r=fn();if(r&&r.includes('/'))return r;}catch(_){}}
-        try{
-          var user=window.netlifyIdentity&&window.netlifyIdentity.currentUser();
-          if(!user)return null;
-          var tok=await user.jwt();
-          var p=JSON.parse(atob(tok.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
-          var am=p.app_metadata||{};
-          var fromJwt=am.repo||am.repository||am.github_repo;
-          if(fromJwt&&fromJwt.includes('/'))return fromJwt;
-          var res=await fetch('/.netlify/git/github',{headers:{Authorization:'Bearer '+tok}});
-          if(res.ok){var d=await res.json();var f=d.repo||d.full_name;if(f&&f.includes('/'))return f;}
-        }catch(_){}
+        for(var p of paths){try{var r=p();if(r&&r.includes('/'))return r;}catch(_){}}
+
+        /* 3. One-time prompt — saved so user is never asked again */
+        var typed = window.prompt(
+          'Multi-upload needs your GitHub repo name once.\nFormat: username/repo-name\n(e.g. MistressSpite/ludicrous-chronicles):'
+        );
+        if(typed && typed.includes('/')) {
+          var clean = typed.trim();
+          localStorage.setItem('_lc_gh_repo', clean);
+          return clean;
+        }
         return null;
       })();
       return _repoP;
@@ -286,22 +273,19 @@
         if (!user) throw new Error('Not logged in \u2014 please refresh.');
         var token = await user.jwt();
 
-        /* Detect GitHub repo — use passively captured value first */
-        var repo = window._lcRepo || null;
+        /* Detect GitHub repo */
+        var repo = localStorage.getItem('_lc_gh_repo') || null;
         if (!repo) {
           try {
             var b = window.CMS && window.CMS.backend;
-            if (b && b.api) { repo = b.api.repo || (b.api.repoURL && b.api.repoURL.match(/repos\/([^\/]+\/[^\/]+)/)?.[1]); }
+            if (b && b.api) { repo = b.api.repo || (b.api.repoURL && (/repos\/([^\/]+\/[^\/]+)/.exec(b.api.repoURL)||[])[1]); }
           } catch(_) {}
         }
         if (!repo) {
-          /* Trigger a Decap fetch then re-check */
-          try {
-            await fetch('/.netlify/git/github/user', { headers: { Authorization: 'Bearer ' + token } });
-            repo = window._lcRepo || null;
-          } catch(_) {}
+          var typed = window.prompt('Enter your GitHub repo once to enable multi-upload\n(format: username/repo-name):');
+          if (typed && typed.includes('/')) { repo = typed.trim(); localStorage.setItem('_lc_gh_repo', repo); }
         }
-        if (!repo) throw new Error('Could not detect GitHub repo — please navigate to a collection entry first, then try again.');
+        if (!repo) throw new Error('Multi-upload cancelled — GitHub repo not set.');
 
         var base = '/.netlify/git/github/repos/' + repo + '/contents/';
         var paths = [];
