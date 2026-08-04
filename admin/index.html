@@ -68,6 +68,21 @@
   </style>
 </head>
 <body>
+  <!-- ── Passively capture GitHub repo from Decap's own API calls ── -->
+  <script>
+  (function () {
+    window._lcRepo = null;
+    var _orig = window.fetch;
+    window.fetch = function (url) {
+      if (typeof url === 'string' && !window._lcRepo) {
+        var m = url.match(/\/\.netlify\/git\/github\/repos\/([^\/]+\/[^\/\s]+)\//);
+        if (m) { window._lcRepo = m[1]; console.log('[LC Admin] repo captured:', window._lcRepo); }
+      }
+      return _orig.apply(window, arguments);
+    };
+  })();
+  </script>
+
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
   <!-- ── Custom image widget: uses getAsset (correct blob URL) + GitHub fallback ── -->
@@ -78,6 +93,8 @@
     function getRepo() {
       if (_repoP) return _repoP;
       _repoP = (async function () {
+        /* First: use repo captured from Decap's own fetch calls (most reliable) */
+        if (window._lcRepo) return window._lcRepo;
         var t=[
           function(){return window.CMS.backend.api.repo;},
           function(){return window.CMS.backend.implementation.api.repo;},
@@ -269,17 +286,22 @@
         if (!user) throw new Error('Not logged in \u2014 please refresh.');
         var token = await user.jwt();
 
-        /* Detect GitHub repo via git-gateway API */
-        var repo = null;
-        try {
-          var b = window.CMS && window.CMS.backend;
-          if (b && b.api) { repo = b.api.repo || (b.api.repoURL && b.api.repoURL.match(/repos\/([^\/]+\/[^\/]+)/)?.[1]); }
-        } catch(_) {}
+        /* Detect GitHub repo — use passively captured value first */
+        var repo = window._lcRepo || null;
         if (!repo) {
-          var gw = await fetch('/.netlify/git/github', { headers: { Authorization: 'Bearer ' + token } });
-          if (gw.ok) { var gd = await gw.json(); repo = gd.repo || gd.full_name; }
+          try {
+            var b = window.CMS && window.CMS.backend;
+            if (b && b.api) { repo = b.api.repo || (b.api.repoURL && b.api.repoURL.match(/repos\/([^\/]+\/[^\/]+)/)?.[1]); }
+          } catch(_) {}
         }
-        if (!repo) throw new Error('Could not detect GitHub repo. Try refreshing the admin.');
+        if (!repo) {
+          /* Trigger a Decap fetch then re-check */
+          try {
+            await fetch('/.netlify/git/github/user', { headers: { Authorization: 'Bearer ' + token } });
+            repo = window._lcRepo || null;
+          } catch(_) {}
+        }
+        if (!repo) throw new Error('Could not detect GitHub repo — please navigate to a collection entry first, then try again.');
 
         var base = '/.netlify/git/github/repos/' + repo + '/contents/';
         var paths = [];
