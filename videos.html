@@ -611,6 +611,8 @@ async function loadCMSVideos() {
   } catch(e) {
     list.innerHTML = '<p style="padding:1rem;font-family:\'Cinzel\',serif;font-size:10px;color:var(--gold-dim);letter-spacing:0.2em;">No videos found.</p>';
   }
+  /* Re-run after CMS videos render so ?play= links from content.html work */
+  autoPlayFromURL();
 }
 loadCMSVideos();
 </script>
