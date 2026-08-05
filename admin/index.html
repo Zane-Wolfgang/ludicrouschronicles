@@ -229,6 +229,182 @@
   })();
   </script>
 
+  <!-- ── Thumbnail helpers: paste screenshot, YouTube/Vimeo auto-thumb, video frame extract ── -->
+  <script>
+  (function () {
+
+    /* ── Shared: set image field value via Redux — tries both 'thumbnail' and 'image' field names ── */
+    function setFieldValue(value) {
+      var store = window.CMS && window.CMS.store;
+      if (!store) return false;
+      /* Dispatch to all likely field names — Decap silently ignores non-existent fields */
+      ['thumbnail','image'].forEach(function(fieldName) {
+        ['DRAFT_CHANGE_FIELD','ENTRY_DRAFT_CHANGE_FIELD'].forEach(function(type) {
+          try { store.dispatch({ type: type, payload: { path: fieldName, value: value, field: { name: fieldName, widget: 'image' } } }); } catch(_) {}
+        });
+      });
+      return true;
+    }
+
+    /* ── Shared: upload a File blob to GitHub and return the path ──
+       Uses the same approach as the image widget's GitHub fallback.
+       Falls back to blob URL if repo not set (image shows in preview but uploads on entry save). */
+    async function uploadBlob(file) {
+      /* Try direct GitHub API upload if repo is known */
+      var repo = localStorage.getItem('_lc_gh_repo');
+      if (repo) {
+        try {
+          var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+          if (user) {
+            var token = await user.jwt();
+            var fname = Date.now() + '_' + (file.name || 'screenshot.jpg');
+            var b64 = await new Promise(function(res, rej) {
+              var fr = new FileReader();
+              fr.onload = function(e) { res(e.target.result.split(',')[1]); };
+              fr.onerror = rej;
+              fr.readAsDataURL(file);
+            });
+            var resp = await fetch('/.netlify/git/github/repos/' + repo + '/contents/images/uploads/' + fname,
+              { method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: 'Upload thumbnail', content: b64, branch: 'main' }) });
+            if (resp.ok) return '/images/uploads/' + fname;
+          }
+        } catch(_) {}
+      }
+      /* No repo set — cannot upload. Prompt user to set repo once in localStorage */
+      toast('⚠ Set your GitHub repo once:\nlocalStorage._lc_gh_repo = \'user/repo\'\nthen refresh admin.', 5000);
+      return null;
+    }
+
+    /* ─────────────────────────────────────────────
+       FEATURE 1: Paste screenshot → thumbnail field
+       ───────────────────────────────────────────── */
+    var _toast = null;
+    function toast(msg, ms) {
+      if (!_toast) {
+        _toast = document.createElement('div');
+        _toast.style.cssText = 'position:fixed;bottom:5rem;right:1.5rem;background:#1a1710;border:1px solid #c9a84c;color:#c9a84c;padding:.6rem 1rem;font-family:Georgia,serif;font-size:12px;border-radius:4px;z-index:9999;max-width:280px;line-height:1.5;';
+        document.body.appendChild(_toast);
+      }
+      _toast.textContent = msg;
+      _toast.style.display = 'block';
+      clearTimeout(_toast._t);
+      if (ms) _toast._t = setTimeout(function(){ _toast.style.display='none'; }, ms);
+    }
+
+    document.addEventListener('paste', async function(e) {
+      var items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      var imgItem = null;
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) { imgItem = items[i]; break; }
+      }
+      if (!imgItem) return;
+
+      /* Only act when in the CMS admin form (not in a text editor) */
+      var active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' ||
+          active.getAttribute('contenteditable') === 'true')) return;
+
+      e.preventDefault();
+      toast('Uploading pasted image as thumbnail…');
+      var file = imgItem.getAsFile();
+      if (!file) return;
+
+      try {
+        var path = await uploadBlob(file);
+        if (!path) return;
+        var ok = setFieldValue(path);
+        toast(ok ? '✓ Thumbnail set from paste' : '⚠ Could not set thumbnail field', 3000);
+      } catch(err) {
+        toast('⚠ Paste failed: ' + err.message, 4000);
+      }
+    });
+
+    /* ─────────────────────────────────────────────
+       FEATURE 2: YouTube/Vimeo URL → auto-thumbnail
+       ───────────────────────────────────────────── */
+    function extractVideoThumb(url) {
+      var yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/);
+      if (yt) return 'https://img.youtube.com/vi/' + yt[1] + '/hqdefault.jpg';
+      var vm = url.match(/vimeo\.com\/(\d+)/);
+      if (vm) return 'https://vumbnail.com/' + vm[1] + '.jpg';
+      return null;
+    }
+
+    function watchUrlInputs() {
+      document.querySelectorAll('input[type="text"], input[type="url"], input:not([type])').forEach(function(inp) {
+        if (inp._lcUrlWatched) return;
+        inp._lcUrlWatched = true;
+        inp.addEventListener('blur', function() {
+          var thumb = extractVideoThumb(inp.value || '');
+          if (!thumb) return;
+          /* Only auto-fill if the thumbnail field appears empty */
+          var store = window.CMS && window.CMS.store;
+          if (!store) return;
+          var state = store.getState();
+          try {
+            var data = state.get ? state.getIn(['entryDraft','entry','data']) : null;
+            var currentThumb = data && (data.get ? data.get('thumbnail') : data.thumbnail);
+            if (currentThumb) return; /* don't overwrite existing thumbnail */
+          } catch(_) {}
+          setFieldValue(thumb);
+          toast('✓ Thumbnail auto-filled from video URL', 3000);
+        });
+      });
+    }
+    new MutationObserver(watchUrlInputs)
+      .observe(document.documentElement, { childList: true, subtree: true });
+    watchUrlInputs();
+
+    /* ─────────────────────────────────────────────
+       FEATURE 3: Video file → extract frame as thumbnail
+       ───────────────────────────────────────────── */
+    function extractFrame(videoFile, timeSeconds, callback) {
+      var blobUrl = URL.createObjectURL(videoFile);
+      var vid = document.createElement('video');
+      vid.src = blobUrl; vid.muted = true; vid.preload = 'metadata';
+      vid.addEventListener('loadedmetadata', function() {
+        vid.currentTime = Math.min(timeSeconds, vid.duration * 0.25);
+      });
+      vid.addEventListener('seeked', function() {
+        var canvas = document.createElement('canvas');
+        canvas.width = vid.videoWidth || 640;
+        canvas.height = vid.videoHeight || 360;
+        canvas.getContext('2d').drawImage(vid, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(blobUrl);
+        canvas.toBlob(function(blob) { callback(blob); }, 'image/jpeg', 0.88);
+      });
+      vid.addEventListener('error', function() { URL.revokeObjectURL(blobUrl); callback(null); });
+    }
+
+    function watchVideoInputs() {
+      document.querySelectorAll('input[type="file"]').forEach(function(inp) {
+        if (inp._lcVideoWatched) return;
+        inp._lcVideoWatched = true;
+        inp.addEventListener('change', function() {
+          var file = inp.files && inp.files[0];
+          if (!file || !file.type.startsWith('video/')) return;
+          toast('Extracting thumbnail from video…');
+          extractFrame(file, 2, async function(blob) {
+            if (!blob) { toast('⚠ Could not extract frame', 3000); return; }
+            try {
+              var path = await uploadBlob(new File([blob], 'thumb_' + Date.now() + '.jpg', { type: 'image/jpeg' }));
+              if (!path) return;
+              var ok = setFieldValue(path);
+              toast(ok ? '✓ Thumbnail extracted from video' : '⚠ Could not set thumbnail field', 3000);
+            } catch(e) { toast('⚠ ' + e.message, 3000); }
+          });
+        });
+      });
+    }
+    new MutationObserver(watchVideoInputs)
+      .observe(document.documentElement, { childList: true, subtree: true });
+    watchVideoInputs();
+
+  })();
+  </script>
+
   <!-- ── Multi-Image Upload ── -->
   <button id="lc-multi-trigger" title="Select multiple images at once">+</button>
   <script>
