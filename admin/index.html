@@ -306,6 +306,10 @@
       if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' ||
           active.getAttribute('contenteditable') === 'true')) return;
 
+      /* On gallery/stills/traditional pages the multi-upload paste handler takes over — don't double-fire */
+      var multiBtn = document.getElementById('lc-multi-trigger');
+      if (multiBtn && multiBtn.style.display !== 'none') return;
+
       e.preventDefault();
       toast('Uploading pasted image as thumbnail…');
       var file = imgItem.getAsFile();
@@ -516,7 +520,13 @@
         var ctx = modal || document;
 
         /* Try every reasonable selector for a media library grid item */
-        var imgs = Array.from(ctx.querySelectorAll('img[src*="uploads"], img[src*="images"]'));
+        /* Cast wide net — Decap shows newly uploaded files as blob:// URLs before CDN deploys */
+        var imgs = Array.from(ctx.querySelectorAll('img')).filter(function(img) {
+          var src = img.src || '';
+          /* Skip nav icons, tiny SVG sprites, and images with no src */
+          /* blob:// = freshly uploaded (before CDN); http = CDN/external; exclude SVG/GIF icons */
+          return (src.startsWith('blob:') || src.startsWith('http')) && !src.startsWith('data:');
+        });
         if (imgs.length > 0) {
           var target = imgs[imgs.length - 1]; /* newest = last */
           /* Walk up to a clickable ancestor */
@@ -594,7 +604,7 @@
           await selectFile(modal);
 
           await waitGone(modal, 25000);
-          await sleep(500);
+          await sleep(900); /* extra time for Decap to settle after each upload */
           done++;
         } catch(e) {
           status('Image ' + (i+1) + ' failed: ' + e.message + '\nTrying next…');
@@ -607,11 +617,37 @@
       setTimeout(function(){ status(''); }, 4000);
     }
 
+    /* File picker: click + to browse */
     trigger.addEventListener('click', function () {
       var inp = document.createElement('input');
       inp.type = 'file'; inp.multiple = true; inp.accept = 'image/*';
       inp.onchange = function () { if (inp.files && inp.files.length) run(Array.from(inp.files)); };
       inp.click();
+    });
+
+    /* Paste support: Ctrl+V anywhere on a gallery/stills entry → runs same funnel */
+    document.addEventListener('paste', function(e) {
+      /* Only intercept when + button is visible (on a gallery/stills entry page) */
+      if (trigger.style.display === 'none') return;
+      /* Don't intercept when user is typing in a text/textarea field */
+      var active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' ||
+          active.getAttribute('contenteditable') === 'true')) return;
+
+      var items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      var files = [];
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          var f = items[i].getAsFile();
+          if (f) files.push(f);
+        }
+      }
+      if (!files.length) return;
+
+      e.preventDefault();
+      status('Pasted image — funnelling into next field…');
+      run(files);
     });
   })();
   </script>
