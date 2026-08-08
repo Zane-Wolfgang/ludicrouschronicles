@@ -17,6 +17,9 @@
 
   const audio = new Audio();
   audio.volume = DEFAULT_VOL;
+  /* Required for Web Audio API (createMediaElementSource) — without this,
+     remote/CDN audio produces a silent/tainted stream */
+  audio.crossOrigin = 'anonymous';
 
   // ── CSS ──
   const style = document.createElement('style');
@@ -103,6 +106,12 @@
     }
     .mp-btn-mute { width: 24px; height: 24px; flex-shrink: 0; }
     .mp-btn-mute svg { width: 11px; height: 11px; fill: currentColor; }
+    .mp-radio-row { display:flex; align-items:center; gap:8px; margin-top:6px; }
+    .mp-btn-radio { width:26px; height:26px; flex-shrink:0; font-size:13px; line-height:1; border:1px solid rgba(201,168,76,0.25); background:none; color:rgba(201,168,76,0.5); border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+    .mp-btn-radio.on { border-color:var(--gold,#c9a84c); color:var(--gold,#c9a84c); box-shadow:0 0 6px rgba(201,168,76,0.3); }
+    .mp-btn-radio:hover { border-color:var(--gold-dim,#8a6e2f); color:var(--gold-dim,#8a6e2f); }
+    .mp-radio-label { font-size:9px; letter-spacing:.15em; text-transform:uppercase; color:rgba(201,168,76,0.45); }
+    .mp-btn-radio.on ~ .mp-radio-label { color:var(--gold,#c9a84c); }
     .mp-volume-slider {
       flex: 1;
       -webkit-appearance: none;
@@ -226,7 +235,93 @@
   }
 
   // ── UI refs ──
-  let titleEl, artistEl, playBtn, prevBtn, nextBtn, muteBtn, volSlider;
+  let titleEl, artistEl, playBtn, prevBtn, nextBtn, muteBtn, volSlider, radioBtn, radioLabel;
+
+  // ── Web Audio radio filter ──
+  let _audioCtx = null, _mediaSource = null, _radioEnabled = false, _radioStrength = 50;
+
+  function _initAudio() {
+    if (_audioCtx) return;
+    try {
+      _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      _mediaSource = _audioCtx.createMediaElementSource(audio);
+      _buildChain();
+    } catch(e) { console.warn('Radio filter unavailable:', e); }
+  }
+
+  function _makeDistortionCurve(amount) {
+    const n = 512, curve = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      const x = (i * 2) / n - 1;
+      curve[i] = ((Math.PI + amount) * x) / (Math.PI + amount * Math.abs(x));
+    }
+    return curve;
+  }
+
+  let _hp, _lp, _presence, _dist, _bypass;
+
+  function _buildChain() {
+    if (!_audioCtx) return;
+    _hp       = _audioCtx.createBiquadFilter();
+    _hp.type  = 'highpass'; _hp.frequency.value = 280; _hp.Q.value = 0.7;
+
+    _lp       = _audioCtx.createBiquadFilter();
+    _lp.type  = 'lowpass';  _lp.Q.value = 1.2;
+
+    _presence       = _audioCtx.createBiquadFilter();
+    _presence.type  = 'peaking'; _presence.frequency.value = 1100; _presence.Q.value = 0.9;
+
+    _dist           = _audioCtx.createWaveShaper();
+    _dist.oversample = '2x';
+
+    _bypass = _audioCtx.createGain();
+    _bypass.gain.value = 1;
+
+    _applyStrength(_radioStrength);
+    /* Apply whatever state was restored from localStorage (or default OFF) */
+    _setRadio(_radioEnabled);
+  }
+
+  function _applyStrength(s) {
+    _radioStrength = s;           /* always remember, even before chain exists */
+    if (!_lp) return;             /* chain not built yet — will apply in _buildChain */
+    // s 0→100: lowpass 4500→1100 Hz
+    _lp.frequency.value = 4500 - (s / 100) * 3400;
+    // distortion 5→180
+    _dist.curve = _makeDistortionCurve(5 + (s / 100) * 175);
+    // presence boost 2→10 dB
+    _presence.gain.value = 2 + (s / 100) * 8;
+  }
+
+  function _setRadio(on) {
+    if (!_mediaSource) { _radioEnabled = on; _updateRadioUI(on); return; }
+    _radioEnabled = on;
+    /* ALWAYS resume — a suspended context means silence regardless of radio state */
+    if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
+    _mediaSource.disconnect();
+    try { _hp.disconnect(); _lp.disconnect(); _presence.disconnect(); _dist.disconnect(); } catch(_) {}
+    _bypass.disconnect();
+    if (on) {
+      _mediaSource.connect(_hp);
+      _hp.connect(_lp);
+      _lp.connect(_presence);
+      _presence.connect(_dist);
+      _dist.connect(_audioCtx.destination);
+    } else {
+      _mediaSource.connect(_bypass);
+      _bypass.connect(_audioCtx.destination);
+    }
+    _updateRadioUI(on);
+    try { localStorage.setItem('lc_radio_on', on ? '1' : '0'); } catch(_) {}
+  }
+
+  function _updateRadioUI(on) {
+    if (radioBtn) {
+      radioBtn.classList.toggle('on', on);
+      radioBtn.title = on ? 'Radio filter ON — click to disable' : 'Toggle radio filter';
+    }
+    if (radioLabel) radioLabel.textContent = on ? 'Radio: ON' : 'Radio';
+  }
 
   function updateTrackInfo() {
     if (!tracks.length) {
@@ -256,6 +351,7 @@
     currentIndex = ((index % tracks.length) + tracks.length) % tracks.length;
     audio.src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
     audio.volume = isMuted ? 0 : (isDucked ? DUCK_VOL : userVolume);
+    _initAudio(); // ensure AudioContext exists (user gesture satisfies autoplay policy)
     audio.play().then(() => setPlaying(true)).catch(() => {
       // Don't set isPlaying=false here — browser may just need a moment
       // Only the explicit pause button should mark as not playing
@@ -291,6 +387,10 @@
           </button>
           <input type="range" class="mp-volume-slider" id="mp-vol" min="0" max="1" step="0.02" value="${DEFAULT_VOL}">
         </div>
+        <div class="mp-radio-row">
+          <button class="mp-btn-radio" id="mp-radio" title="Toggle radio filter">📻</button>
+          <span class="mp-radio-label" id="mp-radio-label">Radio</span>
+        </div>
         <div class="mp-tracklist-toggle" id="mp-tl-toggle">Track List ▾</div>
         <div class="mp-tracklist" id="mp-tracklist" style="display:none;"></div>
       </div>
@@ -306,8 +406,10 @@
     playBtn   = document.getElementById('mp-play');
     prevBtn   = document.getElementById('mp-prev');
     nextBtn   = document.getElementById('mp-next');
-    muteBtn   = document.getElementById('mp-mute');
-    volSlider = document.getElementById('mp-vol');
+    muteBtn    = document.getElementById('mp-mute');
+    volSlider  = document.getElementById('mp-vol');
+    radioBtn   = document.getElementById('mp-radio');
+    radioLabel = document.getElementById('mp-radio-label');
 
     const back10 = document.getElementById('mp-back10');
     const fwd10  = document.getElementById('mp-fwd10');
@@ -326,6 +428,28 @@
     });
 
     // Play / pause
+    // ── Radio filter wiring ──
+    // Load strength from site-settings
+    fetch('/_data/site-settings.json').then(r => r.ok ? r.json() : {}).then(cfg => {
+      const s = parseInt(cfg.radio_strength);
+      if (!isNaN(s)) _applyStrength(Math.max(0, Math.min(100, s)));
+    }).catch(() => {});
+
+    // Restore last toggle state — mark as pending, applied when audio first plays
+    try {
+      if (localStorage.getItem('lc_radio_on') === '1') {
+        _radioEnabled = true;
+        _updateRadioUI(true);
+      }
+    } catch(_) {}
+
+    if (radioBtn) {
+      radioBtn.addEventListener('click', () => {
+        _initAudio();  // click is a user gesture — safe to create AudioContext
+        _setRadio(!_radioEnabled);
+      });
+    }
+
     playBtn.addEventListener('click', () => {
       if (!tracks.length) return;
       if (isPlaying) {
