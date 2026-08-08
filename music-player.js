@@ -258,12 +258,12 @@
     return curve;
   }
 
-  let _hp, _lp, _presence, _dist, _bypass;
+  let _hp, _lp, _presence, _dist, _bypass, _outGain;
 
   function _buildChain() {
     if (!_audioCtx) return;
     _hp       = _audioCtx.createBiquadFilter();
-    _hp.type  = 'highpass'; _hp.frequency.value = 280; _hp.Q.value = 0.7;
+    _hp.type  = 'highpass'; _hp.frequency.value = 180; _hp.Q.value = 0.5;
 
     _lp       = _audioCtx.createBiquadFilter();
     _lp.type  = 'lowpass';  _lp.Q.value = 1.2;
@@ -277,6 +277,10 @@
     _bypass = _audioCtx.createGain();
     _bypass.gain.value = 1;
 
+    /* Makeup gain — distortion boosts amplitude, so we compensate downward */
+    _outGain = _audioCtx.createGain();
+    _outGain.gain.value = 1;
+
     _applyStrength(_radioStrength);
     /* Apply whatever state was restored from localStorage (or default OFF) */
     _setRadio(_radioEnabled);
@@ -285,12 +289,20 @@
   function _applyStrength(s) {
     _radioStrength = s;           /* always remember, even before chain exists */
     if (!_lp) return;             /* chain not built yet — will apply in _buildChain */
-    // s 0→100: lowpass 4500→1100 Hz
-    _lp.frequency.value = 4500 - (s / 100) * 3400;
-    // distortion 5→180
-    _dist.curve = _makeDistortionCurve(5 + (s / 100) * 175);
-    // presence boost 2→10 dB
-    _presence.gain.value = 2 + (s / 100) * 8;
+    const f = s / 100;            /* 0 → 1 */
+
+    /* Lowpass: 6000 Hz (open) → 1800 Hz (narrow). Less aggressive than before. */
+    _lp.frequency.value = 6000 - f * 4200;
+
+    /* Distortion: 0 → 40 (was 5 → 180 — far too crunchy) */
+    _dist.curve = _makeDistortionCurve(f * 40);
+
+    /* Presence peak: 0 → 4 dB (was 2 → 10 dB — was causing harshness) */
+    _presence.gain.value = f * 4;
+
+    /* Makeup gain: compensate for distortion boosting amplitude.
+       At full strength output drops to ~45% to match bypass loudness. */
+    if (_outGain) _outGain.gain.value = 1 - f * 0.55;
   }
 
   function _setRadio(on) {
@@ -299,14 +311,15 @@
     /* ALWAYS resume — a suspended context means silence regardless of radio state */
     if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
     _mediaSource.disconnect();
-    try { _hp.disconnect(); _lp.disconnect(); _presence.disconnect(); _dist.disconnect(); } catch(_) {}
+    try { _hp.disconnect(); _lp.disconnect(); _presence.disconnect(); _dist.disconnect(); _outGain.disconnect(); } catch(_) {}
     _bypass.disconnect();
     if (on) {
       _mediaSource.connect(_hp);
       _hp.connect(_lp);
       _lp.connect(_presence);
       _presence.connect(_dist);
-      _dist.connect(_audioCtx.destination);
+      _dist.connect(_outGain);
+      _outGain.connect(_audioCtx.destination);
     } else {
       _mediaSource.connect(_bypass);
       _bypass.connect(_audioCtx.destination);
