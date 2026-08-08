@@ -621,3 +621,12 @@ collections:
       default: false
       hint: Applies sepia filters, vintage fonts and Art Deco patterns across the
         site
+    - label: Radio Filter Strength
+      name: radio_strength
+      widget: number
+      default: 50
+      value_type: int
+      min: 0
+      max: 100
+      hint: How strong the radio effect is on the music player (0 = subtle warmth,
+        100 = heavy crackle). Visitors can toggle it on/off.
