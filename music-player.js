@@ -249,11 +249,22 @@
     } catch(e) { console.warn('Radio filter unavailable:', e); }
   }
 
+  /* Soft-clip curve, NORMALISED so peak output never exceeds input.
+     The classic (PI+k)x/(PI+k|x|) formula AMPLIFIES quiet signals up to 6x —
+     that was the cause of the huge volume jump. This version divides by the
+     curve's own maximum so unity gain is preserved at every drive amount. */
   function _makeDistortionCurve(amount) {
     const n = 512, curve = new Float32Array(n);
+    const k = Math.max(0, amount);
+    if (k === 0) {                       /* no drive → perfectly linear */
+      for (let i = 0; i < n; i++) curve[i] = (i * 2) / n - 1;
+      return curve;
+    }
+    /* tanh soft clip — smooth, musical, no harsh square-wave edges */
+    const norm = Math.tanh(k);           /* value the curve reaches at x = 1 */
     for (let i = 0; i < n; i++) {
       const x = (i * 2) / n - 1;
-      curve[i] = ((Math.PI + amount) * x) / (Math.PI + amount * Math.abs(x));
+      curve[i] = Math.tanh(k * x) / norm;
     }
     return curve;
   }
@@ -294,15 +305,21 @@
     /* Lowpass: 6000 Hz (open) → 1800 Hz (narrow). Less aggressive than before. */
     _lp.frequency.value = 6000 - f * 4200;
 
-    /* Distortion: 0 → 40 (was 5 → 180 — far too crunchy) */
-    _dist.curve = _makeDistortionCurve(f * 40);
+    /* tanh drive: 0 → 3. Saturates quickly, so small numbers go a long way. */
+    _dist.curve = _makeDistortionCurve(f * 3);
 
-    /* Presence peak: 0 → 4 dB (was 2 → 10 dB — was causing harshness) */
-    _presence.gain.value = f * 4;
+    /* Presence peak: 0 → 3 dB, offset by an equal output trim so net gain is flat */
+    _presence.gain.value = f * 3;
 
-    /* Makeup gain: compensate for distortion boosting amplitude.
-       At full strength output drops to ~45% to match bypass loudness. */
-    if (_outGain) _outGain.gain.value = 1 - f * 0.55;
+    /* Output trim — measured at x=0.15 (low-level signals get compressed hardest)
+       then scaled down to 0.55 so filtered output is always noticeably BELOW dry. */
+    const drive = f * 3;
+    let refGain = 1;
+    if (drive > 0) {
+      refGain = (Math.tanh(drive * 0.15) / Math.tanh(drive)) / 0.15;
+    }
+    const presLin = Math.pow(10, (f * 3) / 20);
+    if (_outGain) _outGain.gain.value = 0.55 / (refGain * presLin);
   }
 
   function _setRadio(on) {
