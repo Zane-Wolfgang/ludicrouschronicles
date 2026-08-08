@@ -176,14 +176,16 @@ function buildSiteSettings() {
   try {
     const path = '_data/site-settings.yml';
     if (!fs.existsSync(path)) {
-      fs.writeFileSync('_data/site-settings.json', JSON.stringify({ vintage_mode: false }, null, 2));
+      fs.writeFileSync('_data/site-settings.json', JSON.stringify({ vintage_mode: false, radio_strength: 50 }, null, 2));
       return;
     }
     const raw = fs.readFileSync(path, 'utf8');
     const raw2 = '---\n' + raw.trim() + '\n---';
     const settings = parseFrontmatter(raw2);
+    const rs = parseInt(settings.radio_strength);
     const out = {
-      vintage_mode: settings.vintage_mode === 'true' || settings.vintage_mode === true
+      vintage_mode:   settings.vintage_mode === 'true' || settings.vintage_mode === true,
+      radio_strength: isNaN(rs) ? 50 : Math.max(0, Math.min(100, rs))
     };
     fs.writeFileSync('_data/site-settings.json', JSON.stringify(out, null, 2));
     console.log('Site settings:', out);
