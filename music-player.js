@@ -274,13 +274,13 @@
   function _buildChain() {
     if (!_audioCtx) return;
     _hp       = _audioCtx.createBiquadFilter();
-    _hp.type  = 'highpass'; _hp.frequency.value = 180; _hp.Q.value = 0.5;
+    _hp.type  = 'highpass'; _hp.frequency.value = 200; _hp.Q.value = 1.2;
 
     _lp       = _audioCtx.createBiquadFilter();
     _lp.type  = 'lowpass';  _lp.Q.value = 1.2;
 
     _presence       = _audioCtx.createBiquadFilter();
-    _presence.type  = 'peaking'; _presence.frequency.value = 1100; _presence.Q.value = 0.9;
+    _presence.type  = 'peaking'; _presence.frequency.value = 900; _presence.Q.value = 1.1;
 
     _dist           = _audioCtx.createWaveShaper();
     _dist.oversample = '2x';
@@ -302,24 +302,24 @@
     if (!_lp) return;             /* chain not built yet — will apply in _buildChain */
     const f = s / 100;            /* 0 → 1 */
 
-    /* Lowpass: 6000 Hz (open) → 1800 Hz (narrow). Less aggressive than before. */
-    _lp.frequency.value = 6000 - f * 4200;
+    /* Lowpass: 5000 Hz (open) → 900 Hz (narrow) — tighter, more telephonic */
+    _lp.frequency.value = 5000 - f * 4100;
 
-    /* tanh drive: 0 → 3. Saturates quickly, so small numbers go a long way. */
-    _dist.curve = _makeDistortionCurve(f * 3);
+    /* tanh drive: 0 → 5 — more saturation character */
+    _dist.curve = _makeDistortionCurve(f * 5);
 
-    /* Presence peak: 0 → 3 dB, offset by an equal output trim so net gain is flat */
-    _presence.gain.value = f * 3;
+    /* Presence peak: 0 → 6 dB at 900 Hz — strong nasal/radio mid push */
+    _presence.gain.value = f * 6;
 
     /* Output trim — measured at x=0.15 (low-level signals get compressed hardest)
        then scaled down to 0.55 so filtered output is always noticeably BELOW dry. */
-    const drive = f * 3;
+    const drive = f * 5;
     let refGain = 1;
     if (drive > 0) {
       refGain = (Math.tanh(drive * 0.15) / Math.tanh(drive)) / 0.15;
     }
-    const presLin = Math.pow(10, (f * 3) / 20);
-    if (_outGain) _outGain.gain.value = 0.55 / (refGain * presLin);
+    const presLin = Math.pow(10, (f * 6) / 20);
+    if (_outGain) _outGain.gain.value = 0.58 / (refGain * presLin);
   }
 
   function _setRadio(on) {
@@ -465,13 +465,11 @@
       if (!isNaN(s)) _applyStrength(Math.max(0, Math.min(100, s)));
     }).catch(() => {});
 
-    // Restore last toggle state — mark as pending, applied when audio first plays
-    try {
-      if (localStorage.getItem('lc_radio_on') === '1') {
-        _radioEnabled = true;
-        _updateRadioUI(true);
-      }
-    } catch(_) {}
+    // Always start with radio OFF — the filter chain doesn't exist yet, and
+    // auto-enabling it from localStorage only shows a misleading ON state
+    // without actually connecting anything until the user toggles it manually.
+    _radioEnabled = false;
+    _updateRadioUI(false);
 
     if (radioBtn) {
       radioBtn.addEventListener('click', () => {
