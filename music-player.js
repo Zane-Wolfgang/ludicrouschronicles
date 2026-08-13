@@ -395,9 +395,10 @@
     playTrack._skipCount = 0; /* reset on successful track */
 
     audio.volume = isMuted ? 0 : (isDucked ? DUCK_VOL : userVolume);
-    /* Set src and call load() — required for crossOrigin to take effect on each new track */
+    /* Setting src triggers the browser's implicit load — do NOT call audio.load()
+       explicitly here. An explicit load() after src= races with play() and causes
+       AbortError on most browsers, breaking all but cached/fast tracks. */
     audio.src = trackSrc;
-    audio.load();
 
     _initAudio(); // ensure AudioContext exists (user gesture satisfies autoplay policy)
     /* Restore saved radio state on first init */
