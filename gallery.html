@@ -940,6 +940,12 @@ function setLightboxContent(title, type, notes) {
 function hideSocials() { const t = document.getElementById('socials-trigger'); if (t) t.style.visibility = 'hidden'; }
 function showSocials() { const t = document.getElementById('socials-trigger'); if (t) t.style.visibility = ''; }
 
+/* ── Premiere filtering: hide entries whose date is still in the future ── */
+function isScheduled(item) {
+  if (!item || !item.date) return false; /* no date → always visible */
+  return new Date(item.date) > new Date();
+}
+
 /* Track the hash that was active before opening the lightbox (section anchor) */
 var _prevHash = '';
 
@@ -1108,9 +1114,11 @@ async function loadCMSGallery() {
     /* Sort descending (newest first) — most recently posted appears first */
     singles.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
     const firstHardcoded = grid.firstChild;
-    singles.forEach(item => { grid.insertBefore(makeCMSGalleryItem(item, userTier, tRank), firstHardcoded); });
+    singles.filter(item => !isScheduled(item))
+           .forEach(item => { grid.insertBefore(makeCMSGalleryItem(item, userTier, tRank), firstHardcoded); });
     const setEntries = Object.entries(sets).sort((a,b) => new Date(b[1][0].date||0) - new Date(a[1][0].date||0));
-    setEntries.forEach(([, s]) => { grid.insertBefore(makeCMSGalleryItem(s[0], userTier, tRank), firstHardcoded); });
+    setEntries.filter(([, s]) => !isScheduled(s[0]))
+              .forEach(([, s]) => { grid.insertBefore(makeCMSGalleryItem(s[0], userTier, tRank), firstHardcoded); });
   } catch(e) {}
 }
 
@@ -1177,7 +1185,7 @@ async function loadWips() {
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
     if (loading) loading.remove();
     items.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
-    items.forEach(item => {
+    items.filter(item => !isScheduled(item)).forEach(item => {
       if (item.date) galleryDates.set(item.title, item.date);
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
       const typeLabel = item.type || 'WIP';
@@ -1210,7 +1218,7 @@ async function loadTraditional() {
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
     if (loading) loading.remove();
     items.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
-    items.forEach(item => {
+    items.filter(item => !isScheduled(item)).forEach(item => {
       if (item.date) galleryDates.set(item.title, item.date);
       if (item.note) galleryNotes.set(item.title, item.note);
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
@@ -1249,7 +1257,7 @@ async function loadStills() {
     const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
     if (loading) loading.remove();
     items.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
-    items.forEach(item => {
+    items.filter(item => !isScheduled(item)).forEach(item => {
       if (item.date) galleryDates.set(item.title, item.date);
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
       const images = item.images && item.images.length > 0 ? item.images : [item.image];
