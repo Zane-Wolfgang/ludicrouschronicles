@@ -17,9 +17,8 @@
 
   const audio = new Audio();
   audio.volume = DEFAULT_VOL;
-  /* Required for Web Audio API (createMediaElementSource) — without this,
-     remote/CDN audio produces a silent/tainted stream */
-  audio.crossOrigin = 'anonymous';
+  /* crossOrigin set in _initAudio() when Web Audio API is first activated
+     — setting it here unconditionally can break external audio URLs */
 
   // ── CSS ──
   const style = document.createElement('style');
@@ -244,6 +243,9 @@
     if (_audioCtx) return;
     try {
       _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      /* Set crossOrigin before capture. Takes effect on next audio.load() (called in playTrack).
+         Do NOT call audio.load() here — it would interrupt currently playing music. */
+      audio.crossOrigin = 'anonymous';
       _mediaSource = _audioCtx.createMediaElementSource(audio);
       _buildChain();
     } catch(e) { console.warn('Radio filter unavailable:', e); }
@@ -379,18 +381,33 @@
   function playTrack(index) {
     if (!tracks.length) return;
     currentIndex = ((index % tracks.length) + tracks.length) % tracks.length;
-    audio.src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
+    const trackSrc = tracks[currentIndex].audio || tracks[currentIndex].file || '';
+
+    /* Guard: if no valid audio URL, skip to next track silently.
+       _skipCount prevents infinite recursion if ALL tracks have no audio. */
+    if (!trackSrc || trackSrc === window.location.href) {
+      console.warn('Music player: track has no audio URL, skipping —', tracks[currentIndex].title);
+      playTrack._skipCount = (playTrack._skipCount || 0) + 1;
+      if (playTrack._skipCount < tracks.length) { playTrack(index + 1); }
+      else { playTrack._skipCount = 0; setPlaying(false); }
+      return;
+    }
+    playTrack._skipCount = 0; /* reset on successful track */
+
     audio.volume = isMuted ? 0 : (isDucked ? DUCK_VOL : userVolume);
+    /* Set src and call load() — required for crossOrigin to take effect on each new track */
+    audio.src = trackSrc;
+    audio.load();
+
     _initAudio(); // ensure AudioContext exists (user gesture satisfies autoplay policy)
-    /* First play: apply saved radio state now that the chain actually exists */
+    /* Restore saved radio state on first init */
     try {
-      if (localStorage.getItem('lc_radio_on') === '1' && !_radioEnabled) {
-        _setRadio(true);
-      }
+      if (localStorage.getItem('lc_radio_on') === '1' && !_radioEnabled) _setRadio(true);
     } catch(_) {}
-    audio.play().then(() => setPlaying(true)).catch(() => {
-      // Don't set isPlaying=false here — browser may just need a moment
-      // Only the explicit pause button should mark as not playing
+
+    audio.play().then(() => setPlaying(true)).catch(err => {
+      console.warn('Music player: play() rejected for track', tracks[currentIndex].title, err);
+      setPlaying(false);
     });
     updateTrackInfo();
   }
