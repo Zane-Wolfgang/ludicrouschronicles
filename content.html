@@ -264,7 +264,8 @@ async function loadAllContent() {
     const res = await fetch('/_data/content-index.json');
     if (res.ok) {
       const items = await res.json();
-      items.forEach(item => {
+      const now = new Date();
+      items.filter(item => !item.date || new Date(item.date) <= now).forEach(item => {
         const isLocked = tRank[item.tier||'free'] > tRank[userTier];
         const chNum = parseInt(item.number||0);
         const displayTitle = item.type === 'Chapter' && chNum === 1 ? 'Chapter I — ' + item.title : item.title;
@@ -283,7 +284,8 @@ async function loadAllContent() {
     const res = await fetch('/_data/gallery-index.json');
     if (res.ok) {
       const items = await res.json();
-      items.forEach(item => {
+      const now = new Date();
+      items.filter(item => !item.date || new Date(item.date) <= now).forEach(item => {
         const isLocked = tRank[item.tier||'free'] > tRank[userTier];
         addEntry(new Date(item.date||0).getTime(), makeCard(
           isLocked ? 'membership.html' : '#', item.image||'', item.title,
