@@ -382,6 +382,12 @@
     audio.src = tracks[currentIndex].audio || tracks[currentIndex].file || '';
     audio.volume = isMuted ? 0 : (isDucked ? DUCK_VOL : userVolume);
     _initAudio(); // ensure AudioContext exists (user gesture satisfies autoplay policy)
+    /* First play: apply saved radio state now that the chain actually exists */
+    try {
+      if (localStorage.getItem('lc_radio_on') === '1' && !_radioEnabled) {
+        _setRadio(true);
+      }
+    } catch(_) {}
     audio.play().then(() => setPlaying(true)).catch(() => {
       // Don't set isPlaying=false here — browser may just need a moment
       // Only the explicit pause button should mark as not playing
