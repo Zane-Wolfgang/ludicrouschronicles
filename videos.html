@@ -555,13 +555,25 @@
     const params = new URLSearchParams(window.location.search);
     const play = params.get('play');
     if (!play) return;
-    setTimeout(() => {
+    const target = play.trim().toLowerCase().replace(/\s+/g, ' ');
+
+    function tryFind(attemptsLeft) {
       const buttons = document.querySelectorAll('.video-item');
       for (const btn of buttons) {
-        const title = btn.querySelector('.video-item-title');
-        if (title && title.textContent.trim() === play) { btn.click(); btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+        const titleEl = btn.querySelector('.video-item-title');
+        if (!titleEl) continue;
+        /* Normalise whitespace + case for robust matching */
+        const text = titleEl.textContent.trim().toLowerCase().replace(/\s+/g, ' ');
+        if (text === target) {
+          btn.click();
+          btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
       }
-    }, 300);
+      /* Retry — CMS videos may still be rendering */
+      if (attemptsLeft > 0) setTimeout(() => tryFind(attemptsLeft - 1), 400);
+    }
+    setTimeout(() => tryFind(10), 200); /* start after 200ms, retry up to 10× every 400ms */
   }
   autoPlayFromURL();
 </script>
