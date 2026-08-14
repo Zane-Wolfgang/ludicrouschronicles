@@ -24,7 +24,7 @@ collections:
   - label: Body
     name: body
     widget: markdown
-  sortable_fields: &id001
+  sortable_fields: &id002
   - title
   - date
   - commit_date
@@ -47,6 +47,13 @@ collections:
   - label: Date
     name: date
     widget: datetime
+  - &id001
+    label: Premiere Date & Time
+    name: premiere_at
+    widget: datetime
+    required: false
+    hint: Leave blank to post immediately. Set a future date+time to schedule — the
+      post will appear automatically at that moment without you needing to log in.
   - label: Chapter Art
     name: art
     widget: image
@@ -97,6 +104,7 @@ collections:
   - label: Date
     name: date
     widget: datetime
+  - *id001
   - label: Main Image
     name: image
     widget: image
@@ -143,7 +151,7 @@ collections:
     - label: Bound — $12 members
       value: bound
     default: free
-  sortable_fields: *id001
+  sortable_fields: *id002
 - name: videos
   label: Videos
   folder: _data/videos
@@ -156,6 +164,7 @@ collections:
   - label: Date
     name: date
     widget: datetime
+  - *id001
   - label: Video File
     name: video
     widget: file
@@ -200,7 +209,7 @@ collections:
     - label: Bound — $12 members
       value: bound
     default: devoted
-  sortable_fields: *id001
+  sortable_fields: *id002
 - name: short_stories
   label: Short Stories
   folder: _data/short-stories
@@ -213,6 +222,7 @@ collections:
   - label: Date
     name: date
     widget: datetime
+  - *id001
   - label: Description
     name: description
     widget: markdown
@@ -238,7 +248,7 @@ collections:
     - label: Bound — $12 members
       value: bound
     default: devoted
-  sortable_fields: *id001
+  sortable_fields: *id002
 - name: wips
   label: WIPs & Sketches
   folder: _data/wips
@@ -251,6 +261,7 @@ collections:
   - label: Date
     name: date
     widget: datetime
+  - *id001
   - label: Image
     name: image
     widget: image
@@ -278,7 +289,7 @@ collections:
     - label: Bound — $12 members
       value: bound
     default: bound
-  sortable_fields: *id001
+  sortable_fields: *id002
 - name: stills
   label: Stills
   folder: _data/stills
@@ -292,6 +303,7 @@ collections:
   - label: Date
     name: date
     widget: datetime
+  - *id001
   - label: Cover Image
     name: image
     widget: image
@@ -393,7 +405,7 @@ collections:
     - label: Bound — $12 members
       value: bound
     default: free
-  sortable_fields: *id001
+  sortable_fields: *id002
 - name: socials
   label: Social Links
   folder: _data/socials
@@ -456,7 +468,7 @@ collections:
     widget: boolean
     default: true
     hint: Turn off to hide without deleting
-  sortable_fields: *id001
+  sortable_fields: *id002
 - name: traditional_art
   label: Traditional Art
   folder: _data/traditional-art
@@ -471,6 +483,7 @@ collections:
   - label: Date
     name: date
     widget: datetime
+  - *id001
   - label: Main Image
     name: image
     widget: image
@@ -546,7 +559,7 @@ collections:
     - label: Bound — $12 members
       value: bound
     default: free
-  sortable_fields: *id001
+  sortable_fields: *id002
 - name: emojis
   label: Emojis
   folder: _data/emojis
@@ -579,7 +592,7 @@ collections:
     name: active
     widget: boolean
     default: true
-  sortable_fields: *id001
+  sortable_fields: *id002
 - name: music
   label: Music
   folder: _data/music
@@ -607,7 +620,7 @@ collections:
     name: active
     widget: boolean
     default: true
-  sortable_fields: *id001
+  sortable_fields: *id002
 - name: settings
   label: Site Settings
   files:
