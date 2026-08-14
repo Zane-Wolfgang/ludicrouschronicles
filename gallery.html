@@ -940,10 +940,13 @@ function setLightboxContent(title, type, notes) {
 function hideSocials() { const t = document.getElementById('socials-trigger'); if (t) t.style.visibility = 'hidden'; }
 function showSocials() { const t = document.getElementById('socials-trigger'); if (t) t.style.visibility = ''; }
 
-/* ── Premiere filtering: hide entries whose date is still in the future ── */
+/* ── Premiere filtering: hide entries until their scheduled date+time ── */
 function isScheduled(item) {
-  if (!item || !item.date) return false; /* no date → always visible */
-  return new Date(item.date) > new Date();
+  if (!item) return false;
+  /* premiere_at is precise (datetime), date is fallback (midnight that day) */
+  const t = item.premiere_at || item.date;
+  if (!t) return false;
+  return new Date(t) > new Date();
 }
 
 /* Track the hash that was active before opening the lightbox (section anchor) */
