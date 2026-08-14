@@ -406,6 +406,8 @@
       if (localStorage.getItem('lc_radio_on') === '1' && !_radioEnabled) _setRadio(true);
     } catch(_) {}
 
+    /* Resume AudioContext every time — Chrome/Firefox auto-suspend it on inactivity/tab switch */
+    if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
     audio.play().then(() => setPlaying(true)).catch(err => {
       console.warn('Music player: play() rejected for track', tracks[currentIndex].title, err);
       setPlaying(false);
@@ -510,10 +512,12 @@
         manuallyPaused = true;
       } else {
         manuallyPaused = false;
+        /* Resume AudioContext — suspended context causes silent "playing" state */
+        if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
         if (!audio.src || audio.src === window.location.href) {
           startMusic();
         } else {
-          audio.play().then(() => {}).catch(() => {});
+          audio.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
         }
       }
     });
