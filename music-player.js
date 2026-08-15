@@ -17,8 +17,7 @@
 
   const audio = new Audio();
   audio.volume = DEFAULT_VOL;
-  /* crossOrigin set in _initAudio() when Web Audio API is first activated
-     — setting it here unconditionally can break external audio URLs */
+
 
   // ── CSS ──
   const style = document.createElement('style');
@@ -243,9 +242,6 @@
     if (_audioCtx) return;
     try {
       _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      /* Set crossOrigin before capture. Takes effect on next audio.load() (called in playTrack).
-         Do NOT call audio.load() here — it would interrupt currently playing music. */
-      audio.crossOrigin = 'anonymous';
       _mediaSource = _audioCtx.createMediaElementSource(audio);
       _buildChain();
     } catch(e) { console.warn('Radio filter unavailable:', e); }
@@ -400,11 +396,9 @@
        AbortError on most browsers, breaking all but cached/fast tracks. */
     audio.src = trackSrc;
 
-    _initAudio(); // ensure AudioContext exists (user gesture satisfies autoplay policy)
-    /* Restore saved radio state on first init */
-    try {
-      if (localStorage.getItem('lc_radio_on') === '1' && !_radioEnabled) _setRadio(true);
-    } catch(_) {}
+    /* Web Audio (_initAudio) only called from radio button — not here.
+       Initialising on every track captures the audio element in Web Audio,
+       and any context suspension silences ALL subsequent tracks. */
 
     /* Resume AudioContext every time — Chrome/Firefox auto-suspend it on inactivity/tab switch */
     if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
@@ -499,8 +493,11 @@
 
     if (radioBtn) {
       radioBtn.addEventListener('click', () => {
-        _initAudio();  // click is a user gesture — safe to create AudioContext
+        _initAudio();   /* first click creates context & captures element */
+        /* After init, apply toggle */
         _setRadio(!_radioEnabled);
+        /* Persist preference */
+        try { localStorage.setItem('lc_radio_on', _radioEnabled ? '1' : '0'); } catch(_) {}
       });
     }
 
