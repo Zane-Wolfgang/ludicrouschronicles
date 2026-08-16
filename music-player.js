@@ -317,7 +317,7 @@
       refGain = (Math.tanh(drive * 0.15) / Math.tanh(drive)) / 0.15;
     }
     const presLin = Math.pow(10, (f * 6) / 20);
-    if (_outGain) _outGain.gain.value = 0.58 / (refGain * presLin);
+    if (_outGain) _outGain.gain.value = 0.64 / (refGain * presLin);
   }
 
   function _setRadio(on) {
@@ -636,10 +636,16 @@
   const _crackle = new Audio('/images/sounds/vinyl-crackle.mp3');
   _crackle.volume = 0.6;
 
+  let _crackleTimer = null;
   function playWithCrackle(index) {
     manuallyPaused = false;
     audio.pause();
     audio.currentTime = 0;
+
+    /* Cancel any pending crackle-to-track timer from a previous rapid click —
+       otherwise stale timers fire playTrack with old indices, racing audio.src
+       changes and causing AbortError / silence. */
+    if (_crackleTimer) { clearTimeout(_crackleTimer); _crackleTimer = null; }
 
     /* One-shot guard — crackle error, catch, AND setTimeout could each fire playTrack;
        only the first should win, or the track restarts mid-play and stops. */
@@ -652,7 +658,7 @@
 
     /* If crackle plays, start the track halfway through it */
     const halfwayMs = (_crackle.duration > 0 ? _crackle.duration / 2 : 0.8) * 1000;
-    setTimeout(startTrack, halfwayMs);
+    _crackleTimer = setTimeout(startTrack, halfwayMs);
   }
 
   // ── Next track on end ──
