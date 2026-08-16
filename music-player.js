@@ -640,13 +640,19 @@
     manuallyPaused = false;
     audio.pause();
     audio.currentTime = 0;
-    // Start crackle
+
+    /* One-shot guard — crackle error, catch, AND setTimeout could each fire playTrack;
+       only the first should win, or the track restarts mid-play and stops. */
+    let started = false;
+    const startTrack = () => { if (started) return; started = true; playTrack(index); };
+
     _crackle.currentTime = 0;
-    _crackle.onerror = () => playTrack(index);
-    _crackle.play().catch(() => { playTrack(index); return; });
-    // Start next track halfway through the crackle
+    _crackle.onerror = startTrack;
+    _crackle.play().catch(() => { startTrack(); });
+
+    /* If crackle plays, start the track halfway through it */
     const halfwayMs = (_crackle.duration > 0 ? _crackle.duration / 2 : 0.8) * 1000;
-    setTimeout(() => playTrack(index), halfwayMs);
+    setTimeout(startTrack, halfwayMs);
   }
 
   // ── Next track on end ──
