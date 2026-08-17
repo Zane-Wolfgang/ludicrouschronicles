@@ -246,38 +246,104 @@
       return true;
     }
 
-    /* ── Shared: upload a File blob to GitHub and return the path ──
-       Uses the same approach as the image widget's GitHub fallback.
-       Falls back to blob URL if repo not set (image shows in preview but uploads on entry save). */
-    async function uploadBlob(file) {
-      /* Try direct GitHub API upload if repo is known */
-      var repo = localStorage.getItem('_lc_gh_repo');
-      if (repo) {
-        try {
-          var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
-          if (user) {
-            var token = await user.jwt();
-            var fname = Date.now() + '_' + (file.name || 'screenshot.jpg');
-            var b64 = await new Promise(function(res, rej) {
-              var fr = new FileReader();
-              fr.onload = function(e) { res(e.target.result.split(',')[1]); };
-              fr.onerror = rej;
-              fr.readAsDataURL(file);
-            });
-            var resp = await fetch('/.netlify/git/github/repos/' + repo + '/contents/images/uploads/' + fname,
-              { method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: 'Upload thumbnail', content: b64, branch: 'main' }) });
-            if (resp.ok) return '/images/uploads/' + fname;
-          }
-        } catch(_) {}
+    /* ── Inject a file into Decap's media library for a specific field ──
+       This is how the multi-upload works too — Decap already knows the repo,
+       so no GitHub API / _lc_gh_repo needed. Finds the field's own
+       "Choose an image" button, opens the library, injects the file. */
+    function sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
+
+    function findFieldChooseButton(fieldLabels) {
+      /* Prefer an EMPTY image field (button says "Choose an image").
+         This lets paste fill the next open slot on ANY collection —
+         gallery, stills, short story cover, chapter art, thumbnail, etc. */
+      var allButtons = Array.from(document.querySelectorAll('button'));
+      var emptyChoose = allButtons.find(function(b){ return b.textContent.trim() === 'Choose an image'; });
+      if (emptyChoose) return emptyChoose;
+
+      /* If a preferred label is given, try to match it (even if already filled) */
+      if (fieldLabels && fieldLabels.length) {
+        var wrappers = Array.from(document.querySelectorAll('[class*="control"], [class*="Control"], [class*="widget"], [class*="Widget"], fieldset, label'));
+        for (var i = 0; i < wrappers.length; i++) {
+          var w = wrappers[i];
+          var text = (w.textContent || '').toLowerCase();
+          if (!fieldLabels.some(function(l){ return text.indexOf(l) !== -1; })) continue;
+          var btn = Array.from(w.querySelectorAll('button')).find(function(b){
+            var t = b.textContent.trim();
+            return t === 'Choose an image' || t === 'Choose different image';
+          });
+          if (btn) return btn;
+        }
       }
-      /* No repo set — cannot upload. Prompt user to set repo once in localStorage */
-      toast('⚠ Set your GitHub repo once:\nlocalStorage._lc_gh_repo = \'user/repo\'\nthen refresh admin.', 5000);
-      return null;
+
+      /* Fallback: any image button (replace an existing image) */
+      return allButtons.find(function(b){
+        var t = b.textContent.trim();
+        return t === 'Choose an image' || t === 'Choose different image';
+      }) || null;
+    }
+
+    async function injectIntoField(file, fieldLabels) {
+      var chooseBtn = findFieldChooseButton(fieldLabels);
+      if (!chooseBtn) { toast('⚠ No image field found on this entry', 3500); return false; }
+
+      /* Snapshot visible modals before opening */
+      var before = new Set(Array.from(document.querySelectorAll('[role="dialog"],[aria-modal="true"]'))
+        .filter(function(el){ return !el.hidden && el.style.display !== 'none' && el.getAttribute('aria-hidden') !== 'true'; }));
+
+      chooseBtn.click();
+
+      /* Wait for the media library modal to open */
+      var modal = null;
+      for (var i = 0; i < 30; i++) {
+        await sleep(200);
+        modal = Array.from(document.querySelectorAll('[role="dialog"],[aria-modal="true"]'))
+          .find(function(el){ return !before.has(el) && !el.hidden && el.style.display !== 'none' && el.getAttribute('aria-hidden') !== 'true'; });
+        if (modal) break;
+      }
+      if (!modal) { toast('⚠ Media library did not open', 3500); return false; }
+
+      await sleep(500);
+
+      /* Inject the file into the modal's file input */
+      var input = modal.querySelector('input[type="file"]') || document.querySelector('input[type="file"]');
+      if (!input) { toast('⚠ Upload input not found', 3500); return false; }
+      var dt = new DataTransfer();
+      dt.items.add(file);
+      try { Object.defineProperty(input, 'files', { value: dt.files, writable: false, configurable: true }); }
+      catch(_) { try { input.files = dt.files; } catch(__){} }
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.dispatchEvent(new Event('input',  { bubbles: true }));
+
+      /* Wait for the uploaded file to appear in the library, then click it */
+      for (var j = 0; j < 25; j++) {
+        await sleep(500);
+        var imgs = Array.from(modal.querySelectorAll('img')).filter(function(im){
+          var s = im.src || '';
+          return (s.startsWith('blob:') || s.startsWith('http')) && !s.startsWith('data:');
+        });
+        if (imgs.length) {
+          var last = imgs[imgs.length - 1];
+          var clickable = last;
+          for (var p = last; p && p !== modal; p = p.parentElement) {
+            if (p.tagName === 'BUTTON' || p.getAttribute('role') === 'button' ||
+                p.getAttribute('role') === 'option' || p.getAttribute('tabindex') != null) { clickable = p; break; }
+          }
+          clickable.click();
+          await sleep(400);
+          var confirm = Array.from(modal.querySelectorAll('button')).find(function(b){
+            var t = b.textContent.trim().toLowerCase();
+            return t === 'choose selected' || t === 'insert' || t === 'select' || t === 'use';
+          });
+          if (confirm) confirm.click();
+          return true;
+        }
+      }
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      return false;
     }
 
     /* ─────────────────────────────────────────────
-       FEATURE 1: Paste screenshot → thumbnail field
+       FEATURE 1: Paste screenshot → thumbnail field (via Decap library)
        ───────────────────────────────────────────── */
     var _toast = null;
     function toast(msg, ms) {
@@ -301,25 +367,36 @@
       }
       if (!imgItem) return;
 
-      /* Only act when in the CMS admin form (not in a text editor) */
+      /* Only act when NOT typing in a text field or rich-text editor.
+         Decap's markdown editor is a nested contenteditable, so check ancestors too. */
       var active = document.activeElement;
       if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' ||
-          active.getAttribute('contenteditable') === 'true')) return;
+          active.getAttribute('contenteditable') === 'true' ||
+          active.closest('[contenteditable="true"]') ||
+          active.closest('[class*="markdown" i]') ||
+          active.closest('[class*="CodeMirror" i]') ||
+          active.closest('[class*="slate" i]'))) return;
 
-      /* On gallery/stills/traditional pages the multi-upload paste handler takes over — don't double-fire */
+      /* Defer to the multi-upload paste handler ONLY on gallery/stills/traditional
+         entry pages where the + button is visible (multi-slot collections). */
       var multiBtn = document.getElementById('lc-multi-trigger');
       if (multiBtn && multiBtn.style.display !== 'none') return;
 
+      /* Only act if this entry actually has an image field to fill */
+      var hasImageField = Array.from(document.querySelectorAll('button')).some(function(b){
+        var t = b.textContent.trim();
+        return t === 'Choose an image' || t === 'Choose different image';
+      });
+      if (!hasImageField) return;
+
       e.preventDefault();
-      toast('Uploading pasted image as thumbnail…');
+      toast('Pasting image…');
       var file = imgItem.getAsFile();
       if (!file) return;
 
       try {
-        var path = await uploadBlob(file);
-        if (!path) return;
-        var ok = setFieldValue(path);
-        toast(ok ? '✓ Thumbnail set from paste' : '⚠ Could not set thumbnail field', 3000);
+        var ok = await injectIntoField(file, ['thumbnail', 'cover image', 'cover', 'art', 'image']);
+        if (ok) toast('✓ Image set from paste', 3000);
       } catch(err) {
         toast('⚠ Paste failed: ' + err.message, 4000);
       }
@@ -393,10 +470,9 @@
           extractFrame(file, 2, async function(blob) {
             if (!blob) { toast('⚠ Could not extract frame', 3000); return; }
             try {
-              var path = await uploadBlob(new File([blob], 'thumb_' + Date.now() + '.jpg', { type: 'image/jpeg' }));
-              if (!path) return;
-              var ok = setFieldValue(path);
-              toast(ok ? '✓ Thumbnail extracted from video' : '⚠ Could not set thumbnail field', 3000);
+              var thumbFile = new File([blob], 'thumb_' + Date.now() + '.jpg', { type: 'image/jpeg' });
+              var ok = await injectIntoField(thumbFile, ['thumbnail', 'cover image', 'cover', 'image']);
+              if (ok) toast('✓ Thumbnail extracted from video', 3000);
             } catch(e) { toast('⚠ ' + e.message, 3000); }
           });
         });
@@ -629,10 +705,14 @@
     document.addEventListener('paste', function(e) {
       /* Only intercept when + button is visible (on a gallery/stills entry page) */
       if (trigger.style.display === 'none') return;
-      /* Don't intercept when user is typing in a text/textarea field */
+      /* Don't intercept when typing in a text field or rich-text editor */
       var active = document.activeElement;
       if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' ||
-          active.getAttribute('contenteditable') === 'true')) return;
+          active.getAttribute('contenteditable') === 'true' ||
+          active.closest('[contenteditable="true"]') ||
+          active.closest('[class*="markdown" i]') ||
+          active.closest('[class*="CodeMirror" i]') ||
+          active.closest('[class*="slate" i]'))) return;
 
       var items = e.clipboardData && e.clipboardData.items;
       if (!items) return;
