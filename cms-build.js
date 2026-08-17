@@ -256,7 +256,7 @@ const videos = readDataDir('_data/videos').map(v => {
 const shortStories = readDataDir('_data/short-stories').map(s => {
   const slug = s.filename ? s.filename.replace('.md','') : s.title.toLowerCase().replace(/\s+/g,'-');
   return { ...s, slug, type: 'Short Story', label: 'Short Story', filter_type: 'story',
-    href: `story.html?story=${slug}`, thumbnail: normImg(s.art || s.thumbnail) || '' };
+    href: `story.html?story=${slug}`, thumbnail: normImg(s.cover || s.art || s.thumbnail) || '' };
 });
 
 const wips = readDataDir('_data/wips').map(w => ({
