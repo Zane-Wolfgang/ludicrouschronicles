@@ -262,9 +262,9 @@ async function loadStory() {
     document.getElementById('ch-label').textContent = 'Ghost in Me — Short Story';
     document.getElementById('ch-end').textContent = `End of "${story.title}"`;
 
-    if (story.art || story.thumbnail) {
+    if (story.cover || story.art || story.thumbnail) {
       const art = document.getElementById('ch-art');
-      art.src = story.art || story.thumbnail;
+      art.src = story.cover || story.art || story.thumbnail;
       art.style.display = 'block';
     }
 
