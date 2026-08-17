@@ -164,7 +164,6 @@ collections:
   - label: Date
     name: date
     widget: datetime
-  - *id001
   - label: Video File
     name: video
     widget: file
@@ -228,6 +227,12 @@ collections:
     widget: markdown
     required: false
     hint: Teaser shown on the content page — supports paragraphs and formatting
+  - label: Cover Image
+    name: cover
+    widget: image
+    required: false
+    hint: Optional cover art. You can also paste an image directly (Ctrl+V) on this
+      page.
   - label: Body
     name: body
     widget: markdown
