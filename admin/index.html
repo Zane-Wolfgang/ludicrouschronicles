@@ -268,12 +268,37 @@
       } catch (_) {}
     }
 
+    /* Decap 3.x doesn't reliably expose window.React. Find React wherever it lives. */
+    function getReact() {
+      if (window.React && window.React.createElement) return window.React;
+      var c = window.CMS;
+      if (c) {
+        if (c.React && c.React.createElement) return c.React;
+        try { if (c.default && c.default.React && c.default.React.createElement) return c.default.React; } catch (_) {}
+      }
+      return null;
+    }
+
     /* Register custom image widget */
+    var _regTries = 0;
     function register() {
-      if (!window.CMS || !window.React) return setTimeout(register, 100);
+      var R = getReact();
+      if (!window.CMS || !R) {
+        if (++_regTries < 40) return setTimeout(register, 100);
+        /* React never appeared — register a minimal widget so fields still work and the CMS boots */
+        if (!window._lcRegistered && window.CMS) {
+          window._lcRegistered = true;
+          try {
+            window.CMS.registerWidget('lc_image', 'string');
+            console.error('[LC Admin] React not found after 4s — registered lc_image as a plain string field so the CMS can boot. Paste/link box unavailable until this is resolved.');
+          } catch (e) { console.error('[LC Admin] fallback registerWidget failed:', e); }
+          window._lcWidgetDone = true;
+          if (window._lcTryInit) window._lcTryInit();
+        }
+        return;
+      }
       if (window._lcRegistered) return;
       window._lcRegistered = true;
-      var R = window.React;
 
       function ImageControl(props) {
         var value      = props.value;
@@ -433,7 +458,7 @@
         var value = props.value;
         var asset = value && props.getAsset ? props.getAsset(value) : null;
         var src = asset ? (asset.toString() !== '[object Object]' ? asset.toString() : (asset.url||'')) : '';
-        return src ? window.React.createElement('img', { src: src, style: { maxWidth: '100%' } }) : null;
+        return src ? R.createElement('img', { src: src, style: { maxWidth: '100%' } }) : null;
       }
 
       try {
@@ -443,7 +468,7 @@
         console.error('[LC Admin] registerWidget threw:', err);
         /* Last resort: register a minimal string-based control so fields still work */
         try {
-          window.CMS.registerWidget('lc_image', window.CMS.getWidget ? 'string' : undefined);
+          window.CMS.registerWidget('lc_image', 'string');
         } catch (_) {}
       }
       window._lcWidgetDone = true;
@@ -973,8 +998,13 @@
   <script>
   (function () {
     function registerPreviews() {
-      if (!window.CMS || !window.React) return setTimeout(registerPreviews, 150);
-      var R = window.React;
+      var R = (function () {
+        if (window.React && window.React.createElement) return window.React;
+        var c = window.CMS;
+        if (c) { if (c.React && c.React.createElement) return c.React; try { if (c.default && c.default.React && c.default.React.createElement) return c.default.React; } catch (_) {} }
+        return null;
+      })();
+      if (!window.CMS || !R) return setTimeout(registerPreviews, 150);
 
       /* Safely get a value — handles Immutable.js Map or plain object */
       function get(obj, key) {
