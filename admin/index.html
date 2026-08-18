@@ -105,6 +105,7 @@
   })();
   </script>
 
+  <script>window.CMS_MANUAL_INIT = true;</script>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
   <!-- ── Custom image widget: uses getAsset (correct blob URL) + GitHub fallback ── -->
@@ -222,9 +223,56 @@
       return uploadImageToRepo(file);
     }
 
+    /* ── Auto-rescue support for existing external URLs ── */
+    /* Only true when the full entry editor is open (hash .../entries/... or /new),
+       so rescue never fires on the entry list or the side preview pane. */
+    function inOpenEditor() {
+      var h = window.location.hash || '';
+      return /\/collections\/[^\/]+\/(new$|entries\/)/.test(h);
+    }
+    /* Persisted per-URL guard: a URL is attempted at most once, ever — survives reloads,
+       so failed/dead links aren't re-hammered and successes aren't re-committed. */
+    function rescueSeen(url) {
+      try {
+        var seen = JSON.parse(localStorage.getItem('_lc_rescue_seen') || '{}');
+        return !!seen[url];
+      } catch (_) { return false; }
+    }
+    function markRescueSeen(url) {
+      try {
+        var seen = JSON.parse(localStorage.getItem('_lc_rescue_seen') || '{}');
+        seen[url] = 1;
+        var keys = Object.keys(seen);
+        if (keys.length > 1000) { delete seen[keys[0]]; }
+        localStorage.setItem('_lc_rescue_seen', JSON.stringify(seen));
+      } catch (_) {}
+    }
+    function isForeignUrl(u) {
+      if (!u || typeof u !== 'string' || u.indexOf('http') !== 0) return false;
+      try {
+        var h = new URL(u).hostname;
+      } catch (_) { return false; }
+      /* Already ours, or an intentional/stable thumbnail host — leave alone */
+      if (/netlify|githubusercontent/i.test(h)) return false;
+      if (/youtube|ytimg|vimeo|vumbnail/i.test(h)) return false;
+      return true;
+    }
+    function logRescue(status, url, reason, label) {
+      try {
+        var log = JSON.parse(localStorage.getItem('_lc_rescue_log') || '[]');
+        log = log.filter(function (e) { return e.url !== url; });
+        log.push({ t: Date.now(), url: url, status: status, reason: reason || '', field: label || '' });
+        if (log.length > 200) log = log.slice(log.length - 200);
+        localStorage.setItem('_lc_rescue_log', JSON.stringify(log));
+        window.dispatchEvent(new CustomEvent('lc-rescue-updated'));
+      } catch (_) {}
+    }
+
     /* Register custom image widget */
     function register() {
-      if (!window.CMS || !window.React) return setTimeout(register, 150);
+      if (!window.CMS || !window.React || typeof window.initCMS !== 'function') return setTimeout(register, 150);
+      if (window._lcRegistered) return;
+      window._lcRegistered = true;
       var R = window.React;
 
       function ImageControl(props) {
@@ -312,6 +360,40 @@
             });
           }
 
+          /* 4. Auto-rescue: if this field holds a foreign URL (e.g. Discord), download it
+             into the repo now and rewrite the field to the permanent path — before it dies.
+             Only runs in the OPEN EDITOR (not the entry list or preview pane), and only
+             once per URL ever (persisted), so it never mass-commits or re-hammers on reload. */
+          if (isForeignUrl(value) && inOpenEditor() && !rescueSeen(value) &&
+              window.netlifyIdentity && window.netlifyIdentity.currentUser()) {
+            markRescueSeen(value);
+            var label = '';
+            try {
+              var f = props.field;
+              if (f && f.get) label = f.get('label') || f.get('name') || '';
+            } catch (_) {}
+            var rescuing = value;
+            setPasteStatus('Saving existing image to your repo…');
+            window._lcRescueInFlight = (window._lcRescueInFlight || 0) + 1;
+            downloadUrlToRepo(rescuing).then(function (path) {
+              logRescue('ok', rescuing, '', label);
+              if (!cancelled) {
+                onChange(path);
+                setPasteStatus('✓ Saved to repo — remember to Save the entry');
+                setTimeout(function () { setPasteStatus(''); }, 4000);
+              }
+            }).catch(function (err) {
+              logRescue('fail', rescuing, err.message, label);
+              if (!cancelled) {
+                setPasteStatus('⚠ Could not save — ' + err.message);
+                setTimeout(function () { setPasteStatus(''); }, 6000);
+              }
+            }).then(function () {
+              window._lcRescueInFlight = Math.max(0, (window._lcRescueInFlight || 1) - 1);
+              window.dispatchEvent(new CustomEvent('lc-rescue-updated'));
+            });
+          }
+
           return function () { cancelled = true; };
         }, [value]);
 
@@ -354,8 +436,10 @@
         return src ? window.React.createElement('img', { src: src, style: { maxWidth: '100%' } }) : null;
       }
 
-      window.CMS.registerWidget('image', ImageControl, ImagePreview);
-      console.log('[LC Admin] custom image widget registered');
+      window.CMS.registerWidget('lc_image', ImageControl, ImagePreview);
+      console.log('[LC Admin] lc_image widget registered');
+      window._lcWidgetDone = true;
+      if (window._lcTryInit) window._lcTryInit();
     }
 
     register();
@@ -995,8 +1079,118 @@
       });
 
       console.log('[LC Admin] preview templates registered (gallery, stills, traditional_art, wips)');
+      window._lcPreviewsDone = true;
+      if (window._lcTryInit) window._lcTryInit();
     }
     registerPreviews();
+  })();
+  </script>
+
+  <!-- ── Init gate: boot CMS once widget + previews are registered ── -->
+  <script>
+  (function () {
+    window._lcInitCalled = false;
+    window._lcTryInit = function () {
+      if (window._lcInitCalled) return;
+      if (!window._lcWidgetDone || !window._lcPreviewsDone) return;
+      if (typeof window.initCMS !== 'function') return;
+      window._lcInitCalled = true;
+      window.initCMS();
+      console.log('[LC Admin] initCMS() called');
+    };
+    /* Safety net: if something stalls, boot anyway so the admin never stays blank */
+    setTimeout(function () {
+      if (!window._lcInitCalled && typeof window.initCMS === 'function') {
+        window._lcInitCalled = true;
+        window.initCMS();
+        console.warn('[LC Admin] initCMS() forced by fallback timer');
+      }
+    }, 5000);
+    window._lcTryInit();
+  })();
+  </script>
+
+  <!-- ── Image rescue report: persists failures across reloads; one-time success toast ── -->
+  <script>
+  (function () {
+    function read() { try { return JSON.parse(localStorage.getItem('_lc_rescue_log') || '[]'); } catch (_) { return []; } }
+    function write(l) { try { localStorage.setItem('_lc_rescue_log', JSON.stringify(l)); } catch (_) {} }
+    function esc(s) { return String(s).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
+    function fmt(t) { try { return new Date(t).toLocaleString(); } catch (_) { return ''; } }
+
+    var panel = null, toast = null, dot = null;
+
+    function ensureDot(n) {
+      if (!dot) {
+        dot = document.createElement('button');
+        dot.style.cssText = 'position:fixed;bottom:1rem;right:1.5rem;z-index:99997;background:#7a1f1f;color:#fbeaea;border:1px solid #c9968a;border-radius:20px;padding:.4rem .85rem;font-family:Georgia,serif;font-size:11px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.4);';
+        dot.onclick = function () { showPanel(read().filter(function (e) { return e.status === 'fail'; })); };
+        document.body.appendChild(dot);
+      }
+      dot.textContent = '⚠ ' + n + ' image' + (n > 1 ? 's' : '') + ' not saved';
+      dot.style.display = 'block';
+    }
+    function hideDot() { if (dot) dot.style.display = 'none'; }
+
+    function showPanel(fails) {
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.style.cssText = 'position:fixed;bottom:3.5rem;right:1.5rem;z-index:99998;width:340px;max-height:60vh;overflow-y:auto;background:#1a1210;border:1px solid #a05a5a;border-radius:6px;padding:1rem;font-family:Georgia,serif;color:#e8cccc;box-shadow:0 4px 20px rgba(0,0,0,.5);';
+        document.body.appendChild(panel);
+      }
+      var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;"><strong style="color:#e88;font-size:12px;letter-spacing:.1em;">IMAGES NOT SAVED</strong><span><button id="_lcClr" style="background:none;border:1px solid #a66;color:#e8cccc;font-size:10px;border-radius:3px;padding:2px 6px;cursor:pointer;margin-right:4px;">Clear</button><button id="_lcCls" style="background:none;border:none;color:#a88;font-size:16px;cursor:pointer;line-height:1;">&times;</button></span></div>';
+      html += '<div style="font-size:11px;color:#b99;margin-bottom:.5rem;">These still point at external links and may break. Fix the source or re-add the image, then reopen the entry.</div>';
+      fails.forEach(function (e) {
+        html += '<div style="border-top:1px solid rgba(200,150,150,.2);padding:.5rem 0;font-size:11px;">' +
+          '<div style="color:#f0d0d0;font-weight:bold;">' + esc(e.field || 'Image') + '</div>' +
+          '<div style="word-break:break-all;color:#c9a;margin:.15rem 0;">' + esc(e.url) + '</div>' +
+          '<div style="color:#e88;">' + esc(e.reason || 'failed') + '</div>' +
+          '<div style="color:#866;font-size:10px;">' + fmt(e.t) + '</div></div>';
+      });
+      panel.innerHTML = html;
+      panel.style.display = 'block';
+      panel.querySelector('#_lcCls').onclick = function () { panel.style.display = 'none'; };
+      panel.querySelector('#_lcClr').onclick = function () { write(read().filter(function (x) { return x.status !== 'fail'; })); render(); };
+    }
+    function hidePanel() { if (panel) panel.style.display = 'none'; }
+
+    function showToast() {
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;bottom:1rem;right:1.5rem;z-index:99997;background:#14210f;border:1px solid #6a9a4c;color:#cfe8b8;padding:.6rem 1rem;font-family:Georgia,serif;font-size:12px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4);transition:opacity .6s;';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = '✓ All images saved to your repo';
+      toast.style.opacity = '1';
+      toast.style.display = 'block';
+      clearTimeout(toast._t);
+      toast._t = setTimeout(function () {
+        toast.style.opacity = '0';
+        setTimeout(function () { toast.style.display = 'none'; }, 600);
+      }, 5000);
+    }
+
+    function render() {
+      var log = read();
+      var fails = log.filter(function (e) { return e.status === 'fail'; });
+      var oks = log.filter(function (e) { return e.status === 'ok'; });
+      if (fails.length) {
+        ensureDot(fails.length);
+        /* don't force the panel open on every update — dot is enough; panel opens on click or first load */
+      } else {
+        hideDot(); hidePanel();
+        /* Only declare success once nothing is still downloading */
+        if (oks.length && !window._lcRescueInFlight) { showToast(); write(log.filter(function (e) { return e.status !== 'ok'; })); }
+      }
+    }
+
+    window.addEventListener('lc-rescue-updated', function () { setTimeout(render, 300); });
+    /* On first load, surface any prior failures (from previous sessions) directly */
+    setTimeout(function () {
+      var fails = read().filter(function (e) { return e.status === 'fail'; });
+      if (fails.length) { ensureDot(fails.length); showPanel(fails); }
+      else render();
+    }, 3500);
   })();
   </script>
 
