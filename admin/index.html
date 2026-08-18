@@ -90,6 +90,21 @@
   </script>
 </head>
 <body>
+  <!-- Capture GitHub repo from Decap's own API calls (must run BEFORE CMS loads) -->
+  <script>
+  (function() {
+    window._lcRepo = null;
+    var _origFetch = window.fetch;
+    window.fetch = function(url) {
+      if (typeof url === 'string' && !window._lcRepo) {
+        var m = url.match(/\.netlify\/git\/github\/repos\/([^\/]+\/[^\/\s]+)\//);
+        if (m) { window._lcRepo = m[1]; console.log('[LC] repo:', window._lcRepo); }
+      }
+      return _origFetch.apply(this, arguments);
+    };
+  })();
+  </script>
+
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
   <!-- ── Custom image widget: uses getAsset (correct blob URL) + GitHub fallback ── -->
@@ -201,12 +216,6 @@
           R.createElement('button', { type: 'button', style: s.choose,
             onClick: function () { openMedia && openMedia({ forImage: true, allowMultiple: false }); }
           }, resolvedSrc ? 'Choose different image' : 'Choose an image'),
-          R.createElement('button', { type: 'button', style: s.choose,
-            onClick: function () {
-              var url = window.prompt('Enter image URL:');
-              if (url && url.trim()) { onChange(url.trim()); }
-            }
-          }, 'Insert from URL'),
           resolvedSrc && R.createElement('button', { type: 'button', style: s.remove,
             onClick: function () { onChange(null); setResolvedSrc(null); }
           }, 'Remove image')
@@ -246,103 +255,96 @@
       return true;
     }
 
-    /* ── Inject a file into Decap's media library for a specific field ──
-       This is how the multi-upload works too — Decap already knows the repo,
-       so no GitHub API / _lc_gh_repo needed. Finds the field's own
-       "Choose an image" button, opens the library, injects the file. */
-    function sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
+    /* ── Upload file directly via git-gateway + set field via Redux ──
+       No UI automation needed — bypasses Decap's media library entirely. */
 
-    function findFieldChooseButton(fieldLabels) {
-      /* Prefer an EMPTY image field (button says "Choose an image").
-         This lets paste fill the next open slot on ANY collection —
-         gallery, stills, short story cover, chapter art, thumbnail, etc. */
-      var allButtons = Array.from(document.querySelectorAll('button'));
-      var emptyChoose = allButtons.find(function(b){ return b.textContent.trim() === 'Choose an image'; });
-      if (emptyChoose) return emptyChoose;
-
-      /* If a preferred label is given, try to match it (even if already filled) */
-      if (fieldLabels && fieldLabels.length) {
-        var wrappers = Array.from(document.querySelectorAll('[class*="control"], [class*="Control"], [class*="widget"], [class*="Widget"], fieldset, label'));
-        for (var i = 0; i < wrappers.length; i++) {
-          var w = wrappers[i];
-          var text = (w.textContent || '').toLowerCase();
-          if (!fieldLabels.some(function(l){ return text.indexOf(l) !== -1; })) continue;
-          var btn = Array.from(w.querySelectorAll('button')).find(function(b){
-            var t = b.textContent.trim();
-            return t === 'Choose an image' || t === 'Choose different image';
-          });
-          if (btn) return btn;
-        }
-      }
-
-      /* Fallback: any image button (replace an existing image) */
-      return allButtons.find(function(b){
-        var t = b.textContent.trim();
-        return t === 'Choose an image' || t === 'Choose different image';
-      }) || null;
+    function _getRepo() {
+      /* 1. Captured from Decap's own fetch calls */
+      if (window._lcRepo) return window._lcRepo;
+      /* 2. Decap backend object */
+      try { var r = window.CMS.backend.api.repo; if (r) return r; } catch(_) {}
+      try { var r2 = window.CMS.backend.implementation.api.repo; if (r2) return r2; } catch(_) {}
+      /* 3. Redux state */
+      try {
+        var state = window.CMS.store.getState();
+        var cfg = state.get ? state.get('config') : state.config;
+        var be = cfg.get ? cfg.get('backend') : cfg.backend;
+        var r3 = be.get ? be.get('repo') : be.repo;
+        if (r3) return r3;
+      } catch(_) {}
+      /* 4. localStorage fallback */
+      return localStorage.getItem('_lc_gh_repo') || null;
     }
 
-    async function injectIntoField(file, fieldLabels) {
-      var chooseBtn = findFieldChooseButton(fieldLabels);
-      if (!chooseBtn) { toast('⚠ No image field found on this entry', 3500); return false; }
+    async function uploadAndSetField(file) {
+      /* Get auth token */
+      var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+      if (!user) { toast('⚠ Not logged in', 3000); return false; }
+      var token = await user.jwt();
 
-      /* Snapshot visible modals before opening */
-      var before = new Set(Array.from(document.querySelectorAll('[role="dialog"],[aria-modal="true"]'))
-        .filter(function(el){ return !el.hidden && el.style.display !== 'none' && el.getAttribute('aria-hidden') !== 'true'; }));
-
-      chooseBtn.click();
-
-      /* Wait for the media library modal to open */
-      var modal = null;
-      for (var i = 0; i < 30; i++) {
-        await sleep(200);
-        modal = Array.from(document.querySelectorAll('[role="dialog"],[aria-modal="true"]'))
-          .find(function(el){ return !before.has(el) && !el.hidden && el.style.display !== 'none' && el.getAttribute('aria-hidden') !== 'true'; });
-        if (modal) break;
+      /* Get repo */
+      var repo = _getRepo();
+      if (!repo) {
+        /* Last resort: ask once, save forever */
+        repo = window.prompt('Paste needs your GitHub repo once (e.g. YourName/your-repo):');
+        if (repo && repo.includes('/')) { localStorage.setItem('_lc_gh_repo', repo.trim()); repo = repo.trim(); }
+        else { toast('⚠ Upload cancelled — no repo', 3000); return false; }
       }
-      if (!modal) { toast('⚠ Media library did not open', 3500); return false; }
 
-      await sleep(500);
+      /* Read file as base64 */
+      var b64 = await new Promise(function(res, rej) {
+        var fr = new FileReader();
+        fr.onload = function(e) { res(e.target.result.split(',')[1]); };
+        fr.onerror = rej;
+        fr.readAsDataURL(file);
+      });
 
-      /* Inject the file into the modal's file input */
-      var input = modal.querySelector('input[type="file"]') || document.querySelector('input[type="file"]');
-      if (!input) { toast('⚠ Upload input not found', 3500); return false; }
-      var dt = new DataTransfer();
-      dt.items.add(file);
-      try { Object.defineProperty(input, 'files', { value: dt.files, writable: false, configurable: true }); }
-      catch(_) { try { input.files = dt.files; } catch(__){} }
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-      input.dispatchEvent(new Event('input',  { bubbles: true }));
+      /* Upload to GitHub via git-gateway */
+      var fname = Date.now() + '_' + (file.name || 'paste.png').replace(/[^a-zA-Z0-9._-]/g, '_');
+      var path = 'images/uploads/' + fname;
+      var resp = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
+        method: 'PUT',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Upload: ' + fname, content: b64, branch: 'main' })
+      });
 
-      /* Wait for the uploaded file to appear in the library, then click it */
-      for (var j = 0; j < 25; j++) {
-        await sleep(500);
-        var imgs = Array.from(modal.querySelectorAll('img')).filter(function(im){
-          var s = im.src || '';
-          return (s.startsWith('blob:') || s.startsWith('http')) && !s.startsWith('data:');
+      if (!resp.ok) {
+        var err = await resp.text().catch(function() { return ''; });
+        toast('⚠ Upload failed (' + resp.status + ')', 4000);
+        console.warn('[LC paste] upload failed:', resp.status, err);
+        return false;
+      }
+
+      /* Set field value via Redux dispatch — tries all possible field names */
+      var filePath = '/' + path;
+      var store = window.CMS && window.CMS.store;
+      if (store) {
+        /* Detect which image fields exist on this entry by checking for
+           'Choose an image' / 'Choose different image' buttons and their labels */
+        var existingFields = new Set();
+        document.querySelectorAll('label, [class*="control"], [class*="Control"]').forEach(function(el) {
+          var btn = el.querySelector('button');
+          if (!btn) return;
+          var t = btn.textContent.trim();
+          if (t !== 'Choose an image' && t !== 'Choose different image') return;
+          var label = (el.textContent || '').toLowerCase();
+          ['thumbnail','cover','image','art','custom_icon','cover image'].forEach(function(f) {
+            if (label.indexOf(f) !== -1) existingFields.add(f === 'cover image' ? 'cover' : f);
+          });
         });
-        if (imgs.length) {
-          var last = imgs[imgs.length - 1];
-          var clickable = last;
-          for (var p = last; p && p !== modal; p = p.parentElement) {
-            if (p.tagName === 'BUTTON' || p.getAttribute('role') === 'button' ||
-                p.getAttribute('role') === 'option' || p.getAttribute('tabindex') != null) { clickable = p; break; }
-          }
-          clickable.click();
-          await sleep(400);
-          var confirm = Array.from(modal.querySelectorAll('button')).find(function(b){
-            var t = b.textContent.trim().toLowerCase();
-            return t === 'choose selected' || t === 'insert' || t === 'select' || t === 'use';
+        /* Fallback: if detection found nothing, try the most common fields */
+        if (existingFields.size === 0) { existingFields.add('image'); existingFields.add('thumbnail'); existingFields.add('cover'); }
+
+        existingFields.forEach(function(fieldName) {
+          ['DRAFT_CHANGE_FIELD','ENTRY_DRAFT_CHANGE_FIELD'].forEach(function(type) {
+            try { store.dispatch({ type: type, payload: { path: fieldName, value: filePath, field: { name: fieldName, widget: 'image' } } }); } catch(_) {}
           });
-          if (confirm) confirm.click();
-          return true;
-        }
+        });
       }
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-      return false;
+      return true;
     }
 
-    /* ─────────────────────────────────────────────
+        /* ─────────────────────────────────────────────
        FEATURE 1: Paste screenshot → thumbnail field (via Decap library)
        ───────────────────────────────────────────── */
     var _toast = null;
@@ -390,13 +392,13 @@
       if (!hasImageField) return;
 
       e.preventDefault();
-      toast('Pasting image…');
+      toast('Uploading pasted image…');
       var file = imgItem.getAsFile();
       if (!file) return;
 
       try {
-        var ok = await injectIntoField(file, ['thumbnail', 'cover image', 'cover', 'art', 'image']);
-        if (ok) toast('✓ Image set from paste', 3000);
+        var ok = await uploadAndSetField(file);
+        toast(ok ? '✓ Image uploaded and set' : '⚠ Upload failed', 3000);
       } catch(err) {
         toast('⚠ Paste failed: ' + err.message, 4000);
       }
@@ -471,8 +473,8 @@
             if (!blob) { toast('⚠ Could not extract frame', 3000); return; }
             try {
               var thumbFile = new File([blob], 'thumb_' + Date.now() + '.jpg', { type: 'image/jpeg' });
-              var ok = await injectIntoField(thumbFile, ['thumbnail', 'cover image', 'cover', 'image']);
-              if (ok) toast('✓ Thumbnail extracted from video', 3000);
+              var ok = await uploadAndSetField(thumbFile);
+              toast(ok ? '✓ Thumbnail extracted from video' : '⚠ Upload failed', 3000);
             } catch(e) { toast('⚠ ' + e.message, 3000); }
           });
         });
@@ -482,6 +484,179 @@
       .observe(document.documentElement, { childList: true, subtree: true });
     watchVideoInputs();
 
+  })();
+  </script>
+
+  <!-- ── External Image Migration: downloads Discord/external URLs and re-uploads to repo ── -->
+  <script>
+  (function() {
+    var btn = document.createElement('button');
+    btn.id = 'lc-migrate-btn';
+    btn.textContent = '🔗 Fix External Images';
+    btn.title = 'Find and replace expiring Discord/external image URLs with permanent uploads';
+    btn.style.cssText = 'position:fixed;bottom:1rem;left:1.5rem;background:#1a1710;border:1px solid #c9a84c;color:#c9a84c;padding:0.5rem 1rem;font-family:Georgia,serif;font-size:11px;border-radius:4px;cursor:pointer;z-index:9998;display:none;';
+    document.body.appendChild(btn);
+
+    /* Always visible — accessible from anywhere in admin */
+    btn.style.display = 'block';
+
+    var _log = null;
+    function log(msg) {
+      if (!_log) {
+        _log = document.createElement('div');
+        _log.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1710;border:1px solid #c9a84c;color:#c9a84c;padding:1.5rem 2rem;font-family:Georgia,serif;font-size:12px;border-radius:6px;z-index:99999;max-width:500px;max-height:70vh;overflow-y:auto;white-space:pre-line;line-height:1.6;';
+        document.body.appendChild(_log);
+      }
+      _log.textContent = msg;
+      _log.style.display = 'block';
+    }
+
+    function isExternal(url) {
+      if (!url || typeof url !== 'string') return false;
+      if (url.startsWith('/') || url.startsWith('./')) return false;
+      if (url.startsWith('http')) {
+        /* External if NOT our own site */
+        try {
+          var host = new URL(url).hostname;
+          return !host.includes('netlify') && !host.includes('githubusercontent');
+        } catch(_) { return false; }
+      }
+      return false;
+    }
+
+    async function migrate() {
+      log('Scanning entries for external image URLs...\nThis may take a minute.');
+
+      var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+      if (!user) { log('⚠ Not logged in. Please log in first.'); return; }
+      var token = await user.jwt();
+
+      /* Get repo */
+      var repo = window._lcRepo || null;
+      try { if (!repo) repo = window.CMS.backend.api.repo; } catch(_) {}
+      if (!repo) repo = localStorage.getItem('_lc_gh_repo');
+      if (!repo) {
+        repo = window.prompt('Enter your GitHub repo (e.g. YourName/your-repo):');
+        if (repo && repo.includes('/')) { localStorage.setItem('_lc_gh_repo', repo.trim()); repo = repo.trim(); }
+        else { log('Cancelled.'); return; }
+      }
+
+      /* Scan all index JSONs for external URLs */
+      var indexes = ['gallery-index','stills-index','traditional-art-index','wips-index','content-index','short-stories-index'];
+      var found = [];
+
+      for (var idx = 0; idx < indexes.length; idx++) {
+        try {
+          var res = await fetch('/_data/' + indexes[idx] + '.json');
+          if (!res.ok) continue;
+          var items = await res.json();
+          items.forEach(function(item) {
+            ['image','image2','image3','image4','thumbnail','cover','art'].forEach(function(field) {
+              if (isExternal(item[field])) {
+                found.push({ title: item.title, field: field, url: item[field], index: indexes[idx] });
+              }
+            });
+            /* Check numbered image fields up to 20 */
+            for (var n = 5; n <= 20; n++) {
+              var fn = 'image' + n;
+              if (isExternal(item[fn])) {
+                found.push({ title: item.title, field: fn, url: item[fn], index: indexes[idx] });
+              }
+            }
+          });
+        } catch(_) {}
+      }
+
+      if (found.length === 0) {
+        log('✓ No external image URLs found!\nAll your images are already safely in your repo.');
+        setTimeout(function(){ _log.style.display = 'none'; }, 4000);
+        return;
+      }
+
+      log('Found ' + found.length + ' external image URL(s).\nDownloading and re-uploading...\n');
+      var fixed = 0, failed = 0;
+
+      for (var i = 0; i < found.length; i++) {
+        var item = found[i];
+        log('Found ' + found.length + ' external URLs.\n\n' + (i+1) + '/' + found.length + ': ' + item.title + ' → ' + item.field + '\nDownloading...');
+
+        try {
+          /* Download via canvas (bypasses CORS — browser already has these rendered).
+             If canvas is tainted, fall back to direct fetch. */
+          var blob = null;
+          try {
+            blob = await new Promise(function(res, rej) {
+              var img = new Image();
+              img.crossOrigin = 'anonymous';
+              img.onload = function() {
+                var c = document.createElement('canvas');
+                c.width = img.naturalWidth; c.height = img.naturalHeight;
+                c.getContext('2d').drawImage(img, 0, 0);
+                c.toBlob(function(b) { b ? res(b) : rej(new Error('toBlob failed')); }, 'image/png');
+              };
+              img.onerror = function() { rej(new Error('img load failed')); };
+              img.src = item.url;
+              setTimeout(function() { rej(new Error('timeout')); }, 15000);
+            });
+          } catch(_) {
+            /* Canvas failed (tainted/expired) — try direct fetch as last resort */
+            try {
+              var imgRes = await fetch(item.url);
+              if (imgRes.ok) blob = await imgRes.blob();
+            } catch(__) {}
+          }
+          if (!blob) { failed++; log((i+1) + '/' + found.length + ': ⚠ Could not download — URL may have expired\n' + item.url.slice(0,80) + '...'); await new Promise(function(r){setTimeout(r,1000);}); continue; }
+
+          /* Convert to base64 */
+          var b64 = await new Promise(function(res, rej) {
+            var fr = new FileReader();
+            fr.onload = function(e) { res(e.target.result.split(',')[1]); };
+            fr.onerror = rej;
+            fr.readAsDataURL(blob);
+          });
+
+          /* Upload to repo */
+          var ext = blob.type.split('/')[1] || 'png';
+          if (ext === 'jpeg') ext = 'jpg';
+          var fname = Date.now() + '_' + item.field + '_' + (item.title || '').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 40) + '.' + ext;
+          var path = 'images/uploads/' + fname;
+
+          log((i+1) + '/' + found.length + ': ' + item.title + '\nUploading to repo...');
+
+          var upRes = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
+            method: 'PUT',
+            headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: 'Migrate: ' + item.title + ' ' + item.field, content: b64, branch: 'main' })
+          });
+
+          if (upRes.ok) {
+            fixed++;
+            log((i+1) + '/' + found.length + ': ✓ ' + item.title + ' → /' + path);
+          } else {
+            failed++;
+            log((i+1) + '/' + found.length + ': ⚠ Upload failed for ' + item.title);
+          }
+
+          /* Brief pause to avoid rate limits */
+          await new Promise(function(r){setTimeout(r,800);});
+
+        } catch(err) {
+          failed++;
+          log((i+1) + '/' + found.length + ': ⚠ Error: ' + err.message);
+        }
+      }
+
+      log('Done!\n\n✓ Fixed: ' + fixed + '\n✗ Failed: ' + failed + '\n\n' +
+          (fixed > 0 ? 'Uploaded images are in /images/uploads/.\nYou still need to update each entry\'s image field in the admin to point to the new path.\n\nNote: the old external URLs will eventually break, so update entries soon.' : '') +
+          '\n\nClick anywhere to dismiss.');
+      document.addEventListener('click', function dismiss() { _log.style.display = 'none'; document.removeEventListener('click', dismiss); }, { once: true });
+    }
+
+    btn.addEventListener('click', function() {
+      if (window.confirm('Scan all entries for expiring external image URLs (Discord, etc.) and re-upload them to your repo?')) {
+        migrate();
+      }
+    });
   })();
   </script>
 
