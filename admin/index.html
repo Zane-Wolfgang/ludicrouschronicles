@@ -291,16 +291,46 @@
       /* Use live-detected repo if Decap has revealed it, else the known repo */
       var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
 
+      /* Compress large images before upload — full-res PNG screenshots can exceed
+         the gateway payload limit. Cap at 2000px, export JPEG 0.85 (keeps PNG only
+         if small). GIFs pass through untouched to preserve animation. */
+      var uploadFile = file;
+      if (file.type !== 'image/gif' && file.size > 900 * 1024) {
+        try {
+          uploadFile = await new Promise(function(res, rej) {
+            var img = new Image();
+            var url = URL.createObjectURL(file);
+            img.onload = function() {
+              URL.revokeObjectURL(url);
+              var MAX_DIM = 2000;
+              var w = img.naturalWidth, h = img.naturalHeight;
+              if (w > MAX_DIM || h > MAX_DIM) {
+                var s = MAX_DIM / Math.max(w, h);
+                w = Math.round(w * s); h = Math.round(h * s);
+              }
+              var c = document.createElement('canvas');
+              c.width = w; c.height = h;
+              c.getContext('2d').drawImage(img, 0, 0, w, h);
+              c.toBlob(function(b) {
+                b ? res(new File([b], (file.name || 'paste').replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' })) : rej(new Error('compress failed'));
+              }, 'image/jpeg', 0.85);
+            };
+            img.onerror = function() { URL.revokeObjectURL(url); rej(new Error('img load failed')); };
+            img.src = url;
+          });
+        } catch(_) { uploadFile = file; /* fall back to original */ }
+      }
+
       /* Read file as base64 */
       var b64 = await new Promise(function(res, rej) {
         var fr = new FileReader();
         fr.onload = function(e) { res(e.target.result.split(',')[1]); };
         fr.onerror = rej;
-        fr.readAsDataURL(file);
+        fr.readAsDataURL(uploadFile);
       });
 
       /* Upload to GitHub via git-gateway */
-      var fname = Date.now() + '_' + (file.name || 'paste.png').replace(/[^a-zA-Z0-9._-]/g, '_');
+      var fname = Date.now() + '_' + (uploadFile.name || 'paste.png').replace(/[^a-zA-Z0-9._-]/g, '_');
       var path = 'images/uploads/' + fname;
       var resp = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
         method: 'PUT',
@@ -311,7 +341,11 @@
       if (!resp.ok) {
         var err = await resp.text().catch(function() { return ''; });
         var short = '';
-        try { short = JSON.parse(err).message || ''; } catch(_) { short = err.slice(0,80); }
+        if (err.trim().indexOf('<') === 0) {
+          short = 'server returned an error page — likely payload too large or session expired';
+        } else {
+          try { short = JSON.parse(err).message || ''; } catch(_) { short = err.slice(0,120); }
+        }
         toast('⚠ Upload failed (' + resp.status + '): ' + short + '\nRepo used: ' + repo, 8000);
         console.warn('[LC paste] upload failed:', resp.status, err, 'repo:', repo);
         return false;
@@ -584,10 +618,20 @@
               var img = new Image();
               img.crossOrigin = 'anonymous';
               img.onload = function() {
+                /* Cap dimensions and export as JPEG — PNG at full Discord resolution
+                   can exceed the git-gateway payload limit (base64 + PNG bloats size
+                   massively vs the original compressed source), causing every upload
+                   to fail with an HTML error page instead of a JSON response. */
+                var MAX_DIM = 2000;
+                var w = img.naturalWidth, h = img.naturalHeight;
+                if (w > MAX_DIM || h > MAX_DIM) {
+                  var scale = MAX_DIM / Math.max(w, h);
+                  w = Math.round(w * scale); h = Math.round(h * scale);
+                }
                 var c = document.createElement('canvas');
-                c.width = img.naturalWidth; c.height = img.naturalHeight;
-                c.getContext('2d').drawImage(img, 0, 0);
-                c.toBlob(function(b) { b ? res(b) : rej(new Error('toBlob failed')); }, 'image/png');
+                c.width = w; c.height = h;
+                c.getContext('2d').drawImage(img, 0, 0, w, h);
+                c.toBlob(function(b) { b ? res(b) : rej(new Error('toBlob failed')); }, 'image/jpeg', 0.85);
               };
               img.onerror = function() { rej(new Error('img load failed')); };
               img.src = item.url;
@@ -618,6 +662,9 @@
 
           log((i+1) + '/' + found.length + ': ' + item.title + '\nUploading to repo...');
 
+          /* Refresh token each upload - jwt() auto-refreshes near expiry */
+          try { token = await user.jwt(); } catch(_) {}
+
           var upRes = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
             method: 'PUT',
             headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -631,7 +678,11 @@
             failed++;
             var upErrText = await upRes.text().catch(function(){return '';});
             var upShort = '';
-            try { upShort = JSON.parse(upErrText).message || ''; } catch(_) { upShort = upErrText.slice(0,80); }
+            if (upErrText.trim().indexOf('<') === 0) {
+              upShort = 'server returned an error page — likely payload too large or session expired';
+            } else {
+              try { upShort = JSON.parse(upErrText).message || ''; } catch(_) { upShort = upErrText.slice(0,120); }
+            }
             log((i+1) + '/' + found.length + ': ⚠ ' + item.title + ' — ' + upRes.status + ' ' + upShort + '\nRepo: ' + repo);
             console.warn('[LC migrate] failed:', upRes.status, upErrText, 'repo:', repo);
           }
