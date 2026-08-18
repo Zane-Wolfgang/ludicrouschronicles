@@ -116,6 +116,8 @@
       if (_repoP) return _repoP;
       _repoP = (async function () {
         /* 1. localStorage (set on first successful prompt — never asks again) */
+        return 'Zane-Wolfgang/ludicrouschronicles';
+        /* Below: legacy fallback paths, unreachable but kept for reference */
         var saved = localStorage.getItem('_lc_gh_repo');
         if (saved && saved.includes('/')) return saved;
 
@@ -259,6 +261,8 @@
        No UI automation needed — bypasses Decap's media library entirely. */
 
     function _getRepo() {
+      return 'Zane-Wolfgang/ludicrouschronicles';
+      /* Below: legacy fallback paths, unreachable but kept for reference */
       /* 1. Captured from Decap's own fetch calls */
       if (window._lcRepo) return window._lcRepo;
       /* 2. Decap backend object */
@@ -283,13 +287,7 @@
       var token = await user.jwt();
 
       /* Get repo */
-      var repo = _getRepo();
-      if (!repo) {
-        /* Last resort: ask once, save forever */
-        repo = window.prompt('Paste needs your GitHub repo once (e.g. YourName/your-repo):');
-        if (repo && repo.includes('/')) { localStorage.setItem('_lc_gh_repo', repo.trim()); repo = repo.trim(); }
-        else { toast('⚠ Upload cancelled — no repo', 3000); return false; }
-      }
+      var repo = 'Zane-Wolfgang/ludicrouschronicles';
 
       /* Read file as base64 */
       var b64 = await new Promise(function(res, rej) {
@@ -532,14 +530,7 @@
       var token = await user.jwt();
 
       /* Get repo */
-      var repo = window._lcRepo || null;
-      try { if (!repo) repo = window.CMS.backend.api.repo; } catch(_) {}
-      if (!repo) repo = localStorage.getItem('_lc_gh_repo');
-      if (!repo) {
-        repo = window.prompt('Enter your GitHub repo (e.g. YourName/your-repo):');
-        if (repo && repo.includes('/')) { localStorage.setItem('_lc_gh_repo', repo.trim()); repo = repo.trim(); }
-        else { log('Cancelled.'); return; }
-      }
+      var repo = 'Zane-Wolfgang/ludicrouschronicles';
 
       /* Scan all index JSONs for external URLs */
       var indexes = ['gallery-index','stills-index','traditional-art-index','wips-index','content-index','short-stories-index'];
