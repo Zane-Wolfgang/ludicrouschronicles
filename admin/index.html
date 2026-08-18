@@ -270,7 +270,7 @@
 
     /* Register custom image widget */
     function register() {
-      if (!window.CMS || !window.React || typeof window.initCMS !== 'function') return setTimeout(register, 150);
+      if (!window.CMS || !window.React) return setTimeout(register, 100);
       if (window._lcRegistered) return;
       window._lcRegistered = true;
       var R = window.React;
@@ -436,8 +436,16 @@
         return src ? window.React.createElement('img', { src: src, style: { maxWidth: '100%' } }) : null;
       }
 
-      window.CMS.registerWidget('lc_image', ImageControl, ImagePreview);
-      console.log('[LC Admin] lc_image widget registered');
+      try {
+        window.CMS.registerWidget('lc_image', ImageControl, ImagePreview);
+        console.log('[LC Admin] lc_image widget registered');
+      } catch (err) {
+        console.error('[LC Admin] registerWidget threw:', err);
+        /* Last resort: register a minimal string-based control so fields still work */
+        try {
+          window.CMS.registerWidget('lc_image', window.CMS.getWidget ? 'string' : undefined);
+        } catch (_) {}
+      }
       window._lcWidgetDone = true;
       if (window._lcTryInit) window._lcTryInit();
     }
@@ -1086,26 +1094,33 @@
   })();
   </script>
 
-  <!-- ── Init gate: boot CMS once widget + previews are registered ── -->
+  <!-- ── Init gate: boot CMS as soon as the custom widget is registered ── -->
   <script>
   (function () {
     window._lcInitCalled = false;
     window._lcTryInit = function () {
       if (window._lcInitCalled) return;
-      if (!window._lcWidgetDone || !window._lcPreviewsDone) return;
+      /* Only the widget is required to boot. Preview templates register independently
+         and attach whenever they're ready — waiting on them just delays the whole UI. */
+      if (!window._lcWidgetDone) return;
       if (typeof window.initCMS !== 'function') return;
       window._lcInitCalled = true;
       window.initCMS();
       console.log('[LC Admin] initCMS() called');
     };
-    /* Safety net: if something stalls, boot anyway so the admin never stays blank */
+    /* Safety net: only force-boot if the widget registration genuinely never completed.
+       Never boot before the widget is ready — doing so causes 'No control for lc_image'. */
     setTimeout(function () {
-      if (!window._lcInitCalled && typeof window.initCMS === 'function') {
+      if (window._lcInitCalled) return;
+      if (typeof window.initCMS !== 'function') return;
+      if (window._lcWidgetDone) {
         window._lcInitCalled = true;
         window.initCMS();
-        console.warn('[LC Admin] initCMS() forced by fallback timer');
+        console.warn('[LC Admin] initCMS() forced by fallback (widget was ready)');
+      } else {
+        console.error('[LC Admin] custom widget never registered — check the widget script for a thrown error. NOT booting to avoid lc_image errors.');
       }
-    }, 5000);
+    }, 4000);
     window._lcTryInit();
   })();
   </script>
