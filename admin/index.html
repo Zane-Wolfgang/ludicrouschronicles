@@ -8,7 +8,7 @@
   <style>
     /* ── Markdown Help Button ── */
     #md-help-btn {
-      position: fixed; bottom: 4rem; left: 1.5rem; z-index: 99999;
+      position: fixed; bottom: 1.5rem; left: 1.5rem; z-index: 99999;
       width: 36px; height: 36px; border-radius: 50%;
       background: #c9a84c; color: #0a0806; border: none;
       font-family: Georgia, serif; font-size: 16px; font-weight: bold;
@@ -160,7 +160,10 @@
       }catch(_){return null;}
     }
 
-    /* Register custom image widget */
+    /* Register custom image widget under its OWN name — 'lc_image'.
+       Decap's built-in 'image' widget cannot be reliably overridden by
+       re-registering the same name, so config.yml now points image fields
+       at widget: lc_image instead of widget: image. */
     function register() {
       if (!window.CMS || !window.React) return setTimeout(register, 150);
       var R = window.React;
@@ -210,12 +213,13 @@
         var s = {
           wrap:   { fontFamily: 'sans-serif' },
           img:    { maxWidth: '100%', maxHeight: '250px', objectFit: 'contain', display: 'block', marginBottom: '8px', border: '1px solid rgba(0,0,0,0.15)' },
-          choose: { background: 'none', border: 'none', cursor: 'pointer', color: '#63b3ed', padding: '4px 0', fontSize: '13px', display: 'block', textAlign: 'left' },
+          choose: { background: '#1a3a52', border: '1px solid #63b3ed', borderRadius: '4px', cursor: 'pointer', color: '#63b3ed', padding: '6px 10px', fontSize: '13px', display: 'block', textAlign: 'center', width: '100%', marginBottom: '6px' },
           remove: { background: 'none', border: 'none', cursor: 'pointer', color: '#fc8181', padding: '4px 0', fontSize: '13px', display: 'block', textAlign: 'left' },
         };
 
         /* Paste-box status */
         var _ps = R.useState(''); var pasteStatus = _ps[0]; var setPasteStatus = _ps[1];
+        var pasteBoxRef = R.useRef(null);
 
         /* Upload a pasted file directly and set THIS field via onChange */
         async function handlePastedFile(file) {
@@ -279,26 +283,45 @@
           }
         }
 
+        /* contentEditable=true is required for the browser to reliably fire
+           native paste events on this box — a plain non-editable div does not
+           consistently receive Ctrl+V across browsers. We block real typing
+           in onKeyDown and wipe any stray content in onInput so it behaves as
+           a paste-only field, never as a real text box. */
         function onPasteBox(e) {
           var items = e.clipboardData && e.clipboardData.items;
-          if (!items) return;
-          for (var i = 0; i < items.length; i++) {
-            if (items[i].type.indexOf('image/') === 0) {
-              e.preventDefault();
-              var f = items[i].getAsFile();
-              if (f) handlePastedFile(f);
-              return;
+          var imgItem = null;
+          if (items) {
+            for (var i = 0; i < items.length; i++) {
+              if (items[i].type.indexOf('image/') === 0) { imgItem = items[i]; break; }
             }
           }
-          setPasteStatus('⚠ No image in clipboard');
-          setTimeout(function () { setPasteStatus(''); }, 2000);
+          e.preventDefault();
+          if (imgItem) {
+            var f = imgItem.getAsFile();
+            if (f) handlePastedFile(f);
+          } else {
+            setPasteStatus('⚠ No image in clipboard');
+            setTimeout(function () { setPasteStatus(''); }, 2000);
+          }
         }
 
-        s.pasteBox = {
-          border: '2px dashed rgba(99,179,237,0.5)', borderRadius: '4px',
-          padding: '10px 12px', margin: '6px 0', fontSize: '12px', color: '#8aa3b8',
-          cursor: 'text', outline: 'none', background: 'rgba(99,179,237,0.05)',
-          minHeight: '20px', textAlign: 'center'
+        function onKeyDownBox(e) {
+          /* Allow the paste shortcut itself and Tab; block everything else
+             so the box can't be typed into. */
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') return;
+          if (e.key === 'Tab') return;
+          e.preventDefault();
+        }
+
+        s.pasteBoxWrap = {
+          position: 'relative', border: '2px dashed rgba(99,179,237,0.5)', borderRadius: '4px',
+          padding: '10px 12px', margin: '2px 0 8px', fontSize: '12px', color: '#8aa3b8',
+          background: 'rgba(99,179,237,0.05)', minHeight: '20px', textAlign: 'center'
+        };
+        s.pasteBoxLabel = { pointerEvents: 'none' };
+        s.pasteBoxHit = {
+          position: 'absolute', inset: 0, cursor: 'text', outline: 'none'
         };
 
         return R.createElement('div', { style: s.wrap },
@@ -306,14 +329,21 @@
           R.createElement('button', { type: 'button', style: s.choose,
             onClick: function () { openMedia && openMedia({ forImage: true, allowMultiple: false }); }
           }, resolvedSrc ? 'Choose different image' : 'Choose an image'),
-          R.createElement('div', {
-            style: s.pasteBox,
-            tabIndex: 0,
-            contentEditable: false,
-            onPaste: onPasteBox,
-            onClick: function (e) { e.currentTarget.focus(); },
-            title: 'Click here, then press Ctrl+V to paste an image from your clipboard'
-          }, pasteStatus || '📋 Click here + Ctrl+V to paste an image'),
+          R.createElement('div', { style: s.pasteBoxWrap, title: 'Click here, then press Ctrl+V to paste an image from your clipboard' },
+            R.createElement('span', { style: s.pasteBoxLabel }, pasteStatus || '📋 Click here, then Ctrl+V to paste an image'),
+            /* Empty contentEditable overlay — never given React children, so its
+               DOM content can never drift out of sync with what React renders. */
+            R.createElement('div', {
+              ref: pasteBoxRef,
+              style: s.pasteBoxHit,
+              tabIndex: 0,
+              contentEditable: true,
+              suppressContentEditableWarning: true,
+              onPaste: onPasteBox,
+              onKeyDown: onKeyDownBox,
+              onClick: function (e) { e.currentTarget.focus(); }
+            })
+          ),
           resolvedSrc && R.createElement('button', { type: 'button', style: s.remove,
             onClick: function () { onChange(null); setResolvedSrc(null); }
           }, 'Remove image')
@@ -328,8 +358,8 @@
         return src ? window.React.createElement('img', { src: src, style: { maxWidth: '100%' } }) : null;
       }
 
-      window.CMS.registerWidget('image', ImageControl, ImagePreview);
-      console.log('[LC Admin] custom image widget registered');
+      window.CMS.registerWidget('lc_image', ImageControl, ImagePreview);
+      console.log('[LC Admin] custom image widget registered as lc_image');
     }
 
     register();
@@ -501,7 +531,9 @@
       if (!imgItem) return;
 
       /* Only act when NOT typing in a text field or rich-text editor.
-         Decap's markdown editor is a nested contenteditable, so check ancestors too. */
+         Decap's markdown editor is a nested contenteditable, so check ancestors too.
+         This also skips the widget's own paste box (contentEditable=true),
+         which handles its own paste event. */
       var active = document.activeElement;
       if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' ||
           active.getAttribute('contenteditable') === 'true' ||
