@@ -105,25 +105,6 @@
   })();
   </script>
 
-  <!-- config.yml references custom widgets (lc_image) that must be registered
-       BEFORE Decap validates/renders the config, or every field using them
-       permanently fails with "No control for widget". Block auto-init and
-       start CMS ourselves once both custom registration scripts finish. -->
-  <script>
-    window.CMS_MANUAL_INIT = true;
-    window._lcWidgetReady = false;
-    window._lcPreviewsReady = false;
-    window._lcInitDone = false;
-    window.maybeInitCMS = function () {
-      if (window._lcInitDone) return;
-      if (window._lcWidgetReady && window._lcPreviewsReady && window.CMS && typeof window.initCMS === 'function') {
-        window._lcInitDone = true;
-        window.initCMS();
-        console.log('[LC Admin] initCMS() called after custom widget + preview registration');
-      }
-    };
-  </script>
-
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
   <!-- ── Custom image widget: uses getAsset (correct blob URL) + GitHub fallback ── -->
@@ -179,10 +160,69 @@
       }catch(_){return null;}
     }
 
-    /* Register custom image widget under its OWN name — 'lc_image'.
-       Decap's built-in 'image' widget cannot be reliably overridden by
-       re-registering the same name, so config.yml now points image fields
-       at widget: lc_image instead of widget: image. */
+    /* uploadImageToRepo: commit a File to images/uploads/ and return its repo path */
+    async function uploadImageToRepo(file) {
+      var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+      if (!user) throw new Error('Not logged in');
+      var token = await user.jwt();
+      var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
+      var b64 = await new Promise(function (res, rej) {
+        var fr = new FileReader();
+        fr.onload = function (e) { res(e.target.result.split(',')[1]); };
+        fr.onerror = rej;
+        fr.readAsDataURL(file);
+      });
+      var fname = Date.now() + '_' + (file.name || 'paste.png').replace(/[^a-zA-Z0-9._-]/g, '_');
+      var path = 'images/uploads/' + fname;
+      var resp = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
+        method: 'PUT',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Upload: ' + fname, content: b64, branch: 'main' })
+      });
+      if (!resp.ok) {
+        var err = await resp.text().catch(function () { return ''; });
+        var short = '';
+        try { short = JSON.parse(err).message || ''; } catch (_) { short = err.slice(0, 80); }
+        throw new Error('Upload failed (' + resp.status + ') ' + short);
+      }
+      return '/' + path;
+    }
+
+    /* downloadUrlToRepo: fetch an external image URL and commit it, returning the repo path.
+       Tries direct fetch first, then a canvas capture, so expiring links (Discord etc.)
+       get saved permanently before they break. */
+    async function downloadUrlToRepo(url) {
+      var blob = null;
+      /* 1. Direct fetch — works when the host allows cross-origin reads */
+      try {
+        var r = await fetch(url, { mode: 'cors' });
+        if (r.ok) blob = await r.blob();
+      } catch (_) {}
+      /* 2. Canvas capture fallback — works when the image renders but blocks fetch */
+      if (!blob) {
+        blob = await new Promise(function (res) {
+          var img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = function () {
+            try {
+              var c = document.createElement('canvas');
+              c.width = img.naturalWidth; c.height = img.naturalHeight;
+              c.getContext('2d').drawImage(img, 0, 0);
+              c.toBlob(function (b) { res(b || null); }, 'image/png');
+            } catch (_) { res(null); }
+          };
+          img.onerror = function () { res(null); };
+          img.src = url;
+          setTimeout(function () { res(null); }, 15000);
+        });
+      }
+      if (!blob) throw new Error('could not download (link may block copying or already be dead)');
+      var ext = (blob.type.split('/')[1] || 'png'); if (ext === 'jpeg') ext = 'jpg';
+      var file = new File([blob], 'link_' + Date.now() + '.' + ext, { type: blob.type || 'image/png' });
+      return uploadImageToRepo(file);
+    }
+
+    /* Register custom image widget */
     function register() {
       if (!window.CMS || !window.React) return setTimeout(register, 150);
       var R = window.React;
@@ -195,6 +235,53 @@
 
         /* Resolve display URL — getAsset handles blob URLs for current-session uploads */
         var _s = R.useState(null); var resolvedSrc = _s[0]; var setResolvedSrc = _s[1];
+        var _st = R.useState(''); var pasteStatus = _st[0]; var setPasteStatus = _st[1];
+
+        /* Paste an image (Ctrl+V) into the box → upload → set this field.
+           If the pasted content is text (a URL) instead, let it fall through to onChange. */
+        function handleBoxPaste(e) {
+          var items = (e.clipboardData && e.clipboardData.items) || [];
+          var imgItem = null;
+          for (var i = 0; i < items.length; i++) {
+            if (items[i].type && items[i].type.indexOf('image/') === 0) { imgItem = items[i]; break; }
+          }
+          if (!imgItem) return; /* not an image — treat as URL text via onChange */
+          e.preventDefault();
+          var file = imgItem.getAsFile();
+          if (!file) return;
+          setPasteStatus('Uploading…');
+          uploadImageToRepo(file).then(function (path) {
+            onChange(path);
+            setPasteStatus('✓ Uploaded');
+            setTimeout(function () { setPasteStatus(''); }, 2500);
+          }).catch(function (err) {
+            setPasteStatus('⚠ ' + err.message);
+            setTimeout(function () { setPasteStatus(''); }, 6000);
+          });
+          if (e.target) e.target.value = '';
+        }
+
+        /* Typed or pasted URL → download it to the repo (so it can't expire), then set the field.
+           If it can't be saved (CORS-blocked or dead), fall back to the raw URL with a warning. */
+        function handleBoxUrl(e) {
+          var v = (e.target && e.target.value || '').trim();
+          if (!v) return;
+          if (e.target) e.target.value = '';
+          /* Already a local/repo path — just set it, no download needed */
+          if (v.charAt(0) === '/' || v.indexOf('githubusercontent') !== -1) {
+            onChange(v); setPasteStatus('✓ Link set'); setTimeout(function () { setPasteStatus(''); }, 2000); return;
+          }
+          setPasteStatus('Saving link to your repo…');
+          downloadUrlToRepo(v).then(function (path) {
+            onChange(path);
+            setPasteStatus('✓ Saved permanently');
+            setTimeout(function () { setPasteStatus(''); }, 3000);
+          }).catch(function (err) {
+            onChange(v); /* keep the raw URL so nothing is lost */
+            setPasteStatus('⚠ Kept as link — ' + err.message);
+            setTimeout(function () { setPasteStatus(''); }, 7000);
+          });
+        }
 
         R.useEffect(function () {
           if (!value) { setResolvedSrc(null); return; }
@@ -232,115 +319,10 @@
         var s = {
           wrap:   { fontFamily: 'sans-serif' },
           img:    { maxWidth: '100%', maxHeight: '250px', objectFit: 'contain', display: 'block', marginBottom: '8px', border: '1px solid rgba(0,0,0,0.15)' },
-          choose: { background: '#1a3a52', border: '1px solid #63b3ed', borderRadius: '4px', cursor: 'pointer', color: '#63b3ed', padding: '6px 10px', fontSize: '13px', display: 'block', textAlign: 'center', width: '100%', marginBottom: '6px' },
+          choose: { background: 'none', border: 'none', cursor: 'pointer', color: '#63b3ed', padding: '4px 0', fontSize: '13px', display: 'block', textAlign: 'left' },
           remove: { background: 'none', border: 'none', cursor: 'pointer', color: '#fc8181', padding: '4px 0', fontSize: '13px', display: 'block', textAlign: 'left' },
-        };
-
-        /* Paste-box status */
-        var _ps = R.useState(''); var pasteStatus = _ps[0]; var setPasteStatus = _ps[1];
-        var pasteBoxRef = R.useRef(null);
-
-        /* Upload a pasted file directly and set THIS field via onChange */
-        async function handlePastedFile(file) {
-          setPasteStatus('Uploading…');
-          try {
-            var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
-            if (!user) { setPasteStatus('⚠ Not logged in'); return; }
-            var token = await user.jwt();
-            var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
-
-            /* Compress if large (>900KB), skip GIFs to preserve animation */
-            var uploadFile = file;
-            if (file.type !== 'image/gif' && file.size > 900 * 1024) {
-              try {
-                uploadFile = await new Promise(function (res, rej) {
-                  var img = new Image();
-                  var url = URL.createObjectURL(file);
-                  img.onload = function () {
-                    URL.revokeObjectURL(url);
-                    var MAX = 2000, w = img.naturalWidth, h = img.naturalHeight;
-                    if (w > MAX || h > MAX) { var sc = MAX / Math.max(w, h); w = Math.round(w*sc); h = Math.round(h*sc); }
-                    var c = document.createElement('canvas'); c.width = w; c.height = h;
-                    c.getContext('2d').drawImage(img, 0, 0, w, h);
-                    c.toBlob(function (b) { b ? res(new File([b], 'paste.jpg', { type: 'image/jpeg' })) : rej(new Error('compress')); }, 'image/jpeg', 0.85);
-                  };
-                  img.onerror = function () { URL.revokeObjectURL(url); rej(new Error('load')); };
-                  img.src = url;
-                });
-              } catch (_) { uploadFile = file; }
-            }
-
-            var b64 = await new Promise(function (res, rej) {
-              var fr = new FileReader();
-              fr.onload = function (e) { res(e.target.result.split(',')[1]); };
-              fr.onerror = rej;
-              fr.readAsDataURL(uploadFile);
-            });
-
-            var ext = (uploadFile.type.split('/')[1] || 'png'); if (ext === 'jpeg') ext = 'jpg';
-            var fname = Date.now() + '_paste.' + ext;
-            var path = 'images/uploads/' + fname;
-
-            var resp = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
-              method: 'PUT',
-              headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ message: 'Paste upload: ' + fname, content: b64, branch: 'main' })
-            });
-
-            if (!resp.ok) {
-              var errT = await resp.text().catch(function(){return '';});
-              setPasteStatus('⚠ Failed (' + resp.status + ')' + (errT.trim().indexOf('<')===0 ? ' — server error page' : ''));
-              return;
-            }
-
-            /* Set THIS field's value directly — no Redux guessing */
-            onChange('/' + path);
-            setPasteStatus('✓ Image set');
-            setTimeout(function () { setPasteStatus(''); }, 2500);
-          } catch (err) {
-            setPasteStatus('⚠ ' + (err.message || 'failed'));
-          }
-        }
-
-        /* contentEditable=true is required for the browser to reliably fire
-           native paste events on this box — a plain non-editable div does not
-           consistently receive Ctrl+V across browsers. We block real typing
-           in onKeyDown and wipe any stray content in onInput so it behaves as
-           a paste-only field, never as a real text box. */
-        function onPasteBox(e) {
-          var items = e.clipboardData && e.clipboardData.items;
-          var imgItem = null;
-          if (items) {
-            for (var i = 0; i < items.length; i++) {
-              if (items[i].type.indexOf('image/') === 0) { imgItem = items[i]; break; }
-            }
-          }
-          e.preventDefault();
-          if (imgItem) {
-            var f = imgItem.getAsFile();
-            if (f) handlePastedFile(f);
-          } else {
-            setPasteStatus('⚠ No image in clipboard');
-            setTimeout(function () { setPasteStatus(''); }, 2000);
-          }
-        }
-
-        function onKeyDownBox(e) {
-          /* Allow the paste shortcut itself and Tab; block everything else
-             so the box can't be typed into. */
-          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') return;
-          if (e.key === 'Tab') return;
-          e.preventDefault();
-        }
-
-        s.pasteBoxWrap = {
-          position: 'relative', border: '2px dashed rgba(99,179,237,0.5)', borderRadius: '4px',
-          padding: '10px 12px', margin: '2px 0 8px', fontSize: '12px', color: '#8aa3b8',
-          background: 'rgba(99,179,237,0.05)', minHeight: '20px', textAlign: 'center'
-        };
-        s.pasteBoxLabel = { pointerEvents: 'none' };
-        s.pasteBoxHit = {
-          position: 'absolute', inset: 0, cursor: 'text', outline: 'none'
+          box:    { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: '6px', padding: '7px 9px', fontSize: '12px', border: '1px dashed rgba(120,120,120,0.6)', borderRadius: '3px', fontFamily: 'sans-serif', background: 'rgba(0,0,0,0.02)' },
+          status: { fontSize: '11px', color: '#2f855a', marginTop: '3px', minHeight: '14px', fontFamily: 'sans-serif' },
         };
 
         return R.createElement('div', { style: s.wrap },
@@ -348,21 +330,16 @@
           R.createElement('button', { type: 'button', style: s.choose,
             onClick: function () { openMedia && openMedia({ forImage: true, allowMultiple: false }); }
           }, resolvedSrc ? 'Choose different image' : 'Choose an image'),
-          R.createElement('div', { style: s.pasteBoxWrap, title: 'Click here, then press Ctrl+V to paste an image from your clipboard' },
-            R.createElement('span', { style: s.pasteBoxLabel }, pasteStatus || '📋 Click here, then Ctrl+V to paste an image'),
-            /* Empty contentEditable overlay — never given React children, so its
-               DOM content can never drift out of sync with what React renders. */
-            R.createElement('div', {
-              ref: pasteBoxRef,
-              style: s.pasteBoxHit,
-              tabIndex: 0,
-              contentEditable: true,
-              suppressContentEditableWarning: true,
-              onPaste: onPasteBox,
-              onKeyDown: onKeyDownBox,
-              onClick: function (e) { e.currentTarget.focus(); }
-            })
-          ),
+          R.createElement('input', {
+            type: 'text',
+            placeholder: 'Click here & Ctrl+V to paste an image, or paste a link (Enter saves it permanently)',
+            style: s.box,
+            autoComplete: 'off',
+            onPaste: handleBoxPaste,
+            onBlur: handleBoxUrl,
+            onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); handleBoxUrl(e); e.target.value = ''; } }
+          }),
+          pasteStatus && R.createElement('div', { style: s.status }, pasteStatus),
           resolvedSrc && R.createElement('button', { type: 'button', style: s.remove,
             onClick: function () { onChange(null); setResolvedSrc(null); }
           }, 'Remove image')
@@ -377,10 +354,8 @@
         return src ? window.React.createElement('img', { src: src, style: { maxWidth: '100%' } }) : null;
       }
 
-      window.CMS.registerWidget('lc_image', ImageControl, ImagePreview);
-      console.log('[LC Admin] custom image widget registered as lc_image');
-      window._lcWidgetReady = true;
-      if (window.maybeInitCMS) window.maybeInitCMS();
+      window.CMS.registerWidget('image', ImageControl, ImagePreview);
+      console.log('[LC Admin] custom image widget registered');
     }
 
     register();
@@ -437,46 +412,16 @@
       /* Use live-detected repo if Decap has revealed it, else the known repo */
       var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
 
-      /* Compress large images before upload — full-res PNG screenshots can exceed
-         the gateway payload limit. Cap at 2000px, export JPEG 0.85 (keeps PNG only
-         if small). GIFs pass through untouched to preserve animation. */
-      var uploadFile = file;
-      if (file.type !== 'image/gif' && file.size > 900 * 1024) {
-        try {
-          uploadFile = await new Promise(function(res, rej) {
-            var img = new Image();
-            var url = URL.createObjectURL(file);
-            img.onload = function() {
-              URL.revokeObjectURL(url);
-              var MAX_DIM = 2000;
-              var w = img.naturalWidth, h = img.naturalHeight;
-              if (w > MAX_DIM || h > MAX_DIM) {
-                var s = MAX_DIM / Math.max(w, h);
-                w = Math.round(w * s); h = Math.round(h * s);
-              }
-              var c = document.createElement('canvas');
-              c.width = w; c.height = h;
-              c.getContext('2d').drawImage(img, 0, 0, w, h);
-              c.toBlob(function(b) {
-                b ? res(new File([b], (file.name || 'paste').replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' })) : rej(new Error('compress failed'));
-              }, 'image/jpeg', 0.85);
-            };
-            img.onerror = function() { URL.revokeObjectURL(url); rej(new Error('img load failed')); };
-            img.src = url;
-          });
-        } catch(_) { uploadFile = file; /* fall back to original */ }
-      }
-
       /* Read file as base64 */
       var b64 = await new Promise(function(res, rej) {
         var fr = new FileReader();
         fr.onload = function(e) { res(e.target.result.split(',')[1]); };
         fr.onerror = rej;
-        fr.readAsDataURL(uploadFile);
+        fr.readAsDataURL(file);
       });
 
       /* Upload to GitHub via git-gateway */
-      var fname = Date.now() + '_' + (uploadFile.name || 'paste.png').replace(/[^a-zA-Z0-9._-]/g, '_');
+      var fname = Date.now() + '_' + (file.name || 'paste.png').replace(/[^a-zA-Z0-9._-]/g, '_');
       var path = 'images/uploads/' + fname;
       var resp = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
         method: 'PUT',
@@ -487,11 +432,7 @@
       if (!resp.ok) {
         var err = await resp.text().catch(function() { return ''; });
         var short = '';
-        if (err.trim().indexOf('<') === 0) {
-          short = 'server returned an error page — likely payload too large or session expired';
-        } else {
-          try { short = JSON.parse(err).message || ''; } catch(_) { short = err.slice(0,120); }
-        }
+        try { short = JSON.parse(err).message || ''; } catch(_) { short = err.slice(0,80); }
         toast('⚠ Upload failed (' + resp.status + '): ' + short + '\nRepo used: ' + repo, 8000);
         console.warn('[LC paste] upload failed:', resp.status, err, 'repo:', repo);
         return false;
@@ -552,9 +493,7 @@
       if (!imgItem) return;
 
       /* Only act when NOT typing in a text field or rich-text editor.
-         Decap's markdown editor is a nested contenteditable, so check ancestors too.
-         This also skips the widget's own paste box (contentEditable=true),
-         which handles its own paste event. */
+         Decap's markdown editor is a nested contenteditable, so check ancestors too. */
       var active = document.activeElement;
       if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' ||
           active.getAttribute('contenteditable') === 'true' ||
@@ -1056,8 +995,6 @@
       });
 
       console.log('[LC Admin] preview templates registered (gallery, stills, traditional_art, wips)');
-      window._lcPreviewsReady = true;
-      if (window.maybeInitCMS) window.maybeInitCMS();
     }
     registerPreviews();
   })();
