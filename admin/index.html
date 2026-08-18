@@ -105,7 +105,6 @@
   })();
   </script>
 
-  <script>window.CMS_MANUAL_INIT = true;</script>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
   <!-- ── Custom image widget: uses getAsset (correct blob URL) + GitHub fallback ── -->
@@ -268,37 +267,10 @@
       } catch (_) {}
     }
 
-    /* Decap 3.x doesn't reliably expose window.React. Find React wherever it lives. */
-    function getReact() {
-      if (window.React && window.React.createElement) return window.React;
-      var c = window.CMS;
-      if (c) {
-        if (c.React && c.React.createElement) return c.React;
-        try { if (c.default && c.default.React && c.default.React.createElement) return c.default.React; } catch (_) {}
-      }
-      return null;
-    }
-
-    /* Register custom image widget */
-    var _regTries = 0;
+    /* Register custom image widget — simple, like the original working file */
     function register() {
-      var R = getReact();
-      if (!window.CMS || !R) {
-        if (++_regTries < 40) return setTimeout(register, 100);
-        /* React never appeared — register a minimal widget so fields still work and the CMS boots */
-        if (!window._lcRegistered && window.CMS) {
-          window._lcRegistered = true;
-          try {
-            window.CMS.registerWidget('lc_image', 'string');
-            console.error('[LC Admin] React not found after 4s — registered lc_image as a plain string field so the CMS can boot. Paste/link box unavailable until this is resolved.');
-          } catch (e) { console.error('[LC Admin] fallback registerWidget failed:', e); }
-          window._lcWidgetDone = true;
-          if (window._lcTryInit) window._lcTryInit();
-        }
-        return;
-      }
-      if (window._lcRegistered) return;
-      window._lcRegistered = true;
+      if (!window.CMS || !window.React) return setTimeout(register, 150);
+      var R = window.React;
 
       function ImageControl(props) {
         var value      = props.value;
@@ -461,18 +433,8 @@
         return src ? R.createElement('img', { src: src, style: { maxWidth: '100%' } }) : null;
       }
 
-      try {
-        window.CMS.registerWidget('lc_image', ImageControl, ImagePreview);
-        console.log('[LC Admin] lc_image widget registered');
-      } catch (err) {
-        console.error('[LC Admin] registerWidget threw:', err);
-        /* Last resort: register a minimal string-based control so fields still work */
-        try {
-          window.CMS.registerWidget('lc_image', 'string');
-        } catch (_) {}
-      }
-      window._lcWidgetDone = true;
-      if (window._lcTryInit) window._lcTryInit();
+      window.CMS.registerWidget('image', ImageControl, ImagePreview);
+      console.log('[LC Admin] custom image widget registered');
     }
 
     register();
@@ -1117,41 +1079,8 @@
       });
 
       console.log('[LC Admin] preview templates registered (gallery, stills, traditional_art, wips)');
-      window._lcPreviewsDone = true;
-      if (window._lcTryInit) window._lcTryInit();
     }
     registerPreviews();
-  })();
-  </script>
-
-  <!-- ── Init gate: boot CMS as soon as the custom widget is registered ── -->
-  <script>
-  (function () {
-    window._lcInitCalled = false;
-    window._lcTryInit = function () {
-      if (window._lcInitCalled) return;
-      /* Only the widget is required to boot. Preview templates register independently
-         and attach whenever they're ready — waiting on them just delays the whole UI. */
-      if (!window._lcWidgetDone) return;
-      if (typeof window.initCMS !== 'function') return;
-      window._lcInitCalled = true;
-      window.initCMS();
-      console.log('[LC Admin] initCMS() called');
-    };
-    /* Safety net: only force-boot if the widget registration genuinely never completed.
-       Never boot before the widget is ready — doing so causes 'No control for lc_image'. */
-    setTimeout(function () {
-      if (window._lcInitCalled) return;
-      if (typeof window.initCMS !== 'function') return;
-      if (window._lcWidgetDone) {
-        window._lcInitCalled = true;
-        window.initCMS();
-        console.warn('[LC Admin] initCMS() forced by fallback (widget was ready)');
-      } else {
-        console.error('[LC Admin] custom widget never registered — check the widget script for a thrown error. NOT booting to avoid lc_image errors.');
-      }
-    }, 4000);
-    window._lcTryInit();
   })();
   </script>
 
