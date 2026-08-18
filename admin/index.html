@@ -105,6 +105,25 @@
   })();
   </script>
 
+  <!-- config.yml references custom widgets (lc_image) that must be registered
+       BEFORE Decap validates/renders the config, or every field using them
+       permanently fails with "No control for widget". Block auto-init and
+       start CMS ourselves once both custom registration scripts finish. -->
+  <script>
+    window.CMS_MANUAL_INIT = true;
+    window._lcWidgetReady = false;
+    window._lcPreviewsReady = false;
+    window._lcInitDone = false;
+    window.maybeInitCMS = function () {
+      if (window._lcInitDone) return;
+      if (window._lcWidgetReady && window._lcPreviewsReady && window.CMS && window.CMS.init) {
+        window._lcInitDone = true;
+        window.CMS.init();
+        console.log('[LC Admin] CMS.init() called after custom widget + preview registration');
+      }
+    };
+  </script>
+
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
   <!-- ── Custom image widget: uses getAsset (correct blob URL) + GitHub fallback ── -->
@@ -360,6 +379,8 @@
 
       window.CMS.registerWidget('lc_image', ImageControl, ImagePreview);
       console.log('[LC Admin] custom image widget registered as lc_image');
+      window._lcWidgetReady = true;
+      if (window.maybeInitCMS) window.maybeInitCMS();
     }
 
     register();
@@ -1035,6 +1056,8 @@
       });
 
       console.log('[LC Admin] preview templates registered (gallery, stills, traditional_art, wips)');
+      window._lcPreviewsReady = true;
+      if (window.maybeInitCMS) window.maybeInitCMS();
     }
     registerPreviews();
   })();
