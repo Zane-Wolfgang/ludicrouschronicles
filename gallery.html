@@ -1305,8 +1305,16 @@ function openFromHash() {
   const hashLower = hash.toLowerCase();
   let found = false;
   document.querySelectorAll('.gallery-item:not(.locked)').forEach(item => {
+    if (found) return;
     const title = item.querySelector('.gallery-overlay-title')?.textContent?.trim();
     if (title && title.toLowerCase() === hashLower) {
+      /* Trigger the item's own onclick — this correctly calls openSlideshow for
+         multi-image sets (with arrows) or openLightbox for singles. */
+      const onclickAttr = item.getAttribute('onclick');
+      if (onclickAttr) {
+        try { new Function(onclickAttr)(); found = true; return; } catch(_) {}
+      }
+      /* Fallback: open directly if no onclick attribute */
       const img = item.querySelector('img');
       const type = item.querySelector('.gallery-overlay-type')?.textContent?.trim();
       if (img) { openLightbox(img.src, title, type || ''); found = true; }
