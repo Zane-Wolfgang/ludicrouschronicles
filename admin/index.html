@@ -116,10 +116,10 @@
     window._lcInitDone = false;
     window.maybeInitCMS = function () {
       if (window._lcInitDone) return;
-      if (window._lcWidgetReady && window._lcPreviewsReady && window.CMS && window.CMS.init) {
+      if (window._lcWidgetReady && window._lcPreviewsReady && window.CMS && typeof window.initCMS === 'function') {
         window._lcInitDone = true;
-        window.CMS.init();
-        console.log('[LC Admin] CMS.init() called after custom widget + preview registration');
+        window.initCMS();
+        console.log('[LC Admin] initCMS() called after custom widget + preview registration');
       }
     };
   </script>
