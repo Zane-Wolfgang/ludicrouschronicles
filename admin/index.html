@@ -107,339 +107,6 @@
 
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
-  <!-- ── Custom image widget: uses getAsset (correct blob URL) + GitHub fallback ── -->
-  <script>
-  (function () {
-    /* fetchFromGitHub: for images committed to GitHub but not yet on CDN */
-    var _repoP = null;
-    function getRepo() {
-      if (_repoP) return _repoP;
-      _repoP = (async function () {
-        /* Use live-detected repo if available, else the known repo */
-        if (window._lcRepo) return window._lcRepo;
-        return 'Zane-Wolfgang/ludicrouschronicles';
-        /* Below: legacy fallback paths, unreachable but kept for reference */
-        var saved = localStorage.getItem('_lc_gh_repo');
-        if (saved && saved.includes('/')) return saved;
-
-        /* 2. Decap backend object paths (works in some Decap versions) */
-        var paths = [
-          function(){return window.CMS.backend.api.repo;},
-          function(){return window.CMS.backend.implementation.api.repo;},
-          function(){var u=window.CMS.backend.api.repoURL;return u&&(/repos\/([^\/\s]+\/[^\/\s]+)/.exec(u)||[])[1]||null;},
-          function(){var u=window.CMS.backend.implementation.api.repoURL;return u&&(/repos\/([^\/\s]+\/[^\/\s]+)/.exec(u)||[])[1]||null;},
-        ];
-        for(var p of paths){try{var r=p();if(r&&r.includes('/'))return r;}catch(_){}}
-
-        /* 3. Silent fail — no prompt (prompt blocks UI on every form re-render) */
-        return null;
-      })();
-      return _repoP;
-    }
-
-    async function fetchFromGitHub(src) {
-      try {
-        var user=window.netlifyIdentity&&window.netlifyIdentity.currentUser();
-        if(!user)return null;
-        var token=await user.jwt();
-        var repo=await getRepo();
-        if(!repo)return null;
-        var path=src.split('?')[0];
-        try{path=new URL(src,location.href).pathname;}catch(_){}
-        path=path.replace(/^\//,'');
-        var resp=await fetch('/.netlify/git/github/repos/'+repo+'/contents/'+path,{headers:{Authorization:'Bearer '+token}});
-        if(!resp.ok)return null;
-        var data=await resp.json();
-        if(!data.content)return null;
-        var bin=atob(data.content.replace(/\n/g,''));
-        var bytes=new Uint8Array(bin.length);
-        for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
-        var ext=path.split('.').pop().toLowerCase();
-        var mime={jpg:'jpeg',jpeg:'jpeg',png:'png',gif:'gif',webp:'webp',svg:'svg+xml'}[ext]||'png';
-        return URL.createObjectURL(new Blob([bytes],{type:'image/'+mime}));
-      }catch(_){return null;}
-    }
-
-    /* uploadImageToRepo: commit a File to images/uploads/ and return its repo path */
-    async function uploadImageToRepo(file) {
-      var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
-      if (!user) throw new Error('Not logged in');
-      var token = await user.jwt();
-      var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
-      var b64 = await new Promise(function (res, rej) {
-        var fr = new FileReader();
-        fr.onload = function (e) { res(e.target.result.split(',')[1]); };
-        fr.onerror = rej;
-        fr.readAsDataURL(file);
-      });
-      var fname = Date.now() + '_' + (file.name || 'paste.png').replace(/[^a-zA-Z0-9._-]/g, '_');
-      var path = 'images/uploads/' + fname;
-      var resp = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
-        method: 'PUT',
-        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: 'Upload: ' + fname, content: b64, branch: 'main' })
-      });
-      if (!resp.ok) {
-        var err = await resp.text().catch(function () { return ''; });
-        var short = '';
-        try { short = JSON.parse(err).message || ''; } catch (_) { short = err.slice(0, 80); }
-        throw new Error('Upload failed (' + resp.status + ') ' + short);
-      }
-      return '/' + path;
-    }
-
-    /* downloadUrlToRepo: fetch an external image URL and commit it, returning the repo path.
-       Tries direct fetch first, then a canvas capture, so expiring links (Discord etc.)
-       get saved permanently before they break. */
-    async function downloadUrlToRepo(url) {
-      var blob = null;
-      /* 1. Direct fetch — works when the host allows cross-origin reads */
-      try {
-        var r = await fetch(url, { mode: 'cors' });
-        if (r.ok) blob = await r.blob();
-      } catch (_) {}
-      /* 2. Canvas capture fallback — works when the image renders but blocks fetch */
-      if (!blob) {
-        blob = await new Promise(function (res) {
-          var img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.onload = function () {
-            try {
-              var c = document.createElement('canvas');
-              c.width = img.naturalWidth; c.height = img.naturalHeight;
-              c.getContext('2d').drawImage(img, 0, 0);
-              c.toBlob(function (b) { res(b || null); }, 'image/png');
-            } catch (_) { res(null); }
-          };
-          img.onerror = function () { res(null); };
-          img.src = url;
-          setTimeout(function () { res(null); }, 15000);
-        });
-      }
-      if (!blob) throw new Error('could not download (link may block copying or already be dead)');
-      var ext = (blob.type.split('/')[1] || 'png'); if (ext === 'jpeg') ext = 'jpg';
-      var file = new File([blob], 'link_' + Date.now() + '.' + ext, { type: blob.type || 'image/png' });
-      return uploadImageToRepo(file);
-    }
-
-    /* ── Auto-rescue support for existing external URLs ── */
-    /* Only true when the full entry editor is open (hash .../entries/... or /new),
-       so rescue never fires on the entry list or the side preview pane. */
-    function inOpenEditor() {
-      var h = window.location.hash || '';
-      return /\/collections\/[^\/]+\/(new$|entries\/)/.test(h);
-    }
-    /* Persisted per-URL guard: a URL is attempted at most once, ever — survives reloads,
-       so failed/dead links aren't re-hammered and successes aren't re-committed. */
-    function rescueSeen(url) {
-      try {
-        var seen = JSON.parse(localStorage.getItem('_lc_rescue_seen') || '{}');
-        return !!seen[url];
-      } catch (_) { return false; }
-    }
-    function markRescueSeen(url) {
-      try {
-        var seen = JSON.parse(localStorage.getItem('_lc_rescue_seen') || '{}');
-        seen[url] = 1;
-        var keys = Object.keys(seen);
-        if (keys.length > 1000) { delete seen[keys[0]]; }
-        localStorage.setItem('_lc_rescue_seen', JSON.stringify(seen));
-      } catch (_) {}
-    }
-    function isForeignUrl(u) {
-      if (!u || typeof u !== 'string' || u.indexOf('http') !== 0) return false;
-      try {
-        var h = new URL(u).hostname;
-      } catch (_) { return false; }
-      /* Already ours, or an intentional/stable thumbnail host — leave alone */
-      if (/netlify|githubusercontent/i.test(h)) return false;
-      if (/youtube|ytimg|vimeo|vumbnail/i.test(h)) return false;
-      return true;
-    }
-    function logRescue(status, url, reason, label) {
-      try {
-        var log = JSON.parse(localStorage.getItem('_lc_rescue_log') || '[]');
-        log = log.filter(function (e) { return e.url !== url; });
-        log.push({ t: Date.now(), url: url, status: status, reason: reason || '', field: label || '' });
-        if (log.length > 200) log = log.slice(log.length - 200);
-        localStorage.setItem('_lc_rescue_log', JSON.stringify(log));
-        window.dispatchEvent(new CustomEvent('lc-rescue-updated'));
-      } catch (_) {}
-    }
-
-    /* Register custom image widget — simple, like the original working file */
-    function register() {
-      if (!window.CMS || !window.React) return setTimeout(register, 150);
-      var R = window.React;
-
-      function ImageControl(props) {
-        var value      = props.value;
-        var onChange   = props.onChange;
-        var openMedia  = props.openMediaLibrary;
-        var getAsset   = props.getAsset;
-
-        /* Resolve display URL — getAsset handles blob URLs for current-session uploads */
-        var _s = R.useState(null); var resolvedSrc = _s[0]; var setResolvedSrc = _s[1];
-        var _st = R.useState(''); var pasteStatus = _st[0]; var setPasteStatus = _st[1];
-
-        /* Paste an image (Ctrl+V) into the box → upload → set this field.
-           If the pasted content is text (a URL) instead, let it fall through to onChange. */
-        function handleBoxPaste(e) {
-          var items = (e.clipboardData && e.clipboardData.items) || [];
-          var imgItem = null;
-          for (var i = 0; i < items.length; i++) {
-            if (items[i].type && items[i].type.indexOf('image/') === 0) { imgItem = items[i]; break; }
-          }
-          if (!imgItem) return; /* not an image — treat as URL text via onChange */
-          e.preventDefault();
-          var file = imgItem.getAsFile();
-          if (!file) return;
-          setPasteStatus('Uploading…');
-          uploadImageToRepo(file).then(function (path) {
-            onChange(path);
-            setPasteStatus('✓ Uploaded');
-            setTimeout(function () { setPasteStatus(''); }, 2500);
-          }).catch(function (err) {
-            setPasteStatus('⚠ ' + err.message);
-            setTimeout(function () { setPasteStatus(''); }, 6000);
-          });
-          if (e.target) e.target.value = '';
-        }
-
-        /* Typed or pasted URL → download it to the repo (so it can't expire), then set the field.
-           If it can't be saved (CORS-blocked or dead), fall back to the raw URL with a warning. */
-        function handleBoxUrl(e) {
-          var v = (e.target && e.target.value || '').trim();
-          if (!v) return;
-          if (e.target) e.target.value = '';
-          /* Already a local/repo path — just set it, no download needed */
-          if (v.charAt(0) === '/' || v.indexOf('githubusercontent') !== -1) {
-            onChange(v); setPasteStatus('✓ Link set'); setTimeout(function () { setPasteStatus(''); }, 2000); return;
-          }
-          setPasteStatus('Saving link to your repo…');
-          downloadUrlToRepo(v).then(function (path) {
-            onChange(path);
-            setPasteStatus('✓ Saved permanently');
-            setTimeout(function () { setPasteStatus(''); }, 3000);
-          }).catch(function (err) {
-            onChange(v); /* keep the raw URL so nothing is lost */
-            setPasteStatus('⚠ Kept as link — ' + err.message);
-            setTimeout(function () { setPasteStatus(''); }, 7000);
-          });
-        }
-
-        R.useEffect(function () {
-          if (!value) { setResolvedSrc(null); return; }
-          var cancelled = false;
-
-          /* 1. getAsset: blob URL for current-session draft files */
-          var src = null;
-          try {
-            var asset = getAsset(value);
-            if (asset) {
-              var str = asset.toString();
-              src = (str && str !== '[object Object]') ? str : (asset.url || null);
-            }
-          } catch (_) {}
-
-          if (src && src.startsWith('blob:')) {
-            setResolvedSrc(src); return;
-          }
-
-          /* 2. CDN URL (might 404 before deploy) — try it, fall back to GitHub */
-          if (src) { setResolvedSrc(src); }
-
-          /* 3. GitHub API fallback for files not yet on CDN */
-          var cdnUrl = src || value;
-          if (cdnUrl && cdnUrl.includes('/images/')) {
-            fetchFromGitHub(cdnUrl).then(function (blobUrl) {
-              if (!cancelled && blobUrl) setResolvedSrc(blobUrl);
-            });
-          }
-
-          /* 4. Auto-rescue: if this field holds a foreign URL (e.g. Discord), download it
-             into the repo now and rewrite the field to the permanent path — before it dies.
-             Only runs in the OPEN EDITOR (not the entry list or preview pane), and only
-             once per URL ever (persisted), so it never mass-commits or re-hammers on reload. */
-          if (isForeignUrl(value) && inOpenEditor() && !rescueSeen(value) &&
-              window.netlifyIdentity && window.netlifyIdentity.currentUser()) {
-            markRescueSeen(value);
-            var label = '';
-            try {
-              var f = props.field;
-              if (f && f.get) label = f.get('label') || f.get('name') || '';
-            } catch (_) {}
-            var rescuing = value;
-            setPasteStatus('Saving existing image to your repo…');
-            window._lcRescueInFlight = (window._lcRescueInFlight || 0) + 1;
-            downloadUrlToRepo(rescuing).then(function (path) {
-              logRescue('ok', rescuing, '', label);
-              if (!cancelled) {
-                onChange(path);
-                setPasteStatus('✓ Saved to repo — remember to Save the entry');
-                setTimeout(function () { setPasteStatus(''); }, 4000);
-              }
-            }).catch(function (err) {
-              logRescue('fail', rescuing, err.message, label);
-              if (!cancelled) {
-                setPasteStatus('⚠ Could not save — ' + err.message);
-                setTimeout(function () { setPasteStatus(''); }, 6000);
-              }
-            }).then(function () {
-              window._lcRescueInFlight = Math.max(0, (window._lcRescueInFlight || 1) - 1);
-              window.dispatchEvent(new CustomEvent('lc-rescue-updated'));
-            });
-          }
-
-          return function () { cancelled = true; };
-        }, [value]);
-
-        /* Styles matching Decap's default image widget appearance */
-        var s = {
-          wrap:   { fontFamily: 'sans-serif' },
-          img:    { maxWidth: '100%', maxHeight: '250px', objectFit: 'contain', display: 'block', marginBottom: '8px', border: '1px solid rgba(0,0,0,0.15)' },
-          choose: { background: 'none', border: 'none', cursor: 'pointer', color: '#63b3ed', padding: '4px 0', fontSize: '13px', display: 'block', textAlign: 'left' },
-          remove: { background: 'none', border: 'none', cursor: 'pointer', color: '#fc8181', padding: '4px 0', fontSize: '13px', display: 'block', textAlign: 'left' },
-          box:    { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: '6px', padding: '7px 9px', fontSize: '12px', border: '1px dashed rgba(120,120,120,0.6)', borderRadius: '3px', fontFamily: 'sans-serif', background: 'rgba(0,0,0,0.02)' },
-          status: { fontSize: '11px', color: '#2f855a', marginTop: '3px', minHeight: '14px', fontFamily: 'sans-serif' },
-        };
-
-        return R.createElement('div', { style: s.wrap },
-          resolvedSrc && R.createElement('img', { src: resolvedSrc, style: s.img }),
-          R.createElement('button', { type: 'button', style: s.choose,
-            onClick: function () { openMedia && openMedia({ forImage: true, allowMultiple: false }); }
-          }, resolvedSrc ? 'Choose different image' : 'Choose an image'),
-          R.createElement('input', {
-            type: 'text',
-            placeholder: 'Click here & Ctrl+V to paste an image, or paste a link (Enter saves it permanently)',
-            style: s.box,
-            autoComplete: 'off',
-            onPaste: handleBoxPaste,
-            onBlur: handleBoxUrl,
-            onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); handleBoxUrl(e); e.target.value = ''; } }
-          }),
-          pasteStatus && R.createElement('div', { style: s.status }, pasteStatus),
-          resolvedSrc && R.createElement('button', { type: 'button', style: s.remove,
-            onClick: function () { onChange(null); setResolvedSrc(null); }
-          }, 'Remove image')
-        );
-      }
-
-      /* Preview for the right-side pane */
-      function ImagePreview(props) {
-        var value = props.value;
-        var asset = value && props.getAsset ? props.getAsset(value) : null;
-        var src = asset ? (asset.toString() !== '[object Object]' ? asset.toString() : (asset.url||'')) : '';
-        return src ? R.createElement('img', { src: src, style: { maxWidth: '100%' } }) : null;
-      }
-
-      window.CMS.registerWidget('image', ImageControl, ImagePreview);
-      console.log('[LC Admin] custom image widget registered');
-    }
-
-    register();
-  })();
-  </script>
 
   <!-- ── Thumbnail helpers: paste screenshot, YouTube/Vimeo auto-thumb, video frame extract ── -->
   <script>
@@ -956,131 +623,119 @@
   </script>
 
 
-  <!-- ── Preview Templates: image shows immediately via getAsset blob URL ── -->
+
+  <!-- ── Rescue engine: saves existing external image URLs (Discord etc.) into the repo ── -->
   <script>
   (function () {
-    function registerPreviews() {
-      var R = (function () {
-        if (window.React && window.React.createElement) return window.React;
-        var c = window.CMS;
-        if (c) { if (c.React && c.React.createElement) return c.React; try { if (c.default && c.default.React && c.default.React.createElement) return c.default.React; } catch (_) {} }
-        return null;
-      })();
-      if (!window.CMS || !R) return setTimeout(registerPreviews, 150);
-
-      /* Safely get a value — handles Immutable.js Map or plain object */
-      function get(obj, key) {
-        if (!obj) return undefined;
-        return typeof obj.get === 'function' ? obj.get(key) : obj[key];
-      }
-
-      /* Safely get nested value — uses entry.getIn if available (Decap 3.x) */
-      function getField(entry, field) {
-        try {
-          if (typeof entry.getIn === 'function') return entry.getIn(['data', field]);
-          return get(get(entry, 'data'), field);
-        } catch(e) { return undefined; }
-      }
-
-      /* Resolve image to URL:
-         - blob URL  if just uploaded this session (via AssetProxy.toString / .url)
-         - CDN URL   if already deployed
-         - raw path  as last resort */
-      function imgSrc(props, key) {
-        var val = getField(props.entry, key);
-        if (!val || typeof val !== 'string') return null;
-        try {
-          var asset = props.getAsset(val);
-          if (!asset) return val;
-          /* AssetProxy.toString() is the canonical way — but guard against bare object */
-          var str = asset.toString();
-          if (str && str !== '[object Object]') return str;
-          /* Fallback: plain object with .url or .path */
-          if (asset.url) return asset.url;
-          if (typeof asset.get === 'function') {
-            return asset.get('url') || asset.get('path') || val;
-          }
-          return val;
-        } catch(e) { return val; }
-      }
-
-      var s = {
-        wrap:  { padding: '1rem', fontFamily: 'Georgia, serif', background: '#111', minHeight: '100vh', color: '#c9a84c' },
-        title: { fontSize: '1.4rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8c96a' },
-        meta:  { fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#7a7260', marginBottom: '1rem' },
-        grid:  { display: 'flex', flexWrap: 'wrap', gap: '6px' },
-        img:   { maxWidth: '180px', maxHeight: '180px', objectFit: 'cover', border: '1px solid rgba(201,168,76,0.3)' },
-        img1:  { maxWidth: '100%', maxHeight: '260px', objectFit: 'contain', border: '1px solid rgba(201,168,76,0.3)', marginBottom: '8px' }
-      };
-
-      /* ── Gallery ── */
-      CMS.registerPreviewTemplate('gallery', function(props) {
-        var title = getField(props.entry, 'title');
-        var type  = getField(props.entry, 'type');
-        var tier  = getField(props.entry, 'tier');
-        var imgs  = ['image','image2','image3','image4']
-          .map(function(k){ return imgSrc(props, k); }).filter(Boolean);
-        return R.createElement('div', { style: s.wrap },
-          title && R.createElement('h2', { style: s.title }, title),
-          R.createElement('div', { style: s.meta }, [type, tier].filter(Boolean).join(' · ')),
-          imgs.length > 0 && R.createElement('div', null,
-            R.createElement('img', { src: imgs[0], style: s.img1 }),
-            imgs.length > 1 && R.createElement('div', { style: s.grid },
-              imgs.slice(1).map(function(src,i){ return R.createElement('img',{key:i,src:src,style:s.img}); })
-            )
-          )
-        );
-      });
-
-      /* ── Stills ── */
-      CMS.registerPreviewTemplate('stills', function(props) {
-        var title = getField(props.entry, 'title');
-        var game  = getField(props.entry, 'game');
-        var fields = ['image'];
-        for (var n=2; n<=20; n++) fields.push('image'+n);
-        var imgs = fields.map(function(k){ return imgSrc(props, k); }).filter(Boolean);
-        return R.createElement('div', { style: s.wrap },
-          title && R.createElement('h2', { style: s.title }, title),
-          game && R.createElement('div', { style: s.meta }, game),
-          imgs.length > 0 && R.createElement('div', null,
-            R.createElement('img', { src: imgs[0], style: s.img1 }),
-            imgs.length > 1 && R.createElement('div', { style: s.grid },
-              imgs.slice(1).map(function(src,i){ return R.createElement('img',{key:i,src:src,style:s.img}); })
-            )
-          )
-        );
-      });
-
-      /* ── Traditional Art ── */
-      CMS.registerPreviewTemplate('traditional_art', function(props) {
-        var title = getField(props.entry, 'title');
-        var fields = ['image'];
-        for (var n=2; n<=10; n++) fields.push('image'+n);
-        var imgs = fields.map(function(k){ return imgSrc(props, k); }).filter(Boolean);
-        return R.createElement('div', { style: s.wrap },
-          title && R.createElement('h2', { style: s.title }, title),
-          imgs.length > 0 && R.createElement('div', null,
-            R.createElement('img', { src: imgs[0], style: s.img1 }),
-            imgs.length > 1 && R.createElement('div', { style: s.grid },
-              imgs.slice(1).map(function(src,i){ return R.createElement('img',{key:i,src:src,style:s.img}); })
-            )
-          )
-        );
-      });
-
-      /* ── WIPs & Sketches ── */
-      CMS.registerPreviewTemplate('wips', function(props) {
-        var title = getField(props.entry, 'title');
-        var src   = imgSrc(props, 'image');
-        return R.createElement('div', { style: s.wrap },
-          title && R.createElement('h2', { style: s.title }, title),
-          src && R.createElement('img', { src: src, style: s.img1 })
-        );
-      });
-
-      console.log('[LC Admin] preview templates registered (gallery, stills, traditional_art, wips)');
+    function seen(u) { try { return !!(JSON.parse(localStorage.getItem('_lc_rescue_seen') || '{}')[u]); } catch (_) { return false; } }
+    function markSeen(u) { try { var s = JSON.parse(localStorage.getItem('_lc_rescue_seen') || '{}'); s[u] = 1; localStorage.setItem('_lc_rescue_seen', JSON.stringify(s)); } catch (_) {} }
+    function logRescue(status, url, reason, label) {
+      try {
+        var log = JSON.parse(localStorage.getItem('_lc_rescue_log') || '[]');
+        log = log.filter(function (e) { return e.url !== url; });
+        log.push({ t: Date.now(), url: url, status: status, reason: reason || '', field: label || '' });
+        if (log.length > 200) log = log.slice(log.length - 200);
+        localStorage.setItem('_lc_rescue_log', JSON.stringify(log));
+        window.dispatchEvent(new CustomEvent('lc-rescue-updated'));
+      } catch (_) {}
     }
-    registerPreviews();
+    function isForeignUrl(u) {
+      if (!u || typeof u !== 'string' || u.indexOf('http') !== 0) return false;
+      var h; try { h = new URL(u).hostname; } catch (_) { return false; }
+      if (/netlify|githubusercontent/i.test(h)) return false;
+      if (/youtube|ytimg|vimeo|vumbnail/i.test(h)) return false;
+      return true;
+    }
+    function inOpenEditor() {
+      var h = window.location.hash || '';
+      return /\/collections\/[^\/]+\/(new$|entries\/)/.test(h);
+    }
+    var IMG_FIELDS = ['image','art','cover','thumbnail','custom_icon'];
+    for (var n = 2; n <= 20; n++) IMG_FIELDS.push('image' + n);
+
+    async function uploadBlob(blob, hintName) {
+      var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+      if (!user) throw new Error('Not logged in');
+      var token = await user.jwt();
+      var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
+      var b64 = await new Promise(function (res, rej) {
+        var fr = new FileReader();
+        fr.onload = function (e) { res(e.target.result.split(',')[1]); };
+        fr.onerror = rej; fr.readAsDataURL(blob);
+      });
+      var ext = (blob.type.split('/')[1] || 'png'); if (ext === 'jpeg') ext = 'jpg';
+      var fname = 'link_' + Date.now() + '_' + (hintName || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 20) + '.' + ext;
+      var path = 'images/uploads/' + fname;
+      var resp = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
+        method: 'PUT',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Rescue: ' + fname, content: b64, branch: 'main' })
+      });
+      if (!resp.ok) {
+        var e = await resp.text().catch(function () { return ''; });
+        var m = ''; try { m = JSON.parse(e).message || ''; } catch (_) { m = e.slice(0, 80); }
+        throw new Error('upload ' + resp.status + ' ' + m);
+      }
+      return '/' + path;
+    }
+    async function downloadUrl(url) {
+      var blob = null;
+      try { var r = await fetch(url, { mode: 'cors' }); if (r.ok) blob = await r.blob(); } catch (_) {}
+      if (!blob) {
+        blob = await new Promise(function (res) {
+          var img = new Image(); img.crossOrigin = 'anonymous';
+          img.onload = function () { try { var c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; c.getContext('2d').drawImage(img, 0, 0); c.toBlob(function (b) { res(b || null); }, 'image/png'); } catch (_) { res(null); } };
+          img.onerror = function () { res(null); };
+          img.src = url; setTimeout(function () { res(null); }, 15000);
+        });
+      }
+      if (!blob) throw new Error('could not download (link may block copying or be dead)');
+      return blob;
+    }
+
+    /* Read the current entry draft's image fields from the Redux store */
+    function draftImageFields() {
+      var out = [];
+      try {
+        var st = window.CMS.store.getState();
+        var data = st.getIn(['entryDraft', 'entry', 'data']);
+        if (!data) return out;
+        IMG_FIELDS.forEach(function (f) {
+          var v = data.get ? data.get(f) : data[f];
+          if (typeof v === 'string' && v) out.push({ field: f, url: v });
+        });
+      } catch (_) {}
+      return out;
+    }
+    function setField(field, value) {
+      try {
+        window.CMS.store.dispatch({ type: 'DRAFT_CHANGE_FIELD', payload: { path: field, value: value, field: { name: field, widget: 'image' } } });
+      } catch (_) {}
+    }
+
+    async function scan() {
+      if (!inOpenEditor()) return;
+      if (!(window.netlifyIdentity && window.netlifyIdentity.currentUser())) return;
+      var fields = draftImageFields();
+      for (var i = 0; i < fields.length; i++) {
+        var f = fields[i];
+        if (!isForeignUrl(f.url) || seen(f.url)) continue;
+        markSeen(f.url);
+        (function (item) {
+          window._lcRescueInFlight = (window._lcRescueInFlight || 0) + 1;
+          downloadUrl(item.url)
+            .then(function (blob) { return uploadBlob(blob, item.field); })
+            .then(function (path) { setField(item.field, path); logRescue('ok', item.url, '', item.field); })
+            .catch(function (err) { logRescue('fail', item.url, err.message, item.field); })
+            .then(function () { window._lcRescueInFlight = Math.max(0, (window._lcRescueInFlight || 1) - 1); window.dispatchEvent(new CustomEvent('lc-rescue-updated')); });
+        })(f);
+      }
+    }
+
+    /* Scan shortly after an editor opens, and whenever the route changes to an editor */
+    window.addEventListener('hashchange', function () { setTimeout(scan, 1500); });
+    setInterval(function () { if (inOpenEditor()) scan(); }, 4000);
+    setTimeout(scan, 3000);
   })();
   </script>
 
