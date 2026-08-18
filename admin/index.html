@@ -8,7 +8,7 @@
   <style>
     /* ── Markdown Help Button ── */
     #md-help-btn {
-      position: fixed; bottom: 1.5rem; left: 1.5rem; z-index: 99999;
+      position: fixed; bottom: 4rem; left: 1.5rem; z-index: 99999;
       width: 36px; height: 36px; border-radius: 50%;
       background: #c9a84c; color: #0a0806; border: none;
       font-family: Georgia, serif; font-size: 16px; font-weight: bold;
@@ -115,7 +115,8 @@
     function getRepo() {
       if (_repoP) return _repoP;
       _repoP = (async function () {
-        /* 1. localStorage (set on first successful prompt — never asks again) */
+        /* Use live-detected repo if available, else the known repo */
+        if (window._lcRepo) return window._lcRepo;
         return 'Zane-Wolfgang/ludicrouschronicles';
         /* Below: legacy fallback paths, unreachable but kept for reference */
         var saved = localStorage.getItem('_lc_gh_repo');
@@ -261,6 +262,7 @@
        No UI automation needed — bypasses Decap's media library entirely. */
 
     function _getRepo() {
+      if (window._lcRepo) return window._lcRepo;
       return 'Zane-Wolfgang/ludicrouschronicles';
       /* Below: legacy fallback paths, unreachable but kept for reference */
       /* 1. Captured from Decap's own fetch calls */
@@ -286,8 +288,8 @@
       if (!user) { toast('⚠ Not logged in', 3000); return false; }
       var token = await user.jwt();
 
-      /* Get repo */
-      var repo = 'Zane-Wolfgang/ludicrouschronicles';
+      /* Use live-detected repo if Decap has revealed it, else the known repo */
+      var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
 
       /* Read file as base64 */
       var b64 = await new Promise(function(res, rej) {
@@ -308,8 +310,10 @@
 
       if (!resp.ok) {
         var err = await resp.text().catch(function() { return ''; });
-        toast('⚠ Upload failed (' + resp.status + ')', 4000);
-        console.warn('[LC paste] upload failed:', resp.status, err);
+        var short = '';
+        try { short = JSON.parse(err).message || ''; } catch(_) { short = err.slice(0,80); }
+        toast('⚠ Upload failed (' + resp.status + '): ' + short + '\nRepo used: ' + repo, 8000);
+        console.warn('[LC paste] upload failed:', resp.status, err, 'repo:', repo);
         return false;
       }
 
@@ -530,7 +534,7 @@
       var token = await user.jwt();
 
       /* Get repo */
-      var repo = 'Zane-Wolfgang/ludicrouschronicles';
+      var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
 
       /* Scan all index JSONs for external URLs */
       var indexes = ['gallery-index','stills-index','traditional-art-index','wips-index','content-index','short-stories-index'];
@@ -625,7 +629,11 @@
             log((i+1) + '/' + found.length + ': ✓ ' + item.title + ' → /' + path);
           } else {
             failed++;
-            log((i+1) + '/' + found.length + ': ⚠ Upload failed for ' + item.title);
+            var upErrText = await upRes.text().catch(function(){return '';});
+            var upShort = '';
+            try { upShort = JSON.parse(upErrText).message || ''; } catch(_) { upShort = upErrText.slice(0,80); }
+            log((i+1) + '/' + found.length + ': ⚠ ' + item.title + ' — ' + upRes.status + ' ' + upShort + '\nRepo: ' + repo);
+            console.warn('[LC migrate] failed:', upRes.status, upErrText, 'repo:', repo);
           }
 
           /* Brief pause to avoid rate limits */
@@ -648,6 +656,25 @@
         migrate();
       }
     });
+  })();
+  </script>
+
+  <!-- ── One-time repo check on load ── -->
+  <script>
+  (function() {
+    setTimeout(async function() {
+      try {
+        var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+        if (!user) return;
+        var token = await user.jwt();
+        var resp = await fetch('/.netlify/git/github/repos/Zane-Wolfgang/ludicrouschronicles', { headers: { Authorization: 'Bearer ' + token } });
+        if (resp.ok) {
+          console.log('[LC] Repo check OK: Zane-Wolfgang/ludicrouschronicles is reachable.');
+        } else {
+          console.warn('[LC] Repo check FAILED (' + resp.status + ') for Zane-Wolfgang/ludicrouschronicles — uploads will fail. Check the repo name is exactly right (case-sensitive) and Git Gateway is enabled in Netlify.');
+        }
+      } catch(e) { console.warn('[LC] Repo check error:', e); }
+    }, 2500);
   })();
   </script>
 
