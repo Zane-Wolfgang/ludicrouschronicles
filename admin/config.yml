@@ -56,7 +56,7 @@ collections:
       post will appear automatically at that moment without you needing to log in.
   - label: Chapter Art
     name: art
-    widget: lc_image
+    widget: image
     required: false
   - label: Body
     name: body
@@ -107,20 +107,20 @@ collections:
   - *id001
   - label: Main Image
     name: image
-    widget: lc_image
+    widget: image
   - label: Page 2
     name: image2
-    widget: lc_image
+    widget: image
     required: false
     hint: Second image in slideshow
   - label: Page 3
     name: image3
-    widget: lc_image
+    widget: image
     required: false
     hint: Third image in slideshow
   - label: Page 4
     name: image4
-    widget: lc_image
+    widget: image
     required: false
     hint: Fourth image in slideshow
   - label: Artist's Note
@@ -171,7 +171,7 @@ collections:
       a YouTube or Vimeo URL instead — thumbnails will be generated automatically.'
   - label: Thumbnail
     name: thumbnail
-    widget: lc_image
+    widget: image
     required: false
   - label: Description / Credits
     name: description
@@ -229,7 +229,7 @@ collections:
     hint: Teaser shown on the content page — supports paragraphs and formatting
   - label: Cover Image
     name: cover
-    widget: lc_image
+    widget: image
     required: false
     hint: Optional cover art. You can also paste an image directly (Ctrl+V) on this
       page.
@@ -269,7 +269,7 @@ collections:
   - *id001
   - label: Image
     name: image
-    widget: lc_image
+    widget: image
   - label: Note
     name: note
     widget: markdown
@@ -311,83 +311,83 @@ collections:
   - *id001
   - label: Cover Image
     name: image
-    widget: lc_image
+    widget: image
     hint: First image shown in the grid
   - label: Image 2
     name: image2
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 3
     name: image3
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 4
     name: image4
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 5
     name: image5
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 6
     name: image6
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 7
     name: image7
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 8
     name: image8
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 9
     name: image9
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 10
     name: image10
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 11
     name: image11
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 12
     name: image12
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 13
     name: image13
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 14
     name: image14
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 15
     name: image15
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 16
     name: image16
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 17
     name: image17
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 18
     name: image18
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 19
     name: image19
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 20
     name: image20
-    widget: lc_image
+    widget: image
     required: false
   - label: Game / Location
     name: game
@@ -457,7 +457,7 @@ collections:
     default: youtube
   - label: Custom Icon (64x64 or 128x128 PNG)
     name: custom_icon
-    widget: lc_image
+    widget: image
     required: false
     hint: Only needed if you chose Custom above
   - label: Hover Tooltip
@@ -491,43 +491,43 @@ collections:
   - *id001
   - label: Main Image
     name: image
-    widget: lc_image
+    widget: image
     hint: Scan or photo of the piece
   - label: Image 2
     name: image2
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 3
     name: image3
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 4
     name: image4
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 5
     name: image5
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 6
     name: image6
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 7
     name: image7
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 8
     name: image8
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 9
     name: image9
-    widget: lc_image
+    widget: image
     required: false
   - label: Image 10
     name: image10
-    widget: lc_image
+    widget: image
     required: false
   - label: Artist's Note
     name: notes
@@ -579,7 +579,7 @@ collections:
     hint: Display name, e.g. Angry Vasily
   - label: Image
     name: image
-    widget: lc_image
+    widget: image
     hint: Upload to images/emojis/
   - label: Display Size (px)
     name: size
