@@ -214,11 +214,106 @@
           remove: { background: 'none', border: 'none', cursor: 'pointer', color: '#fc8181', padding: '4px 0', fontSize: '13px', display: 'block', textAlign: 'left' },
         };
 
+        /* Paste-box status */
+        var _ps = R.useState(''); var pasteStatus = _ps[0]; var setPasteStatus = _ps[1];
+
+        /* Upload a pasted file directly and set THIS field via onChange */
+        async function handlePastedFile(file) {
+          setPasteStatus('Uploading…');
+          try {
+            var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+            if (!user) { setPasteStatus('⚠ Not logged in'); return; }
+            var token = await user.jwt();
+            var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
+
+            /* Compress if large (>900KB), skip GIFs to preserve animation */
+            var uploadFile = file;
+            if (file.type !== 'image/gif' && file.size > 900 * 1024) {
+              try {
+                uploadFile = await new Promise(function (res, rej) {
+                  var img = new Image();
+                  var url = URL.createObjectURL(file);
+                  img.onload = function () {
+                    URL.revokeObjectURL(url);
+                    var MAX = 2000, w = img.naturalWidth, h = img.naturalHeight;
+                    if (w > MAX || h > MAX) { var sc = MAX / Math.max(w, h); w = Math.round(w*sc); h = Math.round(h*sc); }
+                    var c = document.createElement('canvas'); c.width = w; c.height = h;
+                    c.getContext('2d').drawImage(img, 0, 0, w, h);
+                    c.toBlob(function (b) { b ? res(new File([b], 'paste.jpg', { type: 'image/jpeg' })) : rej(new Error('compress')); }, 'image/jpeg', 0.85);
+                  };
+                  img.onerror = function () { URL.revokeObjectURL(url); rej(new Error('load')); };
+                  img.src = url;
+                });
+              } catch (_) { uploadFile = file; }
+            }
+
+            var b64 = await new Promise(function (res, rej) {
+              var fr = new FileReader();
+              fr.onload = function (e) { res(e.target.result.split(',')[1]); };
+              fr.onerror = rej;
+              fr.readAsDataURL(uploadFile);
+            });
+
+            var ext = (uploadFile.type.split('/')[1] || 'png'); if (ext === 'jpeg') ext = 'jpg';
+            var fname = Date.now() + '_paste.' + ext;
+            var path = 'images/uploads/' + fname;
+
+            var resp = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
+              method: 'PUT',
+              headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: 'Paste upload: ' + fname, content: b64, branch: 'main' })
+            });
+
+            if (!resp.ok) {
+              var errT = await resp.text().catch(function(){return '';});
+              setPasteStatus('⚠ Failed (' + resp.status + ')' + (errT.trim().indexOf('<')===0 ? ' — server error page' : ''));
+              return;
+            }
+
+            /* Set THIS field's value directly — no Redux guessing */
+            onChange('/' + path);
+            setPasteStatus('✓ Image set');
+            setTimeout(function () { setPasteStatus(''); }, 2500);
+          } catch (err) {
+            setPasteStatus('⚠ ' + (err.message || 'failed'));
+          }
+        }
+
+        function onPasteBox(e) {
+          var items = e.clipboardData && e.clipboardData.items;
+          if (!items) return;
+          for (var i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image/') === 0) {
+              e.preventDefault();
+              var f = items[i].getAsFile();
+              if (f) handlePastedFile(f);
+              return;
+            }
+          }
+          setPasteStatus('⚠ No image in clipboard');
+          setTimeout(function () { setPasteStatus(''); }, 2000);
+        }
+
+        s.pasteBox = {
+          border: '2px dashed rgba(99,179,237,0.5)', borderRadius: '4px',
+          padding: '10px 12px', margin: '6px 0', fontSize: '12px', color: '#8aa3b8',
+          cursor: 'text', outline: 'none', background: 'rgba(99,179,237,0.05)',
+          minHeight: '20px', textAlign: 'center'
+        };
+
         return R.createElement('div', { style: s.wrap },
           resolvedSrc && R.createElement('img', { src: resolvedSrc, style: s.img }),
           R.createElement('button', { type: 'button', style: s.choose,
             onClick: function () { openMedia && openMedia({ forImage: true, allowMultiple: false }); }
           }, resolvedSrc ? 'Choose different image' : 'Choose an image'),
+          R.createElement('div', {
+            style: s.pasteBox,
+            tabIndex: 0,
+            contentEditable: false,
+            onPaste: onPasteBox,
+            onClick: function (e) { e.currentTarget.focus(); },
+            title: 'Click here, then press Ctrl+V to paste an image from your clipboard'
+          }, pasteStatus || '📋 Click here + Ctrl+V to paste an image'),
           resolvedSrc && R.createElement('button', { type: 'button', style: s.remove,
             onClick: function () { onChange(null); setResolvedSrc(null); }
           }, 'Remove image')
@@ -520,193 +615,6 @@
       .observe(document.documentElement, { childList: true, subtree: true });
     watchVideoInputs();
 
-  })();
-  </script>
-
-  <!-- ── External Image Migration: downloads Discord/external URLs and re-uploads to repo ── -->
-  <script>
-  (function() {
-    var btn = document.createElement('button');
-    btn.id = 'lc-migrate-btn';
-    btn.textContent = '🔗 Fix External Images';
-    btn.title = 'Find and replace expiring Discord/external image URLs with permanent uploads';
-    btn.style.cssText = 'position:fixed;bottom:1rem;left:1.5rem;background:#1a1710;border:1px solid #c9a84c;color:#c9a84c;padding:0.5rem 1rem;font-family:Georgia,serif;font-size:11px;border-radius:4px;cursor:pointer;z-index:9998;display:none;';
-    document.body.appendChild(btn);
-
-    /* Always visible — accessible from anywhere in admin */
-    btn.style.display = 'block';
-
-    var _log = null;
-    function log(msg) {
-      if (!_log) {
-        _log = document.createElement('div');
-        _log.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1710;border:1px solid #c9a84c;color:#c9a84c;padding:1.5rem 2rem;font-family:Georgia,serif;font-size:12px;border-radius:6px;z-index:99999;max-width:500px;max-height:70vh;overflow-y:auto;white-space:pre-line;line-height:1.6;';
-        document.body.appendChild(_log);
-      }
-      _log.textContent = msg;
-      _log.style.display = 'block';
-    }
-
-    function isExternal(url) {
-      if (!url || typeof url !== 'string') return false;
-      if (url.startsWith('/') || url.startsWith('./')) return false;
-      if (url.startsWith('http')) {
-        /* External if NOT our own site */
-        try {
-          var host = new URL(url).hostname;
-          return !host.includes('netlify') && !host.includes('githubusercontent');
-        } catch(_) { return false; }
-      }
-      return false;
-    }
-
-    async function migrate() {
-      log('Scanning entries for external image URLs...\nThis may take a minute.');
-
-      var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
-      if (!user) { log('⚠ Not logged in. Please log in first.'); return; }
-      var token = await user.jwt();
-
-      /* Get repo */
-      var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
-
-      /* Scan all index JSONs for external URLs */
-      var indexes = ['gallery-index','stills-index','traditional-art-index','wips-index','content-index','short-stories-index'];
-      var found = [];
-
-      for (var idx = 0; idx < indexes.length; idx++) {
-        try {
-          var res = await fetch('/_data/' + indexes[idx] + '.json');
-          if (!res.ok) continue;
-          var items = await res.json();
-          items.forEach(function(item) {
-            ['image','image2','image3','image4','thumbnail','cover','art'].forEach(function(field) {
-              if (isExternal(item[field])) {
-                found.push({ title: item.title, field: field, url: item[field], index: indexes[idx] });
-              }
-            });
-            /* Check numbered image fields up to 20 */
-            for (var n = 5; n <= 20; n++) {
-              var fn = 'image' + n;
-              if (isExternal(item[fn])) {
-                found.push({ title: item.title, field: fn, url: item[fn], index: indexes[idx] });
-              }
-            }
-          });
-        } catch(_) {}
-      }
-
-      if (found.length === 0) {
-        log('✓ No external image URLs found!\nAll your images are already safely in your repo.');
-        setTimeout(function(){ _log.style.display = 'none'; }, 4000);
-        return;
-      }
-
-      log('Found ' + found.length + ' external image URL(s).\nDownloading and re-uploading...\n');
-      var fixed = 0, failed = 0;
-
-      for (var i = 0; i < found.length; i++) {
-        var item = found[i];
-        log('Found ' + found.length + ' external URLs.\n\n' + (i+1) + '/' + found.length + ': ' + item.title + ' → ' + item.field + '\nDownloading...');
-
-        try {
-          /* Download via canvas (bypasses CORS — browser already has these rendered).
-             If canvas is tainted, fall back to direct fetch. */
-          var blob = null;
-          try {
-            blob = await new Promise(function(res, rej) {
-              var img = new Image();
-              img.crossOrigin = 'anonymous';
-              img.onload = function() {
-                /* Cap dimensions and export as JPEG — PNG at full Discord resolution
-                   can exceed the git-gateway payload limit (base64 + PNG bloats size
-                   massively vs the original compressed source), causing every upload
-                   to fail with an HTML error page instead of a JSON response. */
-                var MAX_DIM = 2000;
-                var w = img.naturalWidth, h = img.naturalHeight;
-                if (w > MAX_DIM || h > MAX_DIM) {
-                  var scale = MAX_DIM / Math.max(w, h);
-                  w = Math.round(w * scale); h = Math.round(h * scale);
-                }
-                var c = document.createElement('canvas');
-                c.width = w; c.height = h;
-                c.getContext('2d').drawImage(img, 0, 0, w, h);
-                c.toBlob(function(b) { b ? res(b) : rej(new Error('toBlob failed')); }, 'image/jpeg', 0.85);
-              };
-              img.onerror = function() { rej(new Error('img load failed')); };
-              img.src = item.url;
-              setTimeout(function() { rej(new Error('timeout')); }, 15000);
-            });
-          } catch(_) {
-            /* Canvas failed (tainted/expired) — try direct fetch as last resort */
-            try {
-              var imgRes = await fetch(item.url);
-              if (imgRes.ok) blob = await imgRes.blob();
-            } catch(__) {}
-          }
-          if (!blob) { failed++; log((i+1) + '/' + found.length + ': ⚠ Could not download — URL may have expired\n' + item.url.slice(0,80) + '...'); await new Promise(function(r){setTimeout(r,1000);}); continue; }
-
-          /* Convert to base64 */
-          var b64 = await new Promise(function(res, rej) {
-            var fr = new FileReader();
-            fr.onload = function(e) { res(e.target.result.split(',')[1]); };
-            fr.onerror = rej;
-            fr.readAsDataURL(blob);
-          });
-
-          /* Upload to repo */
-          var ext = blob.type.split('/')[1] || 'png';
-          if (ext === 'jpeg') ext = 'jpg';
-          var fname = Date.now() + '_' + item.field + '_' + (item.title || '').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 40) + '.' + ext;
-          var path = 'images/uploads/' + fname;
-
-          log((i+1) + '/' + found.length + ': ' + item.title + '\nUploading to repo...');
-
-          /* Refresh token each upload - jwt() auto-refreshes near expiry */
-          try { token = await user.jwt(); } catch(_) {}
-
-          var upRes = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
-            method: 'PUT',
-            headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: 'Migrate: ' + item.title + ' ' + item.field, content: b64, branch: 'main' })
-          });
-
-          if (upRes.ok) {
-            fixed++;
-            log((i+1) + '/' + found.length + ': ✓ ' + item.title + ' → /' + path);
-          } else {
-            failed++;
-            var upErrText = await upRes.text().catch(function(){return '';});
-            var upShort = '';
-            if (upErrText.trim().indexOf('<') === 0) {
-              upShort = 'server returned an error page — likely payload too large or session expired';
-            } else {
-              try { upShort = JSON.parse(upErrText).message || ''; } catch(_) { upShort = upErrText.slice(0,120); }
-            }
-            log((i+1) + '/' + found.length + ': ⚠ ' + item.title + ' — ' + upRes.status + ' ' + upShort + '\nRepo: ' + repo);
-            console.warn('[LC migrate] failed:', upRes.status, upErrText, 'repo:', repo);
-          }
-
-          /* Brief pause to avoid rate limits */
-          await new Promise(function(r){setTimeout(r,800);});
-
-        } catch(err) {
-          failed++;
-          log((i+1) + '/' + found.length + ': ⚠ Error: ' + err.message);
-        }
-      }
-
-      log('Done!\n\n✓ Fixed: ' + fixed + '\n✗ Failed: ' + failed + '\n\n' +
-          (fixed > 0 ? 'Uploaded images are in /images/uploads/.\nYou still need to update each entry\'s image field in the admin to point to the new path.\n\nNote: the old external URLs will eventually break, so update entries soon.' : '') +
-          '\n\nClick anywhere to dismiss.');
-      document.addEventListener('click', function dismiss() { _log.style.display = 'none'; document.removeEventListener('click', dismiss); }, { once: true });
-    }
-
-    btn.addEventListener('click', function() {
-      if (window.confirm('Scan all entries for expiring external image URLs (Discord, etc.) and re-upload them to your repo?')) {
-        migrate();
-      }
-    });
   })();
   </script>
 
