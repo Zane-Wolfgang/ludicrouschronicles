@@ -124,7 +124,7 @@
           function (el) { return !el.hidden && el.style.display !== 'none' && el.getAttribute('aria-hidden') !== 'true'; }
         );
       }
-      var before = visibleModals();
+      var beforeModals = visibleModals();
       chooseBtn.click();
 
       /* wait for the media modal to open */
@@ -132,30 +132,41 @@
       for (var w = 0; w < 40 && !modal; w++) {
         await sleep(150);
         var now = visibleModals();
-        modal = now.find(function (m) { return before.indexOf(m) === -1; }) || null;
+        modal = now.find(function (m) { return beforeModals.indexOf(m) === -1; }) || null;
       }
       if (!modal) throw new Error('media library did not open');
       await sleep(400);
 
-      /* inject the file into the modal's upload input */
-      var input = modal.querySelector('input[type="file"]') || document.querySelector('input[type="file"]');
-      if (!input) throw new Error('no upload field in media library');
+      /* Find the upload input STRICTLY inside this modal. Never fall back to a
+         page-wide input — this entry may also have Audio/Video file fields, and a
+         page-wide selector risks feeding the pasted image into the wrong control. */
+      var input = null;
+      for (var f = 0; f < 15 && !input; f++) {
+        input = modal.querySelector('input[type="file"]');
+        if (!input) await sleep(200);
+      }
+      if (!input) throw new Error('no upload field found inside the media library');
       var dt = new DataTransfer();
       dt.items.add(file);
       try { Object.defineProperty(input, 'files', { value: dt.files, configurable: true }); }
       catch (_) { try { input.files = dt.files; } catch (__) {} }
+      /* Snapshot what's already in the grid so we only ever pick the NEW upload,
+         never an existing gallery image. */
+      var beforeImgs = new Set(Array.prototype.map.call(modal.querySelectorAll('img'), function (im) { return im.src; }));
+
       input.dispatchEvent(new Event('change', { bubbles: true }));
       input.dispatchEvent(new Event('input', { bubbles: true }));
 
       /* wait for the uploaded item to appear, select it, confirm */
       for (var p = 0; p < 40; p++) {
         await sleep(400);
-        var imgs = Array.prototype.filter.call(modal.querySelectorAll('img'), function (im) {
+        var newImgs = Array.prototype.filter.call(modal.querySelectorAll('img'), function (im) {
           var src = im.src || '';
-          return src.indexOf('blob:') === 0 || src.indexOf('http') === 0;
+          return !beforeImgs.has(src) && (src.indexOf('blob:') === 0 || src.indexOf('http') === 0);
         });
-        if (imgs.length) {
-          var target = imgs[imgs.length - 1];
+        if (newImgs.length) {
+          /* prefer a blob: src — that's unmistakably the just-uploaded, pre-CDN file */
+          var target = newImgs.find(function (im) { return im.src.indexOf('blob:') === 0; }) || newImgs[0];
           var clickable = target;
           for (var el = target; el && el !== modal; el = el.parentElement) {
             if (el.tagName === 'BUTTON' || el.getAttribute('role') === 'button' || el.getAttribute('tabindex') != null) { clickable = el; break; }
@@ -172,6 +183,33 @@
       /* close modal if we couldn't confirm */
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
       throw new Error('upload did not complete in the media library');
+    }
+
+    /* Read the entry's own Title field so uploads can be named after it, instead of
+       a generic browser-clipboard name like "image.png". */
+    function entryTitleSlug() {
+      try {
+        var st = window.CMS.store.getState();
+        var data = st.getIn(['entryDraft', 'entry', 'data']);
+        if (!data) return '';
+        var title = data.get ? data.get('title') : data.title;
+        if (!title || typeof title !== 'string') return '';
+        return title.trim().toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 60);
+      } catch (_) { return ''; }
+    }
+    function renameForUpload(file) {
+      var slug = entryTitleSlug();
+      if (!slug) return file;
+      var ext = (file.type && file.type.split('/')[1]) || (file.name && file.name.split('.').pop()) || 'png';
+      if (ext === 'jpeg') ext = 'jpg';
+      /* Short unique tag instead of a running counter — avoids stale/confusing
+         suffixes when the same title is reused across entries or sessions. */
+      var tag = Date.now().toString(36).slice(-4);
+      var name = slug + '-' + tag + '.' + ext;
+      try { return new File([file], name, { type: file.type }); } catch (_) { return file; }
     }
 
     function makeBox(chooseBtn) {
@@ -191,6 +229,7 @@
         if (!img) return;
         e.preventDefault();
         var file = img.getAsFile(); if (!file) return;
+        file = renameForUpload(file);
         var btn = chooseBtn();
         if (!btn) { status.style.color = '#c77'; status.textContent = '⚠ could not find this field\u2019s image button'; return; }
         status.style.color = '#c9a84c'; status.textContent = 'Uploading…';
