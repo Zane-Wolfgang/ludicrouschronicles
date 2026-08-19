@@ -222,30 +222,22 @@
       return null;
     };
 
-    /* Read the entry's own Title field so uploads can be named after it, instead of
-       a generic browser-clipboard name like "image.png". */
-    function entryTitleSlug() {
-      try {
-        var st = window.CMS.store.getState();
-        var data = st.getIn(['entryDraft', 'entry', 'data']);
-        if (!data) return '';
-        var title = data.get ? data.get('title') : data.title;
-        if (!title || typeof title !== 'string') return '';
-        return title.trim().toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-+|-+$/g, '')
-          .slice(0, 60);
-      } catch (_) { return ''; }
+    /* Name uploads with a short random ID instead of trying to derive a name from
+       the entry's Title — titles can contain anything (including garbage like a
+       pasted GUID), so a random ID is the only thing guaranteed to be clean. */
+    function collectionSlug() {
+      var h = window.location.hash || '';
+      var m = /\/collections\/([^\/]+)\//.exec(h);
+      return (m ? m[1] : 'upload').replace(/[^a-z0-9-]/gi, '').toLowerCase();
+    }
+    function randomId() {
+      /* 6 random base36 chars, e.g. "k3j9pf" — short, unique enough, readable */
+      return Math.random().toString(36).slice(2, 8);
     }
     function renameForUpload(file) {
-      var slug = entryTitleSlug();
-      if (!slug) return file;
       var ext = (file.type && file.type.split('/')[1]) || (file.name && file.name.split('.').pop()) || 'png';
       if (ext === 'jpeg') ext = 'jpg';
-      /* Short unique tag instead of a running counter — avoids stale/confusing
-         suffixes when the same title is reused across entries or sessions. */
-      var tag = Date.now().toString(36).slice(-4);
-      var name = slug + '-' + tag + '.' + ext;
+      var name = collectionSlug() + '-' + randomId() + '.' + ext;
       try { return new File([file], name, { type: file.type }); } catch (_) { return file; }
     }
     window._lcRenameForUpload = renameForUpload;
