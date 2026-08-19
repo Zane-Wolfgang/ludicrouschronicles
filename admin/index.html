@@ -107,6 +107,137 @@
 
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
+  <!-- ── Per-field paste box: adds a "paste an image" box under every image field's buttons ── -->
+  <script>
+  (function () {
+    function repo() { return window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles'; }
+
+    async function uploadFile(file) {
+      var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+      if (!user) throw new Error('Not logged in');
+      var token = await user.jwt();
+      var b64 = await new Promise(function (res, rej) {
+        var fr = new FileReader();
+        fr.onload = function (e) { res(e.target.result.split(',')[1]); };
+        fr.onerror = rej; fr.readAsDataURL(file);
+      });
+      var fname = Date.now() + '_' + (file.name || 'paste.png').replace(/[^a-zA-Z0-9._-]/g, '_');
+      var path = 'images/uploads/' + fname;
+      var resp = await fetch('/.netlify/git/github/repos/' + repo() + '/contents/' + path, {
+        method: 'PUT',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Upload: ' + fname, content: b64, branch: 'main' })
+      });
+      if (!resp.ok) {
+        var e = await resp.text().catch(function () { return ''; });
+        var m = ''; try { m = JSON.parse(e).message || ''; } catch (_) { m = e.slice(0, 80); }
+        throw new Error('upload ' + resp.status + ' ' + m);
+      }
+      return '/' + path;
+    }
+
+    /* Given the field's own wrapper element, read ITS label to pick the field name.
+       Reads only this wrapper's text (not the whole form), so stacked fields don't collide. */
+    function fieldNameFor(wrapper) {
+      var known = ['image20','image19','image18','image17','image16','image15','image14','image13','image12','image11','image10','image9','image8','image7','image6','image5','image4','image3','image2','custom_icon','thumbnail','cover','art','image'];
+      /* Prefer an explicit label element inside or just before this wrapper */
+      var labelText = '';
+      var lbl = wrapper.querySelector('label');
+      if (lbl) labelText = lbl.textContent || '';
+      if (!labelText) {
+        /* look at the wrapper's own leading text, and a preceding sibling label if any */
+        var prev = wrapper.previousElementSibling;
+        if (prev && /label/i.test(prev.tagName)) labelText = prev.textContent || '';
+      }
+      if (!labelText) labelText = wrapper.textContent || '';
+      labelText = labelText.toLowerCase();
+      for (var i = 0; i < known.length; i++) {
+        var k = known[i];
+        var human = k.replace(/(\d+)/, ' $1'); /* image2 -> "image 2" */
+        if (labelText.indexOf(human) !== -1 || labelText.indexOf(k) !== -1) return k;
+      }
+      return 'image';
+    }
+
+    function setField(name, value) {
+      var store = window.CMS && window.CMS.store;
+      if (!store) return;
+      ['DRAFT_CHANGE_FIELD', 'ENTRY_DRAFT_CHANGE_FIELD'].forEach(function (type) {
+        try { store.dispatch({ type: type, payload: { path: name, value: value, field: { name: name, widget: 'image' } } }); } catch (_) {}
+      });
+    }
+
+    function makeBox(fieldName) {
+      var wrap = document.createElement('div');
+      wrap.className = 'lc-pastebox';
+      wrap.style.cssText = 'margin:8px 0 2px;';
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = '📋 Click here & Ctrl+V to paste an image';
+      input.style.cssText = 'width:100%;box-sizing:border-box;padding:8px 10px;font-size:12px;font-family:sans-serif;border:1px dashed #c9a84c;border-radius:4px;background:rgba(201,168,76,0.06);color:#c9a84c;';
+      var status = document.createElement('div');
+      status.style.cssText = 'font-size:11px;font-family:sans-serif;color:#8a9a6a;margin-top:3px;min-height:14px;';
+      input.addEventListener('paste', function (e) {
+        var items = (e.clipboardData && e.clipboardData.items) || [];
+        var img = null;
+        for (var i = 0; i < items.length; i++) { if (items[i].type && items[i].type.indexOf('image/') === 0) { img = items[i]; break; } }
+        if (!img) return;
+        e.preventDefault();
+        var file = img.getAsFile(); if (!file) return;
+        var name = fieldName();
+        status.style.color = '#c9a84c'; status.textContent = 'Uploading…';
+        uploadFile(file).then(function (path) {
+          setField(name, path);
+          status.style.color = '#8a9a6a'; status.textContent = '✓ Uploaded — remember to Publish';
+          setTimeout(function () { status.textContent = ''; }, 4000);
+        }).catch(function (err) {
+          status.style.color = '#c77'; status.textContent = '⚠ ' + err.message;
+          setTimeout(function () { status.textContent = ''; }, 7000);
+        });
+      });
+      input.addEventListener('keydown', function (e) { if (e.key !== 'Control' && !e.ctrlKey && e.key.length === 1) e.preventDefault(); });
+      wrap.appendChild(input); wrap.appendChild(status);
+      return wrap;
+    }
+
+    /* Find every image widget on the page and inject a box under its buttons, once each. */
+    function inject() {
+      var buttons = document.querySelectorAll('button');
+      buttons.forEach(function (btn) {
+        var t = (btn.textContent || '').trim();
+        if (t !== 'Choose an image' && t !== 'Choose different image') return;
+        if (btn._lcBoxed) return;              /* this exact button already handled */
+        btn._lcBoxed = true;
+        /* Anchor to the button's own control wrapper: the nearest ancestor that also
+           contains this field's "URL" button (Decap groups the two together). Never
+           climb past that, so each field keeps its own box. */
+        var wrapper = btn.parentElement;
+        var hops = 0;
+        while (wrapper && hops < 4) {
+          var btns = wrapper.querySelectorAll('button');
+          var hasChoose = false, hasUrl = false;
+          for (var i = 0; i < btns.length; i++) {
+            var bt = (btns[i].textContent || '').trim();
+            if (bt === 'Choose an image' || bt === 'Choose different image') hasChoose = true;
+            if (/url/i.test(bt)) hasUrl = true;
+          }
+          if (hasChoose && (hasUrl || hops >= 1)) break;   /* found this field's own group */
+          wrapper = wrapper.parentElement; hops++;
+        }
+        if (!wrapper) wrapper = btn.parentElement;
+        /* Guard: if this wrapper already owns a box as a direct-ish child, skip */
+        if (wrapper.querySelector(':scope > .lc-pastebox, :scope > * > .lc-pastebox')) return;
+        var boxWrapper = wrapper;
+        wrapper.appendChild(makeBox(function () { return fieldNameFor(boxWrapper); }));
+      });
+    }
+
+    new MutationObserver(function () { inject(); }).observe(document.documentElement, { childList: true, subtree: true });
+    setInterval(inject, 1500);
+    setTimeout(inject, 1000);
+  })();
+  </script>
+
 
   <!-- ── Thumbnail helpers: paste screenshot, YouTube/Vimeo auto-thumb, video frame extract ── -->
   <script>
