@@ -81,10 +81,15 @@
         root.setAttribute('autocomplete', 'off');
       }
     }
+    var _acPending = [];
+    var _acTimer = null;
     new MutationObserver(function(muts) {
-      muts.forEach(function(m) {
-        m.addedNodes.forEach(suppressAutocomplete);
-      });
+      muts.forEach(function(m) { _acPending.push.apply(_acPending, m.addedNodes); });
+      clearTimeout(_acTimer);
+      _acTimer = setTimeout(function () {
+        var batch = _acPending; _acPending = [];
+        batch.forEach(suppressAutocomplete);
+      }, 250);
     }).observe(document.documentElement, { childList: true, subtree: true });
   })();
   </script>
@@ -184,6 +189,27 @@
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
       throw new Error('upload did not complete in the media library');
     }
+    window._lcUploadViaDecap = uploadViaDecap;
+
+    /* Find a live "Choose an image" button matching a field by key (e.g. 'thumbnail',
+       'image2'), by reading each candidate's own label — used by background features
+       that need to upload into a specific field without a direct button reference. */
+    window._lcFindChooseButton = function (fieldKey) {
+      var human = fieldKey.replace(/(\d+)$/, ' $1').toLowerCase();
+      var buttons = document.querySelectorAll('button');
+      for (var i = 0; i < buttons.length; i++) {
+        var b = buttons[i];
+        var t = (b.textContent || '').trim();
+        if (t !== 'Choose an image' && t !== 'Choose different image') continue;
+        var el = b.parentElement, label = '';
+        for (var up = 0; up < 4 && el; up++, el = el.parentElement) {
+          var lbl = el.querySelector && el.querySelector('label');
+          if (lbl) { label = (lbl.textContent || '').toLowerCase(); break; }
+        }
+        if (label.indexOf(human) !== -1 || label.indexOf(fieldKey) !== -1) return b;
+      }
+      return null;
+    };
 
     /* Read the entry's own Title field so uploads can be named after it, instead of
        a generic browser-clipboard name like "image.png". */
@@ -285,7 +311,11 @@
       });
     }
 
-    new MutationObserver(function () { inject(); }).observe(document.documentElement, { childList: true, subtree: true });
+    var _injTimer = null;
+    new MutationObserver(function () {
+      clearTimeout(_injTimer);
+      _injTimer = setTimeout(inject, 250);
+    }).observe(document.documentElement, { childList: true, subtree: true });
     setInterval(inject, 1500);
     setTimeout(inject, 1000);
   })();
@@ -309,93 +339,10 @@
       return true;
     }
 
-    /* ── Upload file directly via git-gateway + set field via Redux ──
-       No UI automation needed — bypasses Decap's media library entirely. */
-
-    function _getRepo() {
-      if (window._lcRepo) return window._lcRepo;
-      return 'Zane-Wolfgang/ludicrouschronicles';
-      /* Below: legacy fallback paths, unreachable but kept for reference */
-      /* 1. Captured from Decap's own fetch calls */
-      if (window._lcRepo) return window._lcRepo;
-      /* 2. Decap backend object */
-      try { var r = window.CMS.backend.api.repo; if (r) return r; } catch(_) {}
-      try { var r2 = window.CMS.backend.implementation.api.repo; if (r2) return r2; } catch(_) {}
-      /* 3. Redux state */
-      try {
-        var state = window.CMS.store.getState();
-        var cfg = state.get ? state.get('config') : state.config;
-        var be = cfg.get ? cfg.get('backend') : cfg.backend;
-        var r3 = be.get ? be.get('repo') : be.repo;
-        if (r3) return r3;
-      } catch(_) {}
-      /* 4. localStorage fallback */
-      return localStorage.getItem('_lc_gh_repo') || null;
-    }
-
-    async function uploadAndSetField(file) {
-      /* Get auth token */
-      var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
-      if (!user) { toast('⚠ Not logged in', 3000); return false; }
-      var token = await user.jwt();
-
-      /* Use live-detected repo if Decap has revealed it, else the known repo */
-      var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
-
-      /* Read file as base64 */
-      var b64 = await new Promise(function(res, rej) {
-        var fr = new FileReader();
-        fr.onload = function(e) { res(e.target.result.split(',')[1]); };
-        fr.onerror = rej;
-        fr.readAsDataURL(file);
-      });
-
-      /* Upload to GitHub via git-gateway */
-      var fname = Date.now() + '_' + (file.name || 'paste.png').replace(/[^a-zA-Z0-9._-]/g, '_');
-      var path = 'images/uploads/' + fname;
-      var resp = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
-        method: 'PUT',
-        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: 'Upload: ' + fname, content: b64, branch: 'main' })
-      });
-
-      if (!resp.ok) {
-        var err = await resp.text().catch(function() { return ''; });
-        var short = '';
-        try { short = JSON.parse(err).message || ''; } catch(_) { short = err.slice(0,80); }
-        toast('⚠ Upload failed (' + resp.status + '): ' + short + '\nRepo used: ' + repo, 8000);
-        console.warn('[LC paste] upload failed:', resp.status, err, 'repo:', repo);
-        return false;
-      }
-
-      /* Set field value via Redux dispatch — tries all possible field names */
-      var filePath = '/' + path;
-      var store = window.CMS && window.CMS.store;
-      if (store) {
-        /* Detect which image fields exist on this entry by checking for
-           'Choose an image' / 'Choose different image' buttons and their labels */
-        var existingFields = new Set();
-        document.querySelectorAll('label, [class*="control"], [class*="Control"]').forEach(function(el) {
-          var btn = el.querySelector('button');
-          if (!btn) return;
-          var t = btn.textContent.trim();
-          if (t !== 'Choose an image' && t !== 'Choose different image') return;
-          var label = (el.textContent || '').toLowerCase();
-          ['thumbnail','cover','image','art','custom_icon','cover image'].forEach(function(f) {
-            if (label.indexOf(f) !== -1) existingFields.add(f === 'cover image' ? 'cover' : f);
-          });
-        });
-        /* Fallback: if detection found nothing, try the most common fields */
-        if (existingFields.size === 0) { existingFields.add('image'); existingFields.add('thumbnail'); existingFields.add('cover'); }
-
-        existingFields.forEach(function(fieldName) {
-          ['DRAFT_CHANGE_FIELD','ENTRY_DRAFT_CHANGE_FIELD'].forEach(function(type) {
-            try { store.dispatch({ type: type, payload: { path: fieldName, value: filePath, field: { name: fieldName, widget: 'image' } } }); } catch(_) {}
-          });
-        });
-      }
-      return true;
-    }
+    /* NOTE: the old direct-GitHub upload helper (_getRepo / uploadAndSetField) was
+       removed — it bypassed Decap's own auth path and always hit a 401. Every
+       upload now goes through window._lcUploadViaDecap (defined in the per-field
+       paste box script), which drives Decap's real media library instead. */
 
         /* ─────────────────────────────────────────────
        FEATURE 1: Paste screenshot → thumbnail field (via Decap library)
@@ -413,49 +360,10 @@
       if (ms) _toast._t = setTimeout(function(){ _toast.style.display='none'; }, ms);
     }
 
-    document.addEventListener('paste', async function(e) {
-      var items = e.clipboardData && e.clipboardData.items;
-      if (!items) return;
-      var imgItem = null;
-      for (var i = 0; i < items.length; i++) {
-        if (items[i].type.startsWith('image/')) { imgItem = items[i]; break; }
-      }
-      if (!imgItem) return;
-
-      /* Only act when NOT typing in a text field or rich-text editor.
-         Decap's markdown editor is a nested contenteditable, so check ancestors too. */
-      var active = document.activeElement;
-      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' ||
-          active.getAttribute('contenteditable') === 'true' ||
-          active.closest('[contenteditable="true"]') ||
-          active.closest('[class*="markdown" i]') ||
-          active.closest('[class*="CodeMirror" i]') ||
-          active.closest('[class*="slate" i]'))) return;
-
-      /* Defer to the multi-upload paste handler ONLY on gallery/stills/traditional
-         entry pages where the + button is visible (multi-slot collections). */
-      var multiBtn = document.getElementById('lc-multi-trigger');
-      if (multiBtn && multiBtn.style.display !== 'none') return;
-
-      /* Only act if this entry actually has an image field to fill */
-      var hasImageField = Array.from(document.querySelectorAll('button')).some(function(b){
-        var t = b.textContent.trim();
-        return t === 'Choose an image' || t === 'Choose different image';
-      });
-      if (!hasImageField) return;
-
-      e.preventDefault();
-      toast('Uploading pasted image…');
-      var file = imgItem.getAsFile();
-      if (!file) return;
-
-      try {
-        var ok = await uploadAndSetField(file);
-        toast(ok ? '✓ Image uploaded and set' : '⚠ Upload failed', 3000);
-      } catch(err) {
-        toast('⚠ Paste failed: ' + err.message, 4000);
-      }
-    });
+    /* NOTE: the old "paste anywhere on the page" thumbnail handler was removed —
+       every image field now has its own paste box (see the per-field script above),
+       which uploads through Decap's real media library instead of a raw GitHub call
+       that would 401. This global fallback was redundant and broken. */
 
     /* ─────────────────────────────────────────────
        FEATURE 2: YouTube/Vimeo URL → auto-thumbnail
@@ -489,7 +397,8 @@
         });
       });
     }
-    new MutationObserver(watchUrlInputs)
+    var _urlWatchTimer = null;
+    new MutationObserver(function () { clearTimeout(_urlWatchTimer); _urlWatchTimer = setTimeout(watchUrlInputs, 250); })
       .observe(document.documentElement, { childList: true, subtree: true });
     watchUrlInputs();
 
@@ -526,14 +435,17 @@
             if (!blob) { toast('⚠ Could not extract frame', 3000); return; }
             try {
               var thumbFile = new File([blob], 'thumb_' + Date.now() + '.jpg', { type: 'image/jpeg' });
-              var ok = await uploadAndSetField(thumbFile);
-              toast(ok ? '✓ Thumbnail extracted from video' : '⚠ Upload failed', 3000);
+              var btn = window._lcFindChooseButton && window._lcFindChooseButton('thumbnail');
+              if (!btn) throw new Error('could not find the Thumbnail field on this entry');
+              await window._lcUploadViaDecap(thumbFile, btn);
+              toast('✓ Thumbnail extracted from video', 3000);
             } catch(e) { toast('⚠ ' + e.message, 3000); }
           });
         });
       });
     }
-    new MutationObserver(watchVideoInputs)
+    var _vidWatchTimer = null;
+    new MutationObserver(function () { clearTimeout(_vidWatchTimer); _vidWatchTimer = setTimeout(watchVideoInputs, 250); })
       .observe(document.documentElement, { childList: true, subtree: true });
     watchVideoInputs();
 
@@ -837,31 +749,9 @@
     var IMG_FIELDS = ['image','art','cover','thumbnail','custom_icon'];
     for (var n = 2; n <= 20; n++) IMG_FIELDS.push('image' + n);
 
-    async function uploadBlob(blob, hintName) {
-      var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
-      if (!user) throw new Error('Not logged in');
-      var token = await user.jwt();
-      var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
-      var b64 = await new Promise(function (res, rej) {
-        var fr = new FileReader();
-        fr.onload = function (e) { res(e.target.result.split(',')[1]); };
-        fr.onerror = rej; fr.readAsDataURL(blob);
-      });
-      var ext = (blob.type.split('/')[1] || 'png'); if (ext === 'jpeg') ext = 'jpg';
-      var fname = 'link_' + Date.now() + '_' + (hintName || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 20) + '.' + ext;
-      var path = 'images/uploads/' + fname;
-      var resp = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
-        method: 'PUT',
-        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: 'Rescue: ' + fname, content: b64, branch: 'main' })
-      });
-      if (!resp.ok) {
-        var e = await resp.text().catch(function () { return ''; });
-        var m = ''; try { m = JSON.parse(e).message || ''; } catch (_) { m = e.slice(0, 80); }
-        throw new Error('upload ' + resp.status + ' ' + m);
-      }
-      return '/' + path;
-    }
+    /* NOTE: rescue uploads now go through window._lcUploadViaDecap (Decap's own
+       media library), same as every other upload path — no more raw GitHub PUTs
+       that 401. */
     async function downloadUrl(url) {
       var blob = null;
       try { var r = await fetch(url, { mode: 'cors' }); if (r.ok) blob = await r.blob(); } catch (_) {}
@@ -891,11 +781,6 @@
       } catch (_) {}
       return out;
     }
-    function setField(field, value) {
-      try {
-        window.CMS.store.dispatch({ type: 'DRAFT_CHANGE_FIELD', payload: { path: field, value: value, field: { name: field, widget: 'image' } } });
-      } catch (_) {}
-    }
 
     async function scan() {
       if (!inOpenEditor()) return;
@@ -907,9 +792,15 @@
         markSeen(f.url);
         (function (item) {
           window._lcRescueInFlight = (window._lcRescueInFlight || 0) + 1;
-          downloadUrl(item.url)
-            .then(function (blob) { return uploadBlob(blob, item.field); })
-            .then(function (path) { setField(item.field, path); logRescue('ok', item.url, '', item.field); })
+          Promise.resolve().then(async function () {
+            var btn = window._lcFindChooseButton && window._lcFindChooseButton(item.field);
+            if (!btn) throw new Error('could not find the ' + item.field + ' field\u2019s button on screen');
+            var blob = await downloadUrl(item.url);
+            var ext = (blob.type.split('/')[1] || 'png'); if (ext === 'jpeg') ext = 'jpg';
+            var file = new File([blob], 'link_' + Date.now() + '.' + ext, { type: blob.type || 'image/png' });
+            await window._lcUploadViaDecap(file, btn);
+          })
+            .then(function () { logRescue('ok', item.url, '', item.field); })
             .catch(function (err) { logRescue('fail', item.url, err.message, item.field); })
             .then(function () { window._lcRescueInFlight = Math.max(0, (window._lcRescueInFlight || 1) - 1); window.dispatchEvent(new CustomEvent('lc-rescue-updated')); });
         })(f);
