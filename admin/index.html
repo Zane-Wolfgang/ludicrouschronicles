@@ -110,64 +110,71 @@
   <!-- ── Per-field paste box: adds a "paste an image" box under every image field's buttons ── -->
   <script>
   (function () {
-    function repo() { return window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles'; }
+    function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-    async function uploadFile(file) {
-      var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
-      if (!user) throw new Error('Not logged in');
-      var token = await user.jwt();
-      var b64 = await new Promise(function (res, rej) {
-        var fr = new FileReader();
-        fr.onload = function (e) { res(e.target.result.split(',')[1]); };
-        fr.onerror = rej; fr.readAsDataURL(file);
-      });
-      var fname = Date.now() + '_' + (file.name || 'paste.png').replace(/[^a-zA-Z0-9._-]/g, '_');
-      var path = 'images/uploads/' + fname;
-      var resp = await fetch('/.netlify/git/github/repos/' + repo() + '/contents/' + path, {
-        method: 'PUT',
-        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: 'Upload: ' + fname, content: b64, branch: 'main' })
-      });
-      if (!resp.ok) {
-        var e = await resp.text().catch(function () { return ''; });
-        var m = ''; try { m = JSON.parse(e).message || ''; } catch (_) { m = e.slice(0, 80); }
-        throw new Error('upload ' + resp.status + ' ' + m);
+    /* Upload a pasted file THE SAME WAY the "Choose an image" button does — through
+       Decap's own media library — so it uses the exact auth path that already works.
+       We open this field's media modal, drop the file into its file input, and let
+       Decap upload + select it. No direct GitHub call, nothing to reconnect. */
+    async function uploadViaDecap(file, chooseBtn) {
+      /* snapshot currently-open modals so we can detect the new one */
+      function visibleModals() {
+        return Array.prototype.filter.call(
+          document.querySelectorAll('[role="dialog"],[aria-modal="true"]'),
+          function (el) { return !el.hidden && el.style.display !== 'none' && el.getAttribute('aria-hidden') !== 'true'; }
+        );
       }
-      return '/' + path;
+      var before = visibleModals();
+      chooseBtn.click();
+
+      /* wait for the media modal to open */
+      var modal = null;
+      for (var w = 0; w < 40 && !modal; w++) {
+        await sleep(150);
+        var now = visibleModals();
+        modal = now.find(function (m) { return before.indexOf(m) === -1; }) || null;
+      }
+      if (!modal) throw new Error('media library did not open');
+      await sleep(400);
+
+      /* inject the file into the modal's upload input */
+      var input = modal.querySelector('input[type="file"]') || document.querySelector('input[type="file"]');
+      if (!input) throw new Error('no upload field in media library');
+      var dt = new DataTransfer();
+      dt.items.add(file);
+      try { Object.defineProperty(input, 'files', { value: dt.files, configurable: true }); }
+      catch (_) { try { input.files = dt.files; } catch (__) {} }
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+
+      /* wait for the uploaded item to appear, select it, confirm */
+      for (var p = 0; p < 40; p++) {
+        await sleep(400);
+        var imgs = Array.prototype.filter.call(modal.querySelectorAll('img'), function (im) {
+          var src = im.src || '';
+          return src.indexOf('blob:') === 0 || src.indexOf('http') === 0;
+        });
+        if (imgs.length) {
+          var target = imgs[imgs.length - 1];
+          var clickable = target;
+          for (var el = target; el && el !== modal; el = el.parentElement) {
+            if (el.tagName === 'BUTTON' || el.getAttribute('role') === 'button' || el.getAttribute('tabindex') != null) { clickable = el; break; }
+          }
+          clickable.click();
+          await sleep(300);
+          var confirm = Array.prototype.find.call(modal.querySelectorAll('button'), function (b) {
+            var t = (b.textContent || '').trim().toLowerCase();
+            return t === 'choose selected' || t === 'insert' || t === 'choose' || t === 'select';
+          });
+          if (confirm) { confirm.click(); return true; }
+        }
+      }
+      /* close modal if we couldn't confirm */
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      throw new Error('upload did not complete in the media library');
     }
 
-    /* Given the field's own wrapper element, read ITS label to pick the field name.
-       Reads only this wrapper's text (not the whole form), so stacked fields don't collide. */
-    function fieldNameFor(wrapper) {
-      var known = ['image20','image19','image18','image17','image16','image15','image14','image13','image12','image11','image10','image9','image8','image7','image6','image5','image4','image3','image2','custom_icon','thumbnail','cover','art','image'];
-      /* Prefer an explicit label element inside or just before this wrapper */
-      var labelText = '';
-      var lbl = wrapper.querySelector('label');
-      if (lbl) labelText = lbl.textContent || '';
-      if (!labelText) {
-        /* look at the wrapper's own leading text, and a preceding sibling label if any */
-        var prev = wrapper.previousElementSibling;
-        if (prev && /label/i.test(prev.tagName)) labelText = prev.textContent || '';
-      }
-      if (!labelText) labelText = wrapper.textContent || '';
-      labelText = labelText.toLowerCase();
-      for (var i = 0; i < known.length; i++) {
-        var k = known[i];
-        var human = k.replace(/(\d+)/, ' $1'); /* image2 -> "image 2" */
-        if (labelText.indexOf(human) !== -1 || labelText.indexOf(k) !== -1) return k;
-      }
-      return 'image';
-    }
-
-    function setField(name, value) {
-      var store = window.CMS && window.CMS.store;
-      if (!store) return;
-      ['DRAFT_CHANGE_FIELD', 'ENTRY_DRAFT_CHANGE_FIELD'].forEach(function (type) {
-        try { store.dispatch({ type: type, payload: { path: name, value: value, field: { name: name, widget: 'image' } } }); } catch (_) {}
-      });
-    }
-
-    function makeBox(fieldName) {
+    function makeBox(chooseBtn) {
       var wrap = document.createElement('div');
       wrap.className = 'lc-pastebox';
       wrap.style.cssText = 'margin:8px 0 2px;';
@@ -184,10 +191,10 @@
         if (!img) return;
         e.preventDefault();
         var file = img.getAsFile(); if (!file) return;
-        var name = fieldName();
+        var btn = chooseBtn();
+        if (!btn) { status.style.color = '#c77'; status.textContent = '⚠ could not find this field\u2019s image button'; return; }
         status.style.color = '#c9a84c'; status.textContent = 'Uploading…';
-        uploadFile(file).then(function (path) {
-          setField(name, path);
+        uploadViaDecap(file, btn).then(function () {
           status.style.color = '#8a9a6a'; status.textContent = '✓ Uploaded — remember to Publish';
           setTimeout(function () { status.textContent = ''; }, 4000);
         }).catch(function (err) {
@@ -227,8 +234,15 @@
         if (!wrapper) wrapper = btn.parentElement;
         /* Guard: if this wrapper already owns a box as a direct-ish child, skip */
         if (wrapper.querySelector(':scope > .lc-pastebox, :scope > * > .lc-pastebox')) return;
-        var boxWrapper = wrapper;
-        wrapper.appendChild(makeBox(function () { return fieldNameFor(boxWrapper); }));
+        var thisBtn = btn;
+        wrapper.appendChild(makeBox(function () {
+          if (document.contains(thisBtn)) return thisBtn;
+          /* button was re-rendered — find the Choose button inside this wrapper again */
+          return Array.prototype.find.call(wrapper.querySelectorAll('button'), function (b) {
+            var x = (b.textContent || '').trim();
+            return x === 'Choose an image' || x === 'Choose different image';
+          }) || null;
+        }));
       });
     }
 
