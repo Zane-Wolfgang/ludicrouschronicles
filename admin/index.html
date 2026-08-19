@@ -897,7 +897,7 @@
     function ensureDot(n) {
       if (!dot) {
         dot = document.createElement('button');
-        dot.style.cssText = 'position:fixed;bottom:1rem;right:1.5rem;z-index:99997;background:#7a1f1f;color:#fbeaea;border:1px solid #c9968a;border-radius:20px;padding:.4rem .85rem;font-family:Georgia,serif;font-size:11px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.4);';
+        dot.style.cssText = 'position:fixed;top:72px;left:1.5rem;z-index:999996;background:#7a1f1f;color:#fbeaea;border:1px solid #c9968a;border-radius:20px;padding:.4rem .85rem;font-family:Georgia,serif;font-size:11px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.4);';
         dot.onclick = function () { showPanel(read().filter(function (e) { return e.status === 'fail'; })); };
         document.body.appendChild(dot);
       }
@@ -909,7 +909,7 @@
     function showPanel(fails) {
       if (!panel) {
         panel = document.createElement('div');
-        panel.style.cssText = 'position:fixed;bottom:3.5rem;right:1.5rem;z-index:99998;width:340px;max-height:60vh;overflow-y:auto;background:#1a1210;border:1px solid #a05a5a;border-radius:6px;padding:1rem;font-family:Georgia,serif;color:#e8cccc;box-shadow:0 4px 20px rgba(0,0,0,.5);';
+        panel.style.cssText = 'position:fixed;top:114px;left:1.5rem;z-index:999997;width:340px;max-height:60vh;overflow-y:auto;background:#1a1210;border:1px solid #a05a5a;border-radius:6px;padding:1rem;font-family:Georgia,serif;color:#e8cccc;box-shadow:0 4px 20px rgba(0,0,0,.5);';
         document.body.appendChild(panel);
       }
       var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;"><strong style="color:#e88;font-size:12px;letter-spacing:.1em;">IMAGES NOT SAVED</strong><span><button id="_lcClr" style="background:none;border:1px solid #a66;color:#e8cccc;font-size:10px;border-radius:3px;padding:2px 6px;cursor:pointer;margin-right:4px;">Clear</button><button id="_lcCls" style="background:none;border:none;color:#a88;font-size:16px;cursor:pointer;line-height:1;">&times;</button></span></div>';
@@ -931,7 +931,7 @@
     function showToast() {
       if (!toast) {
         toast = document.createElement('div');
-        toast.style.cssText = 'position:fixed;bottom:1rem;right:1.5rem;z-index:99997;background:#14210f;border:1px solid #6a9a4c;color:#cfe8b8;padding:.6rem 1rem;font-family:Georgia,serif;font-size:12px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4);transition:opacity .6s;';
+        toast.style.cssText = 'position:fixed;top:72px;left:1.5rem;z-index:999996;background:#14210f;border:1px solid #6a9a4c;color:#cfe8b8;padding:.6rem 1rem;font-family:Georgia,serif;font-size:12px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4);transition:opacity .6s;';
         document.body.appendChild(toast);
       }
       toast.textContent = '✓ All images saved to your repo';
