@@ -170,33 +170,28 @@
       if (!path) return;
       if (failed[path] >= 2) { img._lcTried = true; return; }
       img._lcTried = true;
+      var srcAtStart = img.getAttribute('src') || '';
       try {
         var url = await repoBlobUrl(path);
-        if (url) { img.src = url; delete failed[path]; }
-        else { failed[path] = (failed[path] || 0) + 1; }
+        if (!url) { failed[path] = (failed[path] || 0) + 1; return; }
+        /* After the await, Decap may have removed or reused this node. Only touch it
+           if it's still in the document AND still showing the same broken src — never
+           resurrect an image the CMS has since cleared or changed. */
+        if (document.contains(img) && (img.getAttribute('src') || '') === srcAtStart) {
+          img.src = url;
+        }
+        delete failed[path];
       } catch (_) { failed[path] = (failed[path] || 0) + 1; }
     }
 
-    /* Catch images that error out (broken previews) */
+    /* Purely reactive: only fix an image the moment the browser reports it broken.
+       No periodic DOM sweep — that churned the page and interfered with the media
+       modal and with removing images. This handler touches nothing unless an <img>
+       actually fires an error, so it can't affect removal or modal behavior. */
     document.addEventListener('error', function (e) {
       var t = e.target;
-      if (t && t.tagName === 'IMG') rehydrate(t);
+      if (t && t.tagName === 'IMG' && !t._lcTried) rehydrate(t);
     }, true);
-
-    /* Also proactively sweep any already-broken images periodically */
-    function sweep() {
-      var imgs = document.querySelectorAll('img');
-      for (var i = 0; i < imgs.length; i++) {
-        var im = imgs[i];
-        if (im._lcTried) continue;
-        /* naturalWidth 0 after load attempt = broken */
-        if (im.complete && im.naturalWidth === 0 && /\/images\//.test(im.getAttribute('src') || '')) {
-          rehydrate(im);
-        }
-      }
-    }
-    setInterval(sweep, 1500);
-    setTimeout(sweep, 1000);
   })();
   </script>
 
@@ -205,177 +200,78 @@
   (function () {
     function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-    /* Upload a pasted file THE SAME WAY the "Choose an image" button does — through
-       Decap's own media library — so it uses the exact auth path that already works.
-       We open this field's media modal, drop the file into its file input, and let
-       Decap upload + select it. No direct GitHub call, nothing to reconnect. */
-    async function uploadViaDecapImpl(file, chooseBtn) {
-      /* snapshot currently-open modals so we can detect the new one */
-      function visibleModals() {
-        return Array.prototype.filter.call(
-          document.querySelectorAll('[role="dialog"],[aria-modal="true"]'),
-          function (el) { return !el.hidden && el.style.display !== 'none' && el.getAttribute('aria-hidden') !== 'true'; }
-        );
+    /* DIRECT UPLOAD — the simple, reliable path.
+       Commit the file straight to the repo via git-gateway (the same auth the media
+       library uses), then write the path into the field via Redux. No media-library
+       modal, no simulated clicks, no "which thumbnail is new" guessing — those were
+       the source of nearly every bug. This is just: bytes -> repo -> field value. */
+
+    function _fieldNameForButton(btn) {
+      /* Read the field's own label to get its name (image, image2, cover, art, …). */
+      var known = ['image20','image19','image18','image17','image16','image15','image14','image13','image12','image11','image10','image9','image8','image7','image6','image5','image4','image3','image2','custom_icon','thumbnail','cover','art','image'];
+      var el = btn.parentElement, label = '';
+      for (var up = 0; up < 5 && el; up++, el = el.parentElement) {
+        var lbl = el.querySelector && el.querySelector('label');
+        if (lbl) { label = (lbl.textContent || '').toLowerCase(); break; }
       }
-      var beforeModals = visibleModals();
-      var originalBtnText = (chooseBtn.textContent || '').trim();
-      /* Find the field's control wrapper (a few levels up) and snapshot its full
-         inner HTML fingerprint — any image getting attached changes it, even a
-         broken-preview blob that never renders. The button's *direct* parent is
-         too narrow; the preview usually lives in a sibling container. */
-      function fieldWrapper(btn) {
-        var el = btn.parentElement;
-        for (var u = 0; u < 5 && el; u++, el = el.parentElement) {
-          if (el.querySelector && el.querySelector('label')) return el;
-        }
-        return btn.parentElement;
+      for (var i = 0; i < known.length; i++) {
+        var k = known[i];
+        var human = k.replace(/_/g, ' ').replace(/(\d+)$/, ' $1');
+        if (new RegExp('\\b' + human + '\\b').test(label) || new RegExp('\\b' + k + '\\b').test(label)) return k;
       }
-      var wrap0 = fieldWrapper(chooseBtn);
-      function wrapSignature(w) {
-        if (!w) return '';
-        var img = w.querySelector('img');
-        return (img ? img.getAttribute('src') || img.src || 'img' : 'noimg') + '|' + (w.querySelectorAll('img').length);
-      }
-      var beforeSig = wrapSignature(wrap0);
-      chooseBtn.click();
-
-      /* wait for the media modal to open */
-      var modal = null;
-      for (var w = 0; w < 40 && !modal; w++) {
-        await sleep(150);
-        var now = visibleModals();
-        modal = now.find(function (m) { return beforeModals.indexOf(m) === -1; }) || null;
-      }
-      if (!modal) throw new Error('media library did not open');
-      await sleep(400);
-
-      /* Find the upload input STRICTLY inside this modal. Never fall back to a
-         page-wide input — this entry may also have Audio/Video file fields, and a
-         page-wide selector risks feeding the pasted image into the wrong control. */
-      var input = null;
-      for (var f = 0; f < 15 && !input; f++) {
-        input = modal.querySelector('input[type="file"]');
-        if (!input) await sleep(200);
-      }
-      if (!input) throw new Error('no upload field found inside the media library');
-
-      /* Wait for the grid to stop changing before snapshotting it — otherwise a
-         still-lazy-loading PREVIOUS upload (e.g. the image you just set on another
-         field) can get mistaken for "new" once it finally renders, and get
-         re-selected here instead of the file you're actually uploading now. */
-      var lastCount = -1, stable = 0;
-      for (var s2 = 0; s2 < 15 && stable < 2; s2++) {
-        var count = modal.querySelectorAll('img').length;
-        stable = (count === lastCount) ? stable + 1 : 0;
-        lastCount = count;
-        await sleep(200);
-      }
-
-      var dt = new DataTransfer();
-      dt.items.add(file);
-      try { Object.defineProperty(input, 'files', { value: dt.files, configurable: true }); }
-      catch (_) { try { input.files = dt.files; } catch (__) {} }
-      /* Snapshot what's already in the grid so we only ever pick the NEW upload,
-         never an existing gallery image. */
-      var beforeImgs = new Set(Array.prototype.map.call(modal.querySelectorAll('img'), function (im) { return im.src; }));
-
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-
-      /* wait for the uploaded item to appear, select it, confirm */
-      var targetName = file.name;
-      for (var p = 0; p < 40; p++) {
-        await sleep(400);
-
-        /* PRIMARY: match on the exact filename we generated — Decap shows it as a
-           caption under each thumbnail, so this is deterministic and can't be
-           confused with any other image, unlike guessing from render order. */
-        var clickable = null;
-        if (targetName) {
-          var nameEls = Array.prototype.filter.call(modal.querySelectorAll('*'), function (el) {
-            return el.children.length === 0 && (el.textContent || '').trim() === targetName;
-          });
-          if (nameEls.length) {
-            var el2 = nameEls[0];
-            for (; el2 && el2 !== modal; el2 = el2.parentElement) {
-              if (el2.tagName === 'BUTTON' || el2.getAttribute('role') === 'button' || el2.getAttribute('tabindex') != null) { clickable = el2; break; }
-            }
-            if (!clickable) clickable = nameEls[0].closest('li, [class*="card" i], [class*="item" i]') || nameEls[0];
-          }
-        }
-
-        /* FALLBACK: blob-diff, only if the name hasn't rendered yet */
-        if (!clickable) {
-          var newImgs = Array.prototype.filter.call(modal.querySelectorAll('img'), function (im) {
-            var src = im.src || '';
-            return !beforeImgs.has(src) && (src.indexOf('blob:') === 0 || src.indexOf('http') === 0);
-          });
-          if (newImgs.length) {
-            var blobImgs = newImgs.filter(function (im) { return im.src.indexOf('blob:') === 0; });
-            var target = blobImgs.length ? blobImgs[blobImgs.length - 1] : newImgs[newImgs.length - 1];
-            clickable = target;
-            for (var el = target; el && el !== modal; el = el.parentElement) {
-              if (el.tagName === 'BUTTON' || el.getAttribute('role') === 'button' || el.getAttribute('tabindex') != null) { clickable = el; break; }
-            }
-          }
-        }
-
-        if (clickable) {
-          clickable.click();
-          await sleep(300);
-          var confirm = Array.prototype.find.call(modal.querySelectorAll('button'), function (b) {
-            var t = (b.textContent || '').trim().toLowerCase();
-            return t === 'choose selected' || t === 'insert' || t === 'choose' || t === 'select';
-          });
-          if (confirm) {
-            confirm.click();
-            /* Verify it took. IMPORTANT: with Git Gateway, Decap's in-editor preview
-               is a known-broken blob until the page reloads — the file IS committed,
-               it just won't render live (decaporg/decap-cms#788). So we must NOT
-               require a *working* thumbnail. We accept ANY of: the field wrapper's
-               image fingerprint changed (a new <img> attached, even a broken one),
-               the button text flipped, or — the strongest signal — the modal closed
-               after we clicked confirm, which Decap only does on a committed select. */
-            var verified = false;
-            var confirmClickedAt = Date.now();
-            for (var v = 0; v < 24; v++) {
-              await sleep(250);
-              var modalGone = !document.contains(modal) || modal.hidden || modal.style.display === 'none' || modal.getAttribute('aria-hidden') === 'true';
-              var btnStillThere = document.contains(chooseBtn);
-              var liveWrap = btnStillThere ? fieldWrapper(chooseBtn) : null;
-              var sigChanged = liveWrap && wrapSignature(liveWrap) !== beforeSig;
-              var btnChanged = btnStillThere && (chooseBtn.textContent || '').trim() !== originalBtnText;
-              if (modalGone && (sigChanged || btnChanged || !btnStillThere)) { verified = true; break; }
-              /* Modal closed cleanly after confirm and stayed closed ~0.75s — treat
-                 as success even if the (broken) preview signature hasn't updated. */
-              if (modalGone && (Date.now() - confirmClickedAt) > 750) { verified = true; break; }
-            }
-            if (verified) return true;
-            throw new Error('selection did not visibly apply — please check this field and try again');
-          }
-        }
-      }
-      /* close modal if we couldn't confirm */
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-      throw new Error('upload did not complete in the media library');
+      return 'image';
     }
 
-    /* Serialize every automated upload through one queue. Decap only has one media
-       library modal at a time — without this, two things uploading at once (e.g.
-       rescuing several external links on the same entry) could collide on that
-       shared modal and corrupt each other's selection. */
+    async function uploadDirect(file, fieldName) {
+      var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+      if (!user) throw new Error('not logged in — refresh and log in again');
+      var token = await user.jwt();
+      var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
+      var b64 = await new Promise(function (res, rej) {
+        var fr = new FileReader();
+        fr.onload = function (e) { res(e.target.result.split(',')[1]); };
+        fr.onerror = function () { rej(new Error('could not read the image')); };
+        fr.readAsDataURL(file);
+      });
+      /* Per-collection folder overrides in config.yml: chapters/gallery/traditional_art
+         use /images, emojis uses /images/emojis, everything else uses images/uploads.
+         Commit to the right place and store the matching public path so images resolve. */
+      var coll = (function () { var m = /\/collections\/([^\/]+)\//.exec(window.location.hash || ''); return m ? m[1] : ''; })();
+      var mediaDir, publicDir;
+      if (coll === 'chapters' || coll === 'gallery' || coll === 'traditional_art') { mediaDir = 'images'; publicDir = '/images'; }
+      else if (coll === 'emojis') { mediaDir = 'images/emojis'; publicDir = '/images/emojis'; }
+      else { mediaDir = 'images/uploads'; publicDir = '/images/uploads'; }
+      var path = mediaDir + '/' + file.name;
+      var resp = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
+        method: 'PUT',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Upload ' + file.name, content: b64, branch: 'main' })
+      });
+      if (!resp.ok) {
+        var txt = await resp.text().catch(function () { return ''; });
+        var msg = ''; try { msg = JSON.parse(txt).message || ''; } catch (_) { msg = txt.slice(0, 80); }
+        throw new Error('upload ' + resp.status + (msg ? ' — ' + msg : ''));
+      }
+      var value = publicDir + '/' + file.name;
+      var store = window.CMS && window.CMS.store;
+      if (store && fieldName) {
+        ['DRAFT_CHANGE_FIELD', 'ENTRY_DRAFT_CHANGE_FIELD'].forEach(function (type) {
+          try { store.dispatch({ type: type, payload: { path: fieldName, value: value, field: { name: fieldName, widget: 'image' } } }); } catch (_) {}
+        });
+      }
+      return value;
+    }
+
+    /* Public entrypoint — accepts a button (or getter) and resolves the field name
+       from it, so all existing callers keep working. Serialized so rapid pastes on
+       one entry commit one after another cleanly. */
     window._lcUploadQueue = Promise.resolve();
     window._lcUploadViaDecap = function (file, chooseBtnOrGetter) {
       var run = window._lcUploadQueue.then(function () {
-        /* Resolve the button HERE, when this upload's turn actually starts — not
-           when it was queued. If earlier queued uploads caused Decap to re-render
-           the form, a button reference captured earlier could already be detached;
-           re-resolving live avoids silently clicking a dead node. */
         var btn = (typeof chooseBtnOrGetter === 'function') ? chooseBtnOrGetter() : chooseBtnOrGetter;
-        if (!btn || !document.contains(btn)) throw new Error('this field\u2019s button is no longer on screen \u2014 please retry');
-        return uploadViaDecapImpl(file, btn);
+        var fieldName = btn ? _fieldNameForButton(btn) : 'image';
+        return uploadDirect(file, fieldName);
       });
-      /* keep the chain alive even if this call fails, so later queued uploads still run */
       window._lcUploadQueue = run.catch(function () {});
       return run;
     };
@@ -436,6 +332,29 @@
     }
     window._lcRenameForUpload = renameForUpload;
 
+    function flashStatus(msg, color) {
+      var el = document.getElementById('lc-paste-status');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'lc-paste-status';
+        el.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:2147483000;padding:.5rem 1rem;font-family:Georgia,serif;font-size:13px;border-radius:6px;box-shadow:0 2px 12px rgba(0,0,0,.5);pointer-events:none;transition:opacity .3s;';
+        document.body.appendChild(el);
+      }
+      el.style.background = '#17150f';
+      el.style.border = '1px solid ' + color;
+      el.style.color = color;
+      el.textContent = msg;
+      el.style.opacity = '1';
+      el.style.display = 'block';
+      clearTimeout(el._t);
+      return el;
+    }
+    function clearStatus(delay) {
+      var el = document.getElementById('lc-paste-status');
+      if (!el) return;
+      el._t = setTimeout(function () { el.style.opacity = '0'; setTimeout(function(){ el.style.display='none'; }, 300); }, delay);
+    }
+
     function makeBox(chooseBtn) {
       var wrap = document.createElement('div');
       wrap.className = 'lc-pastebox';
@@ -444,8 +363,6 @@
       input.type = 'text';
       input.placeholder = '📋 Click here & Ctrl+V to paste an image';
       input.style.cssText = 'width:100%;box-sizing:border-box;padding:8px 10px;font-size:12px;font-family:sans-serif;border:1px dashed #c9a84c;border-radius:4px;background:rgba(201,168,76,0.06);color:#c9a84c;';
-      var status = document.createElement('div');
-      status.style.cssText = 'font-size:11px;font-family:sans-serif;color:#8a9a6a;margin-top:3px;min-height:14px;';
       input.addEventListener('paste', function (e) {
         var items = (e.clipboardData && e.clipboardData.items) || [];
         var img = null;
@@ -454,18 +371,16 @@
         e.preventDefault();
         var file = img.getAsFile(); if (!file) return;
         file = renameForUpload(file);
-        if (!chooseBtn()) { status.style.color = '#c77'; status.textContent = '⚠ could not find this field\u2019s image button'; return; }
-        status.style.color = '#c9a84c'; status.textContent = 'Uploading…';
+        if (!chooseBtn()) { flashStatus('⚠ could not find this field\u2019s image button', '#c77'); clearStatus(6000); return; }
+        flashStatus('Uploading…', '#c9a84c');
         window._lcUploadViaDecap(file, chooseBtn).then(function () {
-          status.style.color = '#8a9a6a'; status.textContent = '✓ Uploaded — remember to Publish';
-          setTimeout(function () { status.textContent = ''; }, 4000);
+          flashStatus('✓ Uploaded & set — remember to Publish', '#8fbf6a'); clearStatus(4000);
         }).catch(function (err) {
-          status.style.color = '#c77'; status.textContent = '⚠ ' + err.message;
-          setTimeout(function () { status.textContent = ''; }, 7000);
+          flashStatus('⚠ ' + err.message, '#c77'); clearStatus(7000);
         });
       });
       input.addEventListener('keydown', function (e) { if (e.key !== 'Control' && !e.ctrlKey && e.key.length === 1) e.preventDefault(); });
-      wrap.appendChild(input); wrap.appendChild(status);
+      wrap.appendChild(input);
       return wrap;
     }
 
@@ -1042,7 +957,7 @@
     function ensureDot(n) {
       if (!dot) {
         dot = document.createElement('button');
-        dot.style.cssText = 'position:fixed;top:72px;left:1.5rem;z-index:999996;background:#7a1f1f;color:#fbeaea;border:1px solid #c9968a;border-radius:20px;padding:.4rem .85rem;font-family:Georgia,serif;font-size:11px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.4);';
+        dot.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:2147483000;background:#7a1f1f;color:#fbeaea;border:1px solid #c9968a;border-radius:20px;padding:.4rem .85rem;font-family:Georgia,serif;font-size:11px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.4);';
         dot.onclick = function () { showPanel(read().filter(function (e) { return e.status === 'fail'; })); };
         document.body.appendChild(dot);
       }
@@ -1054,7 +969,7 @@
     function showPanel(fails) {
       if (!panel) {
         panel = document.createElement('div');
-        panel.style.cssText = 'position:fixed;top:114px;left:1.5rem;z-index:999997;width:340px;max-height:60vh;overflow-y:auto;background:#1a1210;border:1px solid #a05a5a;border-radius:6px;padding:1rem;font-family:Georgia,serif;color:#e8cccc;box-shadow:0 4px 20px rgba(0,0,0,.5);';
+        panel.style.cssText = 'position:fixed;top:44px;left:50%;transform:translateX(-50%);z-index:2147483000;width:340px;max-width:90vw;max-height:60vh;overflow-y:auto;background:#1a1210;border:1px solid #a05a5a;border-radius:6px;padding:1rem;font-family:Georgia,serif;color:#e8cccc;box-shadow:0 4px 20px rgba(0,0,0,.5);';
         document.body.appendChild(panel);
       }
       var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;"><strong style="color:#e88;font-size:12px;letter-spacing:.1em;">IMAGES NOT SAVED</strong><span><button id="_lcClr" style="background:none;border:1px solid #a66;color:#e8cccc;font-size:10px;border-radius:3px;padding:2px 6px;cursor:pointer;margin-right:4px;">Clear</button><button id="_lcCls" style="background:none;border:none;color:#a88;font-size:16px;cursor:pointer;line-height:1;">&times;</button></span></div>';
@@ -1076,7 +991,7 @@
     function showToast() {
       if (!toast) {
         toast = document.createElement('div');
-        toast.style.cssText = 'position:fixed;top:72px;left:1.5rem;z-index:999996;background:#14210f;border:1px solid #6a9a4c;color:#cfe8b8;padding:.6rem 1rem;font-family:Georgia,serif;font-size:12px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4);transition:opacity .6s;';
+        toast.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:2147483000;background:#14210f;border:1px solid #6a9a4c;color:#cfe8b8;padding:.6rem 1rem;font-family:Georgia,serif;font-size:12px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4);transition:opacity .6s;';
         document.body.appendChild(toast);
       }
       toast.textContent = '✓ All images saved to your repo';
