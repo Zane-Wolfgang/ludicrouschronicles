@@ -112,40 +112,100 @@
 
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
-  <!-- ── Shared auth: use the token DECAP ITSELF uses (its uploads work), not the
-       separate Netlify Identity widget login (stale → the 401s in console). ── -->
+  <!-- ── Shared auth: expiry-aware. Identity access tokens DIE EVERY HOUR — Decap
+       silently refreshes its own copy before each request, which is why Decap keeps
+       working while a snapshotted token 401s. This getter checks expiry and, when
+       stale, refreshes through Netlify's token endpoint exactly like Decap does. ── -->
   <script>
-  window._lcGetToken = async function () {
-    /* 1. Decap's live auth state — the exact token the working CMS is using */
-    try {
-      var st = window.CMS && window.CMS.store && window.CMS.store.getState();
-      if (st && st.getIn) {
-        var t = st.getIn(['auth', 'user', 'token', 'access_token']);
-        if (t) return t;
-        var u = st.getIn(['auth', 'user']);
-        if (u) {
-          var tok = u.get ? u.get('token') : u.token;
-          var t2 = tok && (tok.get ? tok.get('access_token') : tok.access_token);
-          if (t2) return t2;
+  (function () {
+    var fresh = null; /* { access_token, expires_at } from our own refreshes */
+
+    function readStoredToken() {
+      /* Full token object (access + refresh + expiry) from Decap's live state,
+         then its persisted login, then the identity widget's stored user. */
+      try {
+        var st = window.CMS && window.CMS.store && window.CMS.store.getState();
+        if (st && st.getIn) {
+          var u = st.getIn(['auth', 'user']);
+          if (u) {
+            var tok = u.get ? u.get('token') : u.token;
+            if (tok) {
+              var o = tok.toJS ? tok.toJS() : tok;
+              if (o && o.access_token) return o;
+            }
+          }
         }
+      } catch (_) {}
+      try {
+        var raw = localStorage.getItem('decap-cms.user') || localStorage.getItem('netlify-cms-user');
+        if (raw) {
+          var p = JSON.parse(raw);
+          if (p && p.token && p.token.access_token) return p.token;
+        }
+      } catch (_) {}
+      try {
+        var raw2 = localStorage.getItem('gotrue.user');
+        if (raw2) {
+          var p2 = JSON.parse(raw2);
+          if (p2 && p2.token && p2.token.access_token) return p2.token;
+        }
+      } catch (_) {}
+      return null;
+    }
+
+    function notExpired(tok) {
+      /* expires_at is ms since epoch; treat anything within 60s of expiry as stale */
+      if (!tok) return false;
+      if (!tok.expires_at) return true; /* no expiry info — try it, refresh on 401 */
+      return (Number(tok.expires_at) - Date.now()) > 60000;
+    }
+
+    async function refresh(refreshToken) {
+      var resp = await fetch('/.netlify/identity/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(refreshToken)
+      });
+      if (!resp.ok) throw new Error('session expired — refresh the page and log in again');
+      var data = await resp.json();
+      if (!data.access_token) throw new Error('session expired — refresh the page and log in again');
+      fresh = { access_token: data.access_token, expires_at: Date.now() + ((data.expires_in || 3600) * 1000) - 60000 };
+      return fresh.access_token;
+    }
+
+    window._lcGetToken = async function () {
+      /* Our own recent refresh, still valid */
+      if (fresh && (fresh.expires_at - Date.now()) > 60000) return fresh.access_token;
+      var tok = readStoredToken();
+      if (!tok) {
+        /* identity widget as a true last resort — it refreshes itself */
+        try {
+          var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+          if (user) return await user.jwt();
+        } catch (_) {}
+        throw new Error('not logged in — refresh the page and log in again');
       }
-    } catch (_) {}
-    /* 2. Decap's persisted login */
-    try {
-      var raw = localStorage.getItem('decap-cms.user') || localStorage.getItem('netlify-cms-user');
-      if (raw) {
-        var o = JSON.parse(raw);
-        var t3 = o && o.token && o.token.access_token;
-        if (t3) return t3;
-      }
-    } catch (_) {}
-    /* 3. Identity widget as last resort */
-    try {
-      var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
-      if (user) return await user.jwt();
-    } catch (_) {}
-    throw new Error('not logged in — refresh the page and log in again');
-  };
+      if (notExpired(tok)) return tok.access_token;
+      if (tok.refresh_token) return refresh(tok.refresh_token);
+      /* expired with no refresh token — try widget, else fail honestly */
+      try {
+        var user2 = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+        if (user2) return await user2.jwt();
+      } catch (_) {}
+      throw new Error('session expired — refresh the page and log in again');
+    };
+
+    /* On a 401 mid-request, callers can force one refresh-and-retry */
+    window._lcForceRefreshToken = async function () {
+      var tok = readStoredToken();
+      if (tok && tok.refresh_token) return refresh(tok.refresh_token);
+      try {
+        var user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+        if (user) return await user.jwt();
+      } catch (_) {}
+      throw new Error('session expired — refresh the page and log in again');
+    };
+  })();
   </script>
 
   <!-- ── Broken-image rehydrator: Decap's Git-Gateway preview is broken until reload
@@ -275,11 +335,19 @@
       else if (coll === 'emojis') { mediaDir = 'images/emojis'; publicDir = '/images/emojis'; }
       else { mediaDir = 'images/uploads'; publicDir = '/images/uploads'; }
       var path = mediaDir + '/' + file.name;
-      var resp = await fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
-        method: 'PUT',
-        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: 'Upload ' + file.name, content: b64, branch: 'main' })
-      });
+      function doPut(tk) {
+        return fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
+          method: 'PUT',
+          headers: { Authorization: 'Bearer ' + tk, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: 'Upload ' + file.name, content: b64, branch: 'main' })
+        });
+      }
+      var resp = await doPut(token);
+      if (resp.status === 401) {
+        /* token died mid-session — refresh once and retry automatically */
+        token = await window._lcForceRefreshToken();
+        resp = await doPut(token);
+      }
       if (!resp.ok) {
         var txt = await resp.text().catch(function () { return ''; });
         var msg = ''; try { msg = JSON.parse(txt).message || ''; } catch (_) { msg = txt.slice(0, 80); }
