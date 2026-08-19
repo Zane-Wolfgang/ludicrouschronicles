@@ -95,15 +95,32 @@
   </script>
 </head>
 <body>
-  <!-- Capture GitHub repo from Decap's own API calls (must run BEFORE CMS loads) -->
+  <!-- Capture GitHub repo + the LIVE auth token from Decap's own API calls.
+       Decap refreshes its token before every request, so the captured header is
+       always the freshest working credential — no expiry guessing needed. -->
   <script>
   (function() {
     window._lcRepo = null;
+    window._lcLiveToken = null;      /* token Decap most recently used successfully */
+    window._lcLiveTokenAt = 0;
     var _origFetch = window.fetch;
-    window.fetch = function(url) {
-      if (typeof url === 'string' && !window._lcRepo) {
-        var m = url.match(/\.netlify\/git\/github\/repos\/([^\/]+\/[^\/\s]+)\//);
-        if (m) { window._lcRepo = m[1]; console.log('[LC] repo:', window._lcRepo); }
+    window.fetch = function(url, opts) {
+      if (typeof url === 'string') {
+        if (!window._lcRepo) {
+          var m = url.match(/\.netlify\/git\/github\/repos\/([^\/]+\/[^\/\s]+)\//);
+          if (m) { window._lcRepo = m[1]; console.log('[LC] repo:', window._lcRepo); }
+        }
+        if (url.indexOf('/.netlify/git/') !== -1 && opts && opts.headers && !window._lcOwnRequest) {
+          try {
+            var h = opts.headers;
+            var auth = (typeof h.get === 'function') ? h.get('Authorization')
+                     : (h.Authorization || h.authorization);
+            if (auth && auth.indexOf('Bearer ') === 0) {
+              window._lcLiveToken = auth.slice(7);
+              window._lcLiveTokenAt = Date.now();
+            }
+          } catch(_) {}
+        }
       }
       return _origFetch.apply(this, arguments);
     };
@@ -174,6 +191,12 @@
     }
 
     window._lcGetToken = async function () {
+      /* 0. THE BEST SOURCE: the token Decap itself just used on a real request.
+         Decap refreshes before every call, so if this is under 45 min old it's
+         the same working credential the CMS is running on. */
+      if (window._lcLiveToken && (Date.now() - window._lcLiveTokenAt) < 45 * 60 * 1000) {
+        return window._lcLiveToken;
+      }
       /* Our own recent refresh, still valid */
       if (fresh && (fresh.expires_at - Date.now()) > 60000) return fresh.access_token;
       var tok = readStoredToken();
@@ -336,11 +359,14 @@
       else { mediaDir = 'images/uploads'; publicDir = '/images/uploads'; }
       var path = mediaDir + '/' + file.name;
       function doPut(tk) {
-        return fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
+        window._lcOwnRequest = true;
+        var p = fetch('/.netlify/git/github/repos/' + repo + '/contents/' + path, {
           method: 'PUT',
           headers: { Authorization: 'Bearer ' + tk, 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: 'Upload ' + file.name, content: b64, branch: 'main' })
         });
+        window._lcOwnRequest = false;
+        return p;
       }
       var resp = await doPut(token);
       if (resp.status === 401) {
@@ -704,21 +730,37 @@
   })();
   </script>
 
-  <!-- ── One-time repo check on load ── -->
+  <!-- ── One-time repo check: waits for Decap's live token (proof the CMS is
+       actually logged in), so it never fires misleading pre-login 401 noise. ── -->
   <script>
   (function() {
-    setTimeout(async function() {
+    var tries = 0;
+    async function check() {
+      /* Wait until Decap has made at least one authenticated request */
+      if (!window._lcLiveToken) {
+        if (++tries < 60) return setTimeout(check, 2000);
+        return; /* never logged in this session — nothing to check */
+      }
       try {
-        var token;
-        try { token = await window._lcGetToken(); } catch (_) { return; }
-        var resp = await fetch('/.netlify/git/github/repos/Zane-Wolfgang/ludicrouschronicles', { headers: { Authorization: 'Bearer ' + token } });
-        if (resp.ok) {
-          console.log('[LC] Repo check OK: Zane-Wolfgang/ludicrouschronicles is reachable.');
-        } else {
-          console.warn('[LC] Repo check FAILED (' + resp.status + ') for Zane-Wolfgang/ludicrouschronicles — uploads will fail. Check the repo name is exactly right (case-sensitive) and Git Gateway is enabled in Netlify.');
+        window._lcOwnRequest = true;
+        var resp = await fetch('/.netlify/git/github/repos/Zane-Wolfgang/ludicrouschronicles', { headers: { Authorization: 'Bearer ' + window._lcLiveToken } });
+        window._lcOwnRequest = false;
+        if (resp.status === 401 && window._lcForceRefreshToken) {
+          try {
+            var t2 = await window._lcForceRefreshToken();
+            window._lcOwnRequest = true;
+            resp = await fetch('/.netlify/git/github/repos/Zane-Wolfgang/ludicrouschronicles', { headers: { Authorization: 'Bearer ' + t2 } });
+            window._lcOwnRequest = false;
+          } catch (_) {}
         }
-      } catch(e) { console.warn('[LC] Repo check error:', e); }
-    }, 4000);
+        if (resp.ok) {
+          console.log('[LC] Repo check OK: uploads will work.');
+        } else {
+          console.warn('[LC] Repo check FAILED (' + resp.status + ') — pastes will auto-retry with a fresh token, but if they still fail, Git Gateway itself is rejecting valid logins.');
+        }
+      } catch(e) { window._lcOwnRequest = false; console.warn('[LC] Repo check error:', e); }
+    }
+    setTimeout(check, 3000);
   })();
   </script>
 
