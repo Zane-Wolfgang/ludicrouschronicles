@@ -130,6 +130,9 @@
         );
       }
       var beforeModals = visibleModals();
+      var originalBtnText = (chooseBtn.textContent || '').trim();
+      var wrapperBeforeImg = chooseBtn.parentElement && chooseBtn.parentElement.querySelector('img');
+      var wrapperBeforeSrc = wrapperBeforeImg ? wrapperBeforeImg.src : null;
       chooseBtn.click();
 
       /* wait for the media modal to open */
@@ -151,6 +154,19 @@
         if (!input) await sleep(200);
       }
       if (!input) throw new Error('no upload field found inside the media library');
+
+      /* Wait for the grid to stop changing before snapshotting it — otherwise a
+         still-lazy-loading PREVIOUS upload (e.g. the image you just set on another
+         field) can get mistaken for "new" once it finally renders, and get
+         re-selected here instead of the file you're actually uploading now. */
+      var lastCount = -1, stable = 0;
+      for (var s2 = 0; s2 < 15 && stable < 2; s2++) {
+        var count = modal.querySelectorAll('img').length;
+        stable = (count === lastCount) ? stable + 1 : 0;
+        lastCount = count;
+        await sleep(200);
+      }
+
       var dt = new DataTransfer();
       dt.items.add(file);
       try { Object.defineProperty(input, 'files', { value: dt.files, configurable: true }); }
@@ -163,26 +179,74 @@
       input.dispatchEvent(new Event('input', { bubbles: true }));
 
       /* wait for the uploaded item to appear, select it, confirm */
+      var targetName = file.name;
       for (var p = 0; p < 40; p++) {
         await sleep(400);
-        var newImgs = Array.prototype.filter.call(modal.querySelectorAll('img'), function (im) {
-          var src = im.src || '';
-          return !beforeImgs.has(src) && (src.indexOf('blob:') === 0 || src.indexOf('http') === 0);
-        });
-        if (newImgs.length) {
-          /* prefer a blob: src — that's unmistakably the just-uploaded, pre-CDN file */
-          var target = newImgs.find(function (im) { return im.src.indexOf('blob:') === 0; }) || newImgs[0];
-          var clickable = target;
-          for (var el = target; el && el !== modal; el = el.parentElement) {
-            if (el.tagName === 'BUTTON' || el.getAttribute('role') === 'button' || el.getAttribute('tabindex') != null) { clickable = el; break; }
+
+        /* PRIMARY: match on the exact filename we generated — Decap shows it as a
+           caption under each thumbnail, so this is deterministic and can't be
+           confused with any other image, unlike guessing from render order. */
+        var clickable = null;
+        if (targetName) {
+          var nameEls = Array.prototype.filter.call(modal.querySelectorAll('*'), function (el) {
+            return el.children.length === 0 && (el.textContent || '').trim() === targetName;
+          });
+          if (nameEls.length) {
+            var el2 = nameEls[0];
+            for (; el2 && el2 !== modal; el2 = el2.parentElement) {
+              if (el2.tagName === 'BUTTON' || el2.getAttribute('role') === 'button' || el2.getAttribute('tabindex') != null) { clickable = el2; break; }
+            }
+            if (!clickable) clickable = nameEls[0].closest('li, [class*="card" i], [class*="item" i]') || nameEls[0];
           }
+        }
+
+        /* FALLBACK: blob-diff, only if the name hasn't rendered yet */
+        if (!clickable) {
+          var newImgs = Array.prototype.filter.call(modal.querySelectorAll('img'), function (im) {
+            var src = im.src || '';
+            return !beforeImgs.has(src) && (src.indexOf('blob:') === 0 || src.indexOf('http') === 0);
+          });
+          if (newImgs.length) {
+            var blobImgs = newImgs.filter(function (im) { return im.src.indexOf('blob:') === 0; });
+            var target = blobImgs.length ? blobImgs[blobImgs.length - 1] : newImgs[newImgs.length - 1];
+            clickable = target;
+            for (var el = target; el && el !== modal; el = el.parentElement) {
+              if (el.tagName === 'BUTTON' || el.getAttribute('role') === 'button' || el.getAttribute('tabindex') != null) { clickable = el; break; }
+            }
+          }
+        }
+
+        if (clickable) {
           clickable.click();
           await sleep(300);
           var confirm = Array.prototype.find.call(modal.querySelectorAll('button'), function (b) {
             var t = (b.textContent || '').trim().toLowerCase();
             return t === 'choose selected' || t === 'insert' || t === 'choose' || t === 'select';
           });
-          if (confirm) { confirm.click(); return true; }
+          if (confirm) {
+            confirm.click();
+            /* Verify it actually took — wait for the modal to close AND for Decap's
+               own field control to show the change (button text flips to "Choose
+               different image", or a preview thumbnail appears). Don't just trust
+               the click; confirm the real result before reporting success. */
+            var verified = false;
+            for (var v = 0; v < 20; v++) {
+              await sleep(250);
+              var modalGone = !document.contains(modal) || modal.hidden || modal.style.display === 'none' || modal.getAttribute('aria-hidden') === 'true';
+              var btnStillThere = document.contains(chooseBtn);
+              var btnChanged = btnStillThere && (chooseBtn.textContent || '').trim() !== originalBtnText;
+              var curImg = btnStillThere && chooseBtn.parentElement && chooseBtn.parentElement.querySelector('img');
+              var curSrc = curImg ? curImg.src : null;
+              /* The real signal: the wrapper's image actually CHANGED — not just
+                 that one exists (a field being replaced already had one before we
+                 started, so "an image exists" is true from the first check and
+                 would falsely pass even if the confirm click did nothing). */
+              var imgChanged = curSrc !== wrapperBeforeSrc;
+              if (modalGone && (imgChanged || btnChanged || !btnStillThere)) { verified = true; break; }
+            }
+            if (verified) return true;
+            throw new Error('selection did not visibly apply — please check this field and try again');
+          }
         }
       }
       /* close modal if we couldn't confirm */
@@ -195,8 +259,16 @@
        rescuing several external links on the same entry) could collide on that
        shared modal and corrupt each other's selection. */
     window._lcUploadQueue = Promise.resolve();
-    window._lcUploadViaDecap = function (file, chooseBtn) {
-      var run = window._lcUploadQueue.then(function () { return uploadViaDecapImpl(file, chooseBtn); });
+    window._lcUploadViaDecap = function (file, chooseBtnOrGetter) {
+      var run = window._lcUploadQueue.then(function () {
+        /* Resolve the button HERE, when this upload's turn actually starts — not
+           when it was queued. If earlier queued uploads caused Decap to re-render
+           the form, a button reference captured earlier could already be detached;
+           re-resolving live avoids silently clicking a dead node. */
+        var btn = (typeof chooseBtnOrGetter === 'function') ? chooseBtnOrGetter() : chooseBtnOrGetter;
+        if (!btn || !document.contains(btn)) throw new Error('this field\u2019s button is no longer on screen \u2014 please retry');
+        return uploadViaDecapImpl(file, btn);
+      });
       /* keep the chain alive even if this call fails, so later queued uploads still run */
       window._lcUploadQueue = run.catch(function () {});
       return run;
@@ -206,7 +278,12 @@
        'image2'), by reading each candidate's own label — used by background features
        that need to upload into a specific field without a direct button reference. */
     window._lcFindChooseButton = function (fieldKey) {
-      var human = fieldKey.replace(/(\d+)$/, ' $1').toLowerCase();
+      /* Word-boundary match, not plain substring — "image2" must not match inside
+         "image 20"'s label just because "image 2" happens to be its prefix. */
+      function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+      var human = fieldKey.replace(/_/g, ' ').replace(/(\d+)$/, ' $1').toLowerCase();
+      var reHuman = new RegExp('\\b' + escapeRegex(human) + '\\b');
+      var reKey = new RegExp('\\b' + escapeRegex(fieldKey.toLowerCase()) + '\\b');
       var buttons = document.querySelectorAll('button');
       for (var i = 0; i < buttons.length; i++) {
         var b = buttons[i];
@@ -217,7 +294,7 @@
           var lbl = el.querySelector && el.querySelector('label');
           if (lbl) { label = (lbl.textContent || '').toLowerCase(); break; }
         }
-        if (label.indexOf(human) !== -1 || label.indexOf(fieldKey) !== -1) return b;
+        if (reHuman.test(label) || reKey.test(label)) return b;
       }
       return null;
     };
@@ -234,9 +311,20 @@
       /* 6 random base36 chars, e.g. "k3j9pf" — short, unique enough, readable */
       return Math.random().toString(36).slice(2, 8);
     }
+    /* Only ever return a real image extension — never trust file.name blindly
+       (a dotless name like "image" would otherwise become ".image", producing an
+       unrenderable file). Falls back to png if nothing valid is found. */
+    var KNOWN_IMG_EXT = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'];
+    function safeExt(file) {
+      var fromType = file.type && file.type.split('/')[1];
+      if (fromType) { fromType = fromType.split('+')[0].toLowerCase(); if (KNOWN_IMG_EXT.indexOf(fromType) !== -1) return fromType === 'jpeg' ? 'jpg' : fromType; }
+      var fromName = (file.name && file.name.indexOf('.') !== -1) ? file.name.split('.').pop().toLowerCase() : null;
+      if (fromName && KNOWN_IMG_EXT.indexOf(fromName) !== -1) return fromName === 'jpeg' ? 'jpg' : fromName;
+      return 'png';
+    }
+    window._lcSafeExt = safeExt;
     function renameForUpload(file) {
-      var ext = (file.type && file.type.split('/')[1]) || (file.name && file.name.split('.').pop()) || 'png';
-      if (ext === 'jpeg') ext = 'jpg';
+      var ext = safeExt(file);
       var name = collectionSlug() + '-' + randomId() + '.' + ext;
       try { return new File([file], name, { type: file.type }); } catch (_) { return file; }
     }
@@ -260,10 +348,9 @@
         e.preventDefault();
         var file = img.getAsFile(); if (!file) return;
         file = renameForUpload(file);
-        var btn = chooseBtn();
-        if (!btn) { status.style.color = '#c77'; status.textContent = '⚠ could not find this field\u2019s image button'; return; }
+        if (!chooseBtn()) { status.style.color = '#c77'; status.textContent = '⚠ could not find this field\u2019s image button'; return; }
         status.style.color = '#c9a84c'; status.textContent = 'Uploading…';
-        window._lcUploadViaDecap(file, btn).then(function () {
+        window._lcUploadViaDecap(file, chooseBtn).then(function () {
           status.style.color = '#8a9a6a'; status.textContent = '✓ Uploaded — remember to Publish';
           setTimeout(function () { status.textContent = ''; }, 4000);
         }).catch(function (err) {
@@ -439,9 +526,8 @@
             if (!blob) { toast('⚠ Could not extract frame', 3000); return; }
             try {
               var thumbFile = new File([blob], 'thumb_' + Date.now() + '.jpg', { type: 'image/jpeg' });
-              var btn = window._lcFindChooseButton && window._lcFindChooseButton('thumbnail');
-              if (!btn) throw new Error('could not find the Thumbnail field on this entry');
-              await window._lcUploadViaDecap(thumbFile, btn);
+              if (!(window._lcFindChooseButton && window._lcFindChooseButton('thumbnail'))) throw new Error('could not find the Thumbnail field on this entry');
+              await window._lcUploadViaDecap(thumbFile, function () { return window._lcFindChooseButton('thumbnail'); });
               toast('✓ Thumbnail extracted from video', 3000);
             } catch(e) { toast('⚠ ' + e.message, 3000); }
           });
@@ -579,30 +665,49 @@
     }
 
     /* ── After upload: click the newest item in the library to select it ── */
-    async function selectFile(modal) {
+    async function selectFile(modal, targetName) {
       /* Poll — upload can take several seconds */
       for (var i = 0; i < 20; i++) {
         await sleep(600);
         var ctx = modal || document;
 
-        /* Try every reasonable selector for a media library grid item */
-        /* Cast wide net — Decap shows newly uploaded files as blob:// URLs before CDN deploys */
-        var imgs = Array.from(ctx.querySelectorAll('img')).filter(function(img) {
-          var src = img.src || '';
-          /* Skip nav icons, tiny SVG sprites, and images with no src */
-          /* blob:// = freshly uploaded (before CDN); http = CDN/external; exclude SVG/GIF icons */
-          return (src.startsWith('blob:') || src.startsWith('http')) && !src.startsWith('data:');
-        });
-        if (imgs.length > 0) {
-          var target = imgs[imgs.length - 1]; /* newest = last */
-          /* Walk up to a clickable ancestor */
-          var clickable = target;
-          for (var p = target; p && p !== ctx; p = p.parentElement) {
-            if (p.tagName === 'BUTTON' || p.getAttribute('role') === 'button' ||
-                p.getAttribute('role') === 'option' || p.getAttribute('tabindex') != null) {
-              clickable = p; break;
+        /* PRIMARY: match the exact filename we generated for this upload — Decap
+           shows it as a caption under each thumbnail, so this can't be confused
+           with any other image in the grid (unlike "pick the newest one"). */
+        var clickable = null;
+        if (targetName) {
+          var nameEls = Array.prototype.filter.call(ctx.querySelectorAll('*'), function (el) {
+            return el.children.length === 0 && (el.textContent || '').trim() === targetName;
+          });
+          if (nameEls.length) {
+            var el2 = nameEls[0];
+            for (; el2 && el2 !== ctx; el2 = el2.parentElement) {
+              if (el2.tagName === 'BUTTON' || el2.getAttribute('role') === 'button' || el2.getAttribute('tabindex') != null) { clickable = el2; break; }
+            }
+            if (!clickable) clickable = nameEls[0].closest('li, [class*="card" i], [class*="item" i]') || nameEls[0];
+          }
+        }
+
+        /* FALLBACK: old "newest image in the grid" heuristic — only if the name
+           hasn't rendered yet or targetName wasn't provided. */
+        if (!clickable) {
+          var imgs = Array.from(ctx.querySelectorAll('img')).filter(function(img) {
+            var src = img.src || '';
+            return (src.startsWith('blob:') || src.startsWith('http')) && !src.startsWith('data:');
+          });
+          if (imgs.length > 0) {
+            var target = imgs[imgs.length - 1];
+            clickable = target;
+            for (var p = target; p && p !== ctx; p = p.parentElement) {
+              if (p.tagName === 'BUTTON' || p.getAttribute('role') === 'button' ||
+                  p.getAttribute('role') === 'option' || p.getAttribute('tabindex') != null) {
+                clickable = p; break;
+              }
             }
           }
+        }
+
+        if (clickable) {
           clickable.click();
           await sleep(400);
 
@@ -668,7 +773,7 @@
           if (!ok) throw new Error('no upload input found');
 
           status((i+1) + '/' + files.length + ': selecting…');
-          await selectFile(modal);
+          await selectFile(modal, file.name);
 
           await waitGone(modal, 25000);
           await sleep(900); /* extra time for Decap to settle after each upload */
@@ -798,12 +903,11 @@
         (function (item) {
           window._lcRescueInFlight = (window._lcRescueInFlight || 0) + 1;
           Promise.resolve().then(async function () {
-            var btn = window._lcFindChooseButton && window._lcFindChooseButton(item.field);
-            if (!btn) throw new Error('could not find the ' + item.field + ' field\u2019s button on screen');
+            if (!(window._lcFindChooseButton && window._lcFindChooseButton(item.field))) throw new Error('could not find the ' + item.field + ' field\u2019s button on screen');
             var blob = await downloadUrl(item.url);
-            var ext = (blob.type.split('/')[1] || 'png'); if (ext === 'jpeg') ext = 'jpg';
+            var ext = window._lcSafeExt ? window._lcSafeExt({ type: blob.type }) : 'png';
             var file = new File([blob], 'link_' + Date.now() + '.' + ext, { type: blob.type || 'image/png' });
-            await window._lcUploadViaDecap(file, btn);
+            await window._lcUploadViaDecap(file, function () { return window._lcFindChooseButton(item.field); });
           })
             .then(function () { logRescue('ok', item.url, '', item.field); })
             .catch(function (err) { logRescue('fail', item.url, err.message, item.field); })
