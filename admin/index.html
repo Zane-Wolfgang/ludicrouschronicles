@@ -389,41 +389,75 @@
     }
 
     async function uploadDirect(file, fieldName, chooseBtnNode) {
-      /* Decap's real media flow (confirmed on this build):
-           1. onAddAsset({file}) — registers the file in the media library so it
-              shows up and displays, and gets committed to the repo on Publish.
-           2. onChange(path)      — fills the field with the path Decap stores it at.
-         onAddAsset carries only the raw file (no path in its payload), and Decap
-         does NOT rename it, so the stored path = collection media folder + file.name,
-         which we control via renameForUpload. */
+      /* Do ALL THREE or images 404 / vanish / don't show:
+           1. Commit to repo via GitHub API  → it actually persists (no 404 on refresh)
+           2. onAddAsset({file})             → media library shows it + it displays
+           3. onChange(path)                 → the field holds it
+         onAddAsset alone only stages the asset in memory (gone on refresh → 404). */
       var props = widgetPropsFor(fieldName);
       if (!props) {
         await new Promise(function (r) { setTimeout(r, 400); });
         props = widgetPropsFor(fieldName);
       }
-      if (!props || typeof props.onAddAsset !== 'function') {
+      if (!props) {
         throw new Error('could not reach the image field — open the entry and try again');
       }
 
-      /* Register the asset in Decap's media library. */
-      try {
-        await props.onAddAsset({ file: file });
-      } catch (e) {
-        throw new Error('upload failed: ' + (e && e.message ? e.message : 'unknown error'));
+      /* ---- 1. Commit to the repo (persist) ---- */
+      var token = await window._lcGetToken();
+      var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
+      var b64 = await new Promise(function (res, rej) {
+        var fr = new FileReader();
+        fr.onload = function (e) { res(e.target.result.split(',')[1]); };
+        fr.onerror = function () { rej(new Error('could not read the image')); };
+        fr.readAsDataURL(file);
+      });
+      var coll = (function () { var m = /\/collections\/([^\/]+)\//.exec(window.location.hash || ''); return m ? m[1] : ''; })();
+      var mediaDir, publicDir;
+      if (coll === 'chapters' || coll === 'gallery' || coll === 'traditional_art') { mediaDir = 'images'; publicDir = '/images'; }
+      else if (coll === 'emojis') { mediaDir = 'images/emojis'; publicDir = '/images/emojis'; }
+      else { mediaDir = 'images/uploads'; publicDir = '/images/uploads'; }
+      var repoPath = mediaDir + '/' + file.name;
+      async function getSha(tk) {
+        try {
+          window._lcOwnRequest = true;
+          var r = await fetch('https://api.github.com/repos/' + repo + '/contents/' + repoPath + '?ref=main', { headers: { Authorization: 'token ' + tk, Accept: 'application/vnd.github+json' } });
+          return r.ok ? ((await r.json()).sha || null) : null;
+        } catch (_) { return null; } finally { window._lcOwnRequest = false; }
+      }
+      async function doPut(tk, sha) {
+        var body = { message: 'Upload ' + file.name, content: b64, branch: 'main' };
+        if (sha) body.sha = sha;
+        window._lcOwnRequest = true;
+        try {
+          return await fetch('https://api.github.com/repos/' + repo + '/contents/' + repoPath, {
+            method: 'PUT',
+            headers: { Authorization: 'token ' + tk, 'Content-Type': 'application/json', Accept: 'application/vnd.github+json' },
+            body: JSON.stringify(body)
+          });
+        } finally { window._lcOwnRequest = false; }
+      }
+      var resp = await doPut(token);
+      if (resp.status === 401) { token = await window._lcForceRefreshToken(); resp = await doPut(token); }
+      if (resp.status === 422) { var sha = await getSha(token); if (sha) resp = await doPut(token, sha); }
+      if (!resp.ok) {
+        var txt = await resp.text().catch(function () { return ''; });
+        var msg = ''; try { msg = JSON.parse(txt).message || ''; } catch (_) { msg = txt.slice(0, 80); }
+        throw new Error('upload ' + resp.status + (msg ? ' — ' + msg : ''));
       }
 
-      /* Build the public path Decap will store this at (per-collection folders). */
-      var coll = (function () { var m = /\/collections\/([^\/]+)\//.exec(window.location.hash || ''); return m ? m[1] : ''; })();
-      var publicDir = (coll === 'chapters' || coll === 'gallery' || coll === 'traditional_art') ? '/images'
-                     : (coll === 'emojis') ? '/images/emojis' : '/images/uploads';
       var value = publicDir + '/' + file.name;
 
+      /* ---- 2. Register with Decap's media library (display + gallery) ---- */
+      /* ---- 2. Register with Decap's media library (display + gallery) ---- */
+      window._lcOwnRequest = false; /* let the interceptor capture Decap's own token */
+      try { if (typeof props.onAddAsset === 'function') await props.onAddAsset({ file: file }); } catch (_) {}
+
+      /* ---- 3. Fill the field ---- */
       function matches(a, b) {
         if (a == null) return false;
         a = String(a); b = String(b);
         if (a === b) return true;
-        /* tolerate only a leading-slash difference — NOT a loose basename match,
-           which could falsely confirm against a different field's image. */
         var strip = function (s) { return s.replace(/^\/+/, ''); };
         return strip(a) === strip(b);
       }
@@ -443,7 +477,7 @@
           if (matches(liveWidgetValue(fieldName), value)) { confirmed = true; break; }
         }
         if (!confirmed) {
-          throw new Error('image added to the media library as ' + file.name + ' — click "Choose an image" and it will be at the top');
+          throw new Error('image saved to repo as ' + file.name + ' — click "Choose an image" and it will be in the media library');
         }
       }
       return value;
