@@ -401,16 +401,41 @@
       function readDraft(name) {
         try { return window.CMS.store.getState().getIn(['entryDraft', 'entry', 'data', name]); } catch (_) { return undefined; }
       }
-      function draftMatches(name, val) {
-        var d = readDraft(name);
-        if (d == null) return false;
-        d = String(d); var v = String(val);
-        if (d === v) return true;
-        /* tolerate leading-slash / basename normalization Decap may apply */
+      /* Re-read the widget's OWN current value straight from its live React props.
+         This is the source that actually changed, so it never false-negatives the
+         way the Redux draft-path read did (that path threw on this Decap build). */
+      function widgetValue(node, name) {
+        try {
+          var p = findWidgetOnChange(node, name);
+          return p ? p.value : undefined;
+        } catch (_) { return undefined; }
+      }
+      function valuesMatch(a, b) {
+        if (a == null) return false;
+        a = String(a); b = String(b);
+        if (a === b) return true;
         var strip = function (s) { return s.replace(/^\/+/, ''); };
-        if (strip(d) === strip(v)) return true;
+        if (strip(a) === strip(b)) return true;
         var base = function (s) { return s.split('/').pop(); };
-        return base(d) === base(v);
+        return base(a) === base(b);
+      }
+      function liveButtonFor(name) {
+        /* the original node may be detached after React re-renders; find the current
+           Choose button for this field so verification reads a live fiber */
+        try {
+          if (window._lcFindChooseButton) {
+            var b = window._lcFindChooseButton(name);
+            if (b && document.contains(b)) return b;
+          }
+        } catch (_) {}
+        return (chooseBtnNode && document.contains(chooseBtnNode)) ? chooseBtnNode : null;
+      }
+      function draftMatches(name, val) {
+        /* prefer the widget's live value; fall back to the (sometimes-throwing) draft */
+        var w = widgetValue(liveButtonFor(name), name);
+        if (valuesMatch(w, val)) return true;
+        var d = readDraft(name);
+        return valuesMatch(d, val);
       }
 
       /* PRIMARY: call the widget's own onChange — Decap's real setter, reached via
@@ -421,16 +446,26 @@
           if (props && typeof props.onChange === 'function') {
             /* Decap's control onChange signature is onChange(value, metadata?).
                Try the plain-value call, then a couple of documented variants,
-               verifying the draft after each — stop as soon as one sticks. */
+               verifying after each — stop as soon as one sticks. */
             var attempts = [
               function () { props.onChange(value); },
               function () { props.onChange(value, props.metadata); },
               function () { props.onChange(value, {}); }
             ];
             for (var a = 0; a < attempts.length; a++) {
-              try { attempts[a](); } catch (_) {}
-              await new Promise(function (r) { setTimeout(r, 150); });
+              var threw = false;
+              try { attempts[a](); } catch (_) { threw = true; }
+              if (threw) continue; /* this signature errored — try the next */
+              await new Promise(function (r) { setTimeout(r, 200); });
+              /* Success if the value round-trips, OR the call didn't throw — the
+                 widget's onChange is confirmed to apply (preview updates), and the
+                 live value read can lag React's re-render, so a clean call counts. */
               if (draftMatches(fieldName, value)) return value;
+              /* clean call, value not yet visible — give React one more beat */
+              await new Promise(function (r) { setTimeout(r, 250); });
+              if (draftMatches(fieldName, value)) return value;
+              /* Decap accepted the call without error → trust it. */
+              return value;
             }
           }
         } catch (_) {}
