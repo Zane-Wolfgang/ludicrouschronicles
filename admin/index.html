@@ -284,7 +284,24 @@
        the source of nearly every bug. This is just: bytes -> repo -> field value. */
 
     function _fieldNameForButton(btn) {
-      /* Read the field's own label to get its name (image, image2, cover, art, …). */
+      /* Most reliable: read the real field name straight off the widget's own React
+         props via the fiber. Label-guessing is only a fallback. */
+      try {
+        var key = null;
+        for (var kk in btn) { if (kk.indexOf('__reactFiber$') === 0 || kk.indexOf('__reactInternalInstance$') === 0) { key = kk; break; } }
+        if (key) {
+          var fb = btn[key], hop = 0;
+          while (fb && hop < 40) {
+            var pp = fb.memoizedProps;
+            if (pp && pp.field) {
+              var nm = pp.field.get ? pp.field.get('name') : pp.field.name;
+              if (nm) return nm;
+            }
+            fb = fb.return; hop++;
+          }
+        }
+      } catch (_) {}
+      /* Fallback: read the field's own label to guess the name. */
       var known = ['image20','image19','image18','image17','image16','image15','image14','image13','image12','image11','image10','image9','image8','image7','image6','image5','image4','image3','image2','custom_icon','thumbnail','cover','art','image'];
       var el = btn.parentElement, label = '';
       for (var up = 0; up < 5 && el; up++, el = el.parentElement) {
@@ -317,7 +334,6 @@
           var f = p.field;
           if (f && f.get) return f.get('name');
           if (f && f.name) return f.name;
-          if (typeof p.forID === 'string') return p.forID;
         } catch (_) {}
         return null;
       }
@@ -398,107 +414,53 @@
       }
       var value = publicDir + '/' + file.name;
 
-      function readDraft(name) {
-        try { return window.CMS.store.getState().getIn(['entryDraft', 'entry', 'data', name]); } catch (_) { return undefined; }
-      }
-      /* Re-read the widget's OWN current value straight from its live React props.
-         This is the source that actually changed, so it never false-negatives the
-         way the Redux draft-path read did (that path threw on this Decap build). */
-      function widgetValue(node, name) {
+      /* Read the widget's live value by finding this field's button fresh each time
+         (React replaces nodes on re-render, so never reuse an old reference). */
+      function liveWidgetValue(name) {
         try {
-          var p = findWidgetOnChange(node, name);
+          var b = window._lcFindChooseButton ? window._lcFindChooseButton(name) : null;
+          if (!b) return undefined;
+          var p = findWidgetOnChange(b, name);
           return p ? p.value : undefined;
         } catch (_) { return undefined; }
       }
-      function valuesMatch(a, b) {
+      function matches(a, b) {
         if (a == null) return false;
         a = String(a); b = String(b);
         if (a === b) return true;
         var strip = function (s) { return s.replace(/^\/+/, ''); };
         if (strip(a) === strip(b)) return true;
-        var base = function (s) { return s.split('/').pop(); };
-        return base(a) === base(b);
-      }
-      function liveButtonFor(name) {
-        /* the original node may be detached after React re-renders; find the current
-           Choose button for this field so verification reads a live fiber */
-        try {
-          if (window._lcFindChooseButton) {
-            var b = window._lcFindChooseButton(name);
-            if (b && document.contains(b)) return b;
-          }
-        } catch (_) {}
-        return (chooseBtnNode && document.contains(chooseBtnNode)) ? chooseBtnNode : null;
-      }
-      function draftMatches(name, val) {
-        /* prefer the widget's live value; fall back to the (sometimes-throwing) draft */
-        var w = widgetValue(liveButtonFor(name), name);
-        if (valuesMatch(w, val)) return true;
-        var d = readDraft(name);
-        return valuesMatch(d, val);
+        return a.split('/').pop() === b.split('/').pop();
       }
 
-      /* PRIMARY: call the widget's own onChange — Decap's real setter, reached via
-         the React fiber on this field's button. Version-proof and correct. */
-      if (fieldName && chooseBtnNode) {
-        try {
-          var props = findWidgetOnChange(chooseBtnNode, fieldName);
-          if (props && typeof props.onChange === 'function') {
-            /* Decap's control onChange signature is onChange(value, metadata?).
-               Try the plain-value call, then a couple of documented variants,
-               verifying after each — stop as soon as one sticks. */
-            var attempts = [
-              function () { props.onChange(value); },
-              function () { props.onChange(value, props.metadata); },
-              function () { props.onChange(value, {}); }
-            ];
-            for (var a = 0; a < attempts.length; a++) {
-              var threw = false;
-              try { attempts[a](); } catch (_) { threw = true; }
-              if (threw) continue; /* this signature errored — try the next */
-              await new Promise(function (r) { setTimeout(r, 200); });
-              /* Success if the value round-trips, OR the call didn't throw — the
-                 widget's onChange is confirmed to apply (preview updates), and the
-                 live value read can lag React's re-render, so a clean call counts. */
-              if (draftMatches(fieldName, value)) return value;
-              /* clean call, value not yet visible — give React one more beat */
-              await new Promise(function (r) { setTimeout(r, 250); });
-              if (draftMatches(fieldName, value)) return value;
-              /* Decap accepted the call without error → trust it. */
-              return value;
-            }
-          }
-        } catch (_) {}
-      }
-
-      /* FALLBACK: raw Redux dispatch with an Immutable-compatible field shim, in
-         case the fiber shape changed. Kept only as a safety net. */
+      /* Set the field via Redux dispatch — this is the method proven to actually
+         populate the field on this Decap build (the widget's onChange is a no-op
+         here). Field payload must support .get() since Decap's reducer calls it. */
       function fieldShim(name) {
-        var data = { name: name, widget: 'image' };
-        return { get: function (k) { return data[k]; }, getIn: function (ks) { return data[ks && ks[0]]; }, toJS: function () { return data; } };
+        var d = { name: name, widget: 'image' };
+        return { get: function (k) { return d[k]; }, getIn: function (ks) { return d[ks && ks[0]]; }, toJS: function () { return d; } };
       }
-      function trySet(name, val) {
+      function dispatchSet(name, val) {
         var store = window.CMS && window.CMS.store;
-        if (!store) return false;
-        var shapes = [
+        if (!store) return;
+        [
           { type: 'DRAFT_CHANGE_FIELD', payload: { field: fieldShim(name), value: val, metadata: undefined, entries: [] } },
           { type: 'DRAFT_CHANGE_FIELD', payload: { field: fieldShim(name), value: val } },
           { type: 'DRAFT_CHANGE_FIELD', payload: { path: name, value: val, field: fieldShim(name) } },
           { type: 'ENTRY_DRAFT_CHANGE_FIELD', payload: { path: name, value: val, field: fieldShim(name) } }
-        ];
-        for (var i = 0; i < shapes.length; i++) {
-          try { store.dispatch(shapes[i]); } catch (_) {}
-          if (draftMatches(name, val)) return true;
-        }
-        return draftMatches(name, val);
+        ].forEach(function (action) { try { store.dispatch(action); } catch (_) {} });
       }
+
       if (fieldName) {
-        var ok = trySet(fieldName, value);
-        if (!ok) { await new Promise(function (r) { setTimeout(r, 400); }); ok = trySet(fieldName, value); }
-        if (!ok) {
-          /* The file IS committed to the repo — only the auto-fill failed. Tell the
-             truth so the user clicks Choose an image and picks it, instead of
-             believing a silent success or a false failure. */
+        dispatchSet(fieldName, value);
+        /* Confirm by reading the widget's live value, giving React time to commit. */
+        var confirmed = false;
+        for (var tick = 0; tick < 6; tick++) {
+          await new Promise(function (r) { setTimeout(r, 200); });
+          if (matches(liveWidgetValue(fieldName), value)) { confirmed = true; break; }
+          if (tick === 2) dispatchSet(fieldName, value); /* one more push midway */
+        }
+        if (!confirmed) {
           throw new Error('image saved to repo as ' + file.name + ', but the field didn\u2019t auto-fill \u2014 click "Choose an image" and select it');
         }
       }
@@ -523,23 +485,15 @@
        'image2'), by reading each candidate's own label — used by background features
        that need to upload into a specific field without a direct button reference. */
     window._lcFindChooseButton = function (fieldKey) {
-      /* Word-boundary match, not plain substring — "image2" must not match inside
-         "image 20"'s label just because "image 2" happens to be its prefix. */
-      function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-      var human = fieldKey.replace(/_/g, ' ').replace(/(\d+)$/, ' $1').toLowerCase();
-      var reHuman = new RegExp('\\b' + escapeRegex(human) + '\\b');
-      var reKey = new RegExp('\\b' + escapeRegex(fieldKey.toLowerCase()) + '\\b');
       var buttons = document.querySelectorAll('button');
       for (var i = 0; i < buttons.length; i++) {
         var b = buttons[i];
         var t = (b.textContent || '').trim();
         if (t !== 'Choose an image' && t !== 'Choose different image') continue;
-        var el = b.parentElement, label = '';
-        for (var up = 0; up < 4 && el; up++, el = el.parentElement) {
-          var lbl = el.querySelector && el.querySelector('label');
-          if (lbl) { label = (lbl.textContent || '').toLowerCase(); break; }
-        }
-        if (reHuman.test(label) || reKey.test(label)) return b;
+        /* Resolve THIS button's own field name the same way uploads do, and require
+           an exact match — loose label matching returns Cover Image for every field
+           since "Image 2", "Cover Image" etc. all contain the word "image". */
+        try { if (_fieldNameForButton(b) === fieldKey) return b; } catch (_) {}
       }
       return null;
     };
