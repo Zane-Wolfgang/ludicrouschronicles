@@ -241,8 +241,19 @@
 
     var failed = {};   /* path -> attempt count, so dead paths aren't retried forever */
 
+    var _suppressRehydrateUntil = 0;
+    /* When the user clicks any Remove image button, don't let the rehydrator
+       re-fetch and re-show the image that's being torn down. */
+    document.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('button') : null;
+      if (btn && /remove image/i.test((btn.textContent || ''))) {
+        _suppressRehydrateUntil = Date.now() + 20000;
+      }
+    }, true);
+
     async function rehydrate(img) {
       if (img._lcTried) return;
+      if (Date.now() < _suppressRehydrateUntil) { img._lcTried = true; return; }
       var path = pathFor(img);
       if (!path) return;
       if (failed[path] >= 2) { img._lcTried = true; return; }
@@ -251,9 +262,9 @@
       try {
         var url = await repoBlobUrl(path);
         if (!url) { failed[path] = (failed[path] || 0) + 1; return; }
-        /* After the await, Decap may have removed or reused this node. Only touch it
-           if it's still in the document AND still showing the same broken src — never
-           resurrect an image the CMS has since cleared or changed. */
+        /* After the await, don't restore if a removal started, the node left the
+           document, or its src changed. */
+        if (Date.now() < _suppressRehydrateUntil) return;
         if (document.contains(img) && (img.getAttribute('src') || '') === srcAtStart) {
           img.src = url;
         }
