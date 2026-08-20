@@ -251,8 +251,25 @@
       }
     }, true);
 
+    /* True if this <img> lives in Decap's right-hand preview pane. That pane
+       renders on Decap's own cycle; if we re-serve a cached blob into it, a removed
+       image lingers there for ~15s until Decap re-renders. We must never touch it —
+       only editor field thumbnails on the left get rehydrated. */
+    function inPreviewPane(img) {
+      var el = img;
+      for (var i = 0; i < 30 && el; i++, el = el.parentElement) {
+        var c = (el.className && el.className.toString ? el.className.toString() : '') || '';
+        var id = el.id || '';
+        if (/preview/i.test(c) || /preview/i.test(id) || el.tagName === 'IFRAME') return true;
+      }
+      /* Decap renders the preview in the right half; also treat frameless preview
+         containers marked with a data attr as preview. */
+      return false;
+    }
+
     async function rehydrate(img) {
       if (img._lcTried) return;
+      if (inPreviewPane(img)) { img._lcTried = true; return; }
       if (Date.now() < _suppressRehydrateUntil) { img._lcTried = true; return; }
       var path = pathFor(img);
       if (!path) return;
@@ -262,10 +279,8 @@
       try {
         var url = await repoBlobUrl(path);
         if (!url) { failed[path] = (failed[path] || 0) + 1; return; }
-        /* After the await, don't restore if a removal started, the node left the
-           document, or its src changed. */
         if (Date.now() < _suppressRehydrateUntil) return;
-        if (document.contains(img) && (img.getAttribute('src') || '') === srcAtStart) {
+        if (document.contains(img) && !inPreviewPane(img) && (img.getAttribute('src') || '') === srcAtStart) {
           img.src = url;
         }
         delete failed[path];
@@ -363,116 +378,72 @@
       return null;
     }
 
+    /* Find the widget's FULL props (incl. onPersistMedia/onChange/collection) for a
+       given field, resolving the live button fresh so the node is never stale. */
+    function widgetPropsFor(fieldName) {
+      try {
+        var b = window._lcFindChooseButton ? window._lcFindChooseButton(fieldName) : null;
+        if (!b) return null;
+        return findWidgetOnChange(b, fieldName);
+      } catch (_) { return null; }
+    }
+
     async function uploadDirect(file, fieldName, chooseBtnNode) {
-      var token = await window._lcGetToken();
-      var repo = window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles';
-      var b64 = await new Promise(function (res, rej) {
-        var fr = new FileReader();
-        fr.onload = function (e) { res(e.target.result.split(',')[1]); };
-        fr.onerror = function () { rej(new Error('could not read the image')); };
-        fr.readAsDataURL(file);
-      });
-      /* Per-collection folder overrides in config.yml: chapters/gallery/traditional_art
-         use /images, emojis uses /images/emojis, everything else uses images/uploads.
-         Commit to the right place and store the matching public path so images resolve. */
+      /* Decap's real media flow (confirmed on this build):
+           1. onAddAsset({file}) — registers the file in the media library so it
+              shows up and displays, and gets committed to the repo on Publish.
+           2. onChange(path)      — fills the field with the path Decap stores it at.
+         onAddAsset carries only the raw file (no path in its payload), and Decap
+         does NOT rename it, so the stored path = collection media folder + file.name,
+         which we control via renameForUpload. */
+      var props = widgetPropsFor(fieldName);
+      if (!props) {
+        await new Promise(function (r) { setTimeout(r, 400); });
+        props = widgetPropsFor(fieldName);
+      }
+      if (!props || typeof props.onAddAsset !== 'function') {
+        throw new Error('could not reach the image field — open the entry and try again');
+      }
+
+      /* Register the asset in Decap's media library. */
+      try {
+        await props.onAddAsset({ file: file });
+      } catch (e) {
+        throw new Error('upload failed: ' + (e && e.message ? e.message : 'unknown error'));
+      }
+
+      /* Build the public path Decap will store this at (per-collection folders). */
       var coll = (function () { var m = /\/collections\/([^\/]+)\//.exec(window.location.hash || ''); return m ? m[1] : ''; })();
-      var mediaDir, publicDir;
-      if (coll === 'chapters' || coll === 'gallery' || coll === 'traditional_art') { mediaDir = 'images'; publicDir = '/images'; }
-      else if (coll === 'emojis') { mediaDir = 'images/emojis'; publicDir = '/images/emojis'; }
-      else { mediaDir = 'images/uploads'; publicDir = '/images/uploads'; }
-      var path = mediaDir + '/' + file.name;
-      async function getSha(tk) {
-        try {
-          window._lcOwnRequest = true;
-          var r = await fetch('https://api.github.com/repos/' + repo + '/contents/' + path + '?ref=main', { headers: { Authorization: 'token ' + tk, Accept: 'application/vnd.github+json' } });
-          window._lcOwnRequest = false;
-          if (!r.ok) return null;
-          var j = await r.json();
-          return j && j.sha ? j.sha : null;
-        } catch (_) { window._lcOwnRequest = false; return null; }
-      }
-      async function doPut(tk, sha) {
-        /* github backend talks to GitHub's API directly — NOT the old git-gateway
-           proxy. Auth header is 'token <x>' (GitHub style), not 'Bearer'. The flag
-           must stay true across the whole request (not just the sync fetch call)
-           so the interceptor never mistakes our own upload for Decap's traffic. */
-        var body = { message: 'Upload ' + file.name, content: b64, branch: 'main' };
-        if (sha) body.sha = sha; /* required by GitHub to overwrite an existing file */
-        window._lcOwnRequest = true;
-        try {
-          return await fetch('https://api.github.com/repos/' + repo + '/contents/' + path, {
-            method: 'PUT',
-            headers: { Authorization: 'token ' + tk, 'Content-Type': 'application/json', Accept: 'application/vnd.github+json' },
-            body: JSON.stringify(body)
-          });
-        } finally { window._lcOwnRequest = false; }
-      }
-      var resp = await doPut(token);
-      if (resp.status === 401) {
-        /* token died mid-session — refresh once and retry automatically */
-        token = await window._lcForceRefreshToken();
-        resp = await doPut(token);
-      }
-      if (resp.status === 422) {
-        /* file already exists at this path — GitHub needs its sha to overwrite */
-        var sha = await getSha(token);
-        if (sha) resp = await doPut(token, sha);
-      }
-      if (!resp.ok) {
-        var txt = await resp.text().catch(function () { return ''; });
-        var msg = ''; try { msg = JSON.parse(txt).message || ''; } catch (_) { msg = txt.slice(0, 80); }
-        throw new Error('upload ' + resp.status + (msg ? ' — ' + msg : ''));
-      }
+      var publicDir = (coll === 'chapters' || coll === 'gallery' || coll === 'traditional_art') ? '/images'
+                     : (coll === 'emojis') ? '/images/emojis' : '/images/uploads';
       var value = publicDir + '/' + file.name;
 
-      /* Read the widget's live value by finding this field's button fresh each time
-         (React replaces nodes on re-render, so never reuse an old reference). */
-      function liveWidgetValue(name) {
-        try {
-          var b = window._lcFindChooseButton ? window._lcFindChooseButton(name) : null;
-          if (!b) return undefined;
-          var p = findWidgetOnChange(b, name);
-          return p ? p.value : undefined;
-        } catch (_) { return undefined; }
-      }
       function matches(a, b) {
         if (a == null) return false;
         a = String(a); b = String(b);
         if (a === b) return true;
+        /* tolerate only a leading-slash difference — NOT a loose basename match,
+           which could falsely confirm against a different field's image. */
         var strip = function (s) { return s.replace(/^\/+/, ''); };
-        if (strip(a) === strip(b)) return true;
-        return a.split('/').pop() === b.split('/').pop();
+        return strip(a) === strip(b);
       }
-
-      /* Set the field via Redux dispatch — this is the method proven to actually
-         populate the field on this Decap build (the widget's onChange is a no-op
-         here). Field payload must support .get() since Decap's reducer calls it. */
-      function fieldShim(name) {
-        var d = { name: name, widget: 'image' };
-        return { get: function (k) { return d[k]; }, getIn: function (ks) { return d[ks && ks[0]]; }, toJS: function () { return d; } };
-      }
-      function dispatchSet(name, val) {
-        var store = window.CMS && window.CMS.store;
-        if (!store) return;
-        [
-          { type: 'DRAFT_CHANGE_FIELD', payload: { field: fieldShim(name), value: val, metadata: undefined, entries: [] } },
-          { type: 'DRAFT_CHANGE_FIELD', payload: { field: fieldShim(name), value: val } },
-          { type: 'DRAFT_CHANGE_FIELD', payload: { path: name, value: val, field: fieldShim(name) } },
-          { type: 'ENTRY_DRAFT_CHANGE_FIELD', payload: { path: name, value: val, field: fieldShim(name) } }
-        ].forEach(function (action) { try { store.dispatch(action); } catch (_) {} });
+      function liveWidgetValue(name) {
+        var p = widgetPropsFor(name);
+        return p ? p.value : undefined;
       }
 
       if (fieldName) {
-        dispatchSet(fieldName, value);
-        /* Confirm by reading the widget's live value, giving React time to commit. */
         var confirmed = false;
-        for (var tick = 0; tick < 6; tick++) {
+        for (var tick = 0; tick < 8; tick++) {
+          try {
+            var lp = widgetPropsFor(fieldName);
+            if (lp && typeof lp.onChange === 'function') lp.onChange(value);
+          } catch (_) {}
           await new Promise(function (r) { setTimeout(r, 200); });
           if (matches(liveWidgetValue(fieldName), value)) { confirmed = true; break; }
-          if (tick === 2) dispatchSet(fieldName, value); /* one more push midway */
         }
         if (!confirmed) {
-          throw new Error('image saved to repo as ' + file.name + ', but the field didn\u2019t auto-fill \u2014 click "Choose an image" and select it');
+          throw new Error('image added to the media library as ' + file.name + ' — click "Choose an image" and it will be at the top');
         }
       }
       return value;
