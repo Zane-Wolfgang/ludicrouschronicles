@@ -555,25 +555,26 @@
     const params = new URLSearchParams(window.location.search);
     const play = params.get('play');
     if (!play) return;
-    const target = play.trim().toLowerCase().replace(/\s+/g, ' ');
+    const norm = s => s.trim().toLowerCase().replace(/\s*🔒\s*/g, '').replace(/\s+/g, ' ');
+    const target = norm(play);
 
     function tryFind(attemptsLeft) {
       const buttons = document.querySelectorAll('.video-item');
       for (const btn of buttons) {
         const titleEl = btn.querySelector('.video-item-title');
         if (!titleEl) continue;
-        /* Normalise whitespace + case for robust matching */
-        const text = titleEl.textContent.trim().toLowerCase().replace(/\s+/g, ' ');
-        if (text === target) {
-          btn.click();
+        if (norm(titleEl.textContent) === target) {
+          if (!(btn.classList.contains('active') && document.querySelector('.videos-right')?.classList.contains('visible'))) {
+            btn.click();
+          }
           btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          return;
+          return true;
         }
       }
-      /* Retry — CMS videos may still be rendering */
-      if (attemptsLeft > 0) setTimeout(() => tryFind(attemptsLeft - 1), 400);
+      if (attemptsLeft > 0) setTimeout(() => tryFind(attemptsLeft - 1), 300);
+      return false;
     }
-    setTimeout(() => tryFind(10), 200); /* start after 200ms, retry up to 10× every 400ms */
+    setTimeout(() => tryFind(30), 200);
   }
   autoPlayFromURL();
 </script>
