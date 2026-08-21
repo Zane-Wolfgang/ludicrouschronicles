@@ -274,6 +274,15 @@ async function loadAllContent() {
           : (isLocked ? `${item.type} · ${item.tier==='devoted'?'Devoted':'Bound'}` : item.type);
         let href = isLocked ? 'membership.html' : (item.href || '#');
         if (!isLocked && item.type === 'Video') href = `videos.html?play=${encodeURIComponent(item.title)}`;
+        /* Any gallery-bound entry (stills, traditional, digital) must open its OWN
+           image, never a bare section anchor. Rewrite #stills/#traditional/#wips (or
+           a missing href) to the title hash. */
+        if (!isLocked && /^gallery\.html#(stills|traditional|wips)$/i.test(href || '')) {
+          href = `gallery.html#${encodeURIComponent(item.title)}`;
+        }
+        if (!isLocked && /still|traditional/i.test(item.type || '') && (!href || href === '#')) {
+          href = `gallery.html#${encodeURIComponent(item.title)}`;
+        }
         const filterType = item.type === 'Video' ? 'video' : (item.filter_type || 'story');
         addEntry(new Date(item.date||0).getTime(), makeCard(href, item.thumbnail||'', displayTitle, item.label||item.type, typeDisplay, isLocked, filterType, !isLocked, null, item.is_voice === true), displayTitle);
       });
