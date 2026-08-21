@@ -862,6 +862,10 @@ document.getElementById('lb-comment-submit').addEventListener('click', async () 
 })();
 
 let slideImages = [], slideTitles = [], slideType = '', slideIndex = 0;
+function safeReplaceState(hash) {
+  try { history.replaceState(null, '', hash); }
+  catch (_) { /* sandboxed/cross-origin preview blocks replaceState — ignore */ }
+}
 const galleryNotes = new Map();
 
 const lb      = document.getElementById('lightbox');
@@ -954,7 +958,7 @@ var _prevHash = '';
 
 function openLightbox(src, title, type, notes) {
   _prevHash = location.hash;
-  history.replaceState(null, '', '#' + encodeURIComponent(title));
+  safeReplaceState('#' + encodeURIComponent(title));
   lbImg.src = src;
   lb.classList.add('open'); lb.classList.remove('zoomed');
   document.body.classList.remove('lc-zoomed');
@@ -972,7 +976,7 @@ function openLightbox(src, title, type, notes) {
 
 function openSlideshow(images, titles, type, notes) {
   _prevHash = location.hash;
-  history.replaceState(null, '', '#' + encodeURIComponent(titles[0]));
+  safeReplaceState('#' + encodeURIComponent(titles[0]));
   slideImages = images; slideTitles = titles; slideType = type; slideIndex = 0;
   lb.classList.add('open'); lb.classList.remove('zoomed');
   document.body.classList.remove('lc-zoomed');
@@ -985,7 +989,7 @@ function openSlideshow(images, titles, type, notes) {
 
 function showSlide(index) {
   if (slideTitles && slideTitles[index])
-    history.replaceState(null, '', '#' + encodeURIComponent(slideTitles[index]));
+    safeReplaceState('#' + encodeURIComponent(slideTitles[index]));
   lbImg.style.opacity = '0.2';
   const incoming = new Image();
   incoming.onload = () => { lbImg.src = slideImages[index]; lbImg.style.opacity = '1'; };
@@ -1003,7 +1007,7 @@ function closeLightbox() {
   document.body.style.overflow = '';
   zoomed = false;
   /* Restore the section hash (e.g. #stills) or clear if we came from root */
-  history.replaceState(null, '', _prevHash || location.pathname);
+  safeReplaceState(_prevHash || location.pathname);
   showSocials();
 }
 
@@ -1326,15 +1330,13 @@ _lcHashOpenRetryLoop();
 function openFromHash() {
   const hash = decodeURIComponent(window.location.hash.slice(1));
   if (!hash) return false;
-  const hashLower = hash.toLowerCase();
+  const norm = s => (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  const hashNorm = norm(hash);
   let found = false;
   document.querySelectorAll('.gallery-item:not(.locked)').forEach(item => {
     if (found) return;
-    const title = item.querySelector('.gallery-overlay-title')?.textContent?.trim();
-    if (title && title.toLowerCase() === hashLower) {
-      /* Fire the tile's own click so it opens exactly as a normal click would —
-         openSlideshow for multi-image sets (with arrows), openLightbox for singles.
-         Using the real click avoids fragile onclick-string reconstruction. */
+    const title = item.querySelector('.gallery-overlay-title')?.textContent;
+    if (title && norm(title) === hashNorm) {
       item.click();
       found = true;
       return;
