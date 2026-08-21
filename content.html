@@ -288,10 +288,10 @@ async function loadAllContent() {
       items.filter(item => { const t=item.premiere_at||item.date; return !t||new Date(t)<=now; }).forEach(item => {
         const isLocked = tRank[item.tier||'free'] > tRank[userTier];
         addEntry(new Date(item.date||0).getTime(), makeCard(
-          isLocked ? 'membership.html' : '#', item.image||'', item.title,
+          isLocked ? 'membership.html' : `gallery.html#${encodeURIComponent(item.title)}`, item.image||'', item.title,
           item.type||'Illustration', isLocked ? `Art · ${item.tier==='devoted'?'Devoted':'Bound'}` : 'Art',
           isLocked, 'art', !isLocked,
-          isLocked ? null : () => { window.location.href = `gallery.html#${encodeURIComponent(item.title)}`; }
+          null
         ), item.title);
       });
     }
@@ -309,7 +309,7 @@ async function loadAllContent() {
           isLocked ? 'membership.html' : `gallery.html#${encodeURIComponent(item.title)}`,
           item.image||'', item.title, 'Stills', typeDisplay,
           isLocked, 'stills', !isLocked,
-          isLocked ? null : () => { window.location.href = `gallery.html#${encodeURIComponent(item.title)}`; }
+          null
         ), item.title);
       });
     }
@@ -325,7 +325,7 @@ async function loadAllContent() {
     ['images/art-13-rain.png','In the Rain','Character Art'],
   ];
   const baseDate = new Date(2024,0,1).getTime();
-  freeGallery.forEach(([img, title, type], i) => { addEntry(baseDate - (i * 86400000), makeCard('#', img, title, type, 'Art', false, 'art', false, () => { window.location.href = `gallery.html#${encodeURIComponent(title)}`; }), title); });
+  freeGallery.forEach(([img, title, type], i) => { addEntry(baseDate - (i * 86400000), makeCard(`gallery.html#${encodeURIComponent(title)}`, img, title, type, 'Art', false, 'art', false, null), title); });
 
   const paidArt = [
     { img: 'images/art-birthday.png', title: 'Happy Birthday', tier: 'devoted' },
