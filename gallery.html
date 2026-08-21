@@ -1244,7 +1244,7 @@ async function loadTraditional() {
         div.className = 'gallery-item';
         div.setAttribute('onclick', isSlideshow
           ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, 'Traditional Art${medium}', ${notesJson})`
-          : `openLightbox(${JSON.stringify(images[0])}, ${JSON.stringify(item.title)}, \`Traditional Art${medium}\`, ${notesJson})`);
+          : `openLightbox(${JSON.stringify(images[0])}, ${JSON.stringify(item.title)}, ${JSON.stringify('Traditional Art' + medium)}, ${notesJson})`);
         div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-overlay-date" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(10,8,6,0.7);padding:0.15em 0.5em;">${item.date ? parseLocalDate(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div>${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">Traditional Art${medium}</div></div>`;
       }
       grid.appendChild(div);
@@ -1282,7 +1282,7 @@ async function loadStills() {
         div.className = 'gallery-item';
         div.setAttribute('onclick', isSlideshow
           ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, 'Stills', ${notesJson})`
-          : `openLightbox(${JSON.stringify(images[0])}, ${JSON.stringify(item.title)}, \`Stills${game}\`, ${notesJson})`);
+          : `openLightbox(${JSON.stringify(images[0])}, ${JSON.stringify(item.title)}, ${JSON.stringify('Stills' + game)}, ${notesJson})`);
         div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-overlay-date" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(10,8,6,0.7);padding:0.15em 0.5em;">${item.date ? parseLocalDate(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div>${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">Stills${game}${isSlideshow ? ' · ' + images.length + ' shots' : ''}</div></div>`;
       }
       grid.appendChild(div);
@@ -1304,7 +1304,6 @@ function _lcTryHashOpen() {
   if (lb.classList.contains('open')) { _lcHashOpenDone = true; return true; }
   var hash = window.location.hash;
   if (!hash) return true;
-  if (hash === '#stills' || hash === '#traditional' || hash === '#wips') return true;
   if (openFromHash()) { _lcHashOpenDone = true; return true; }
   return false;
 }
@@ -1327,30 +1326,44 @@ loadWips().then(_lcTryHashOpen);
 _lcHashOpenRetryLoop();
 </script>
 <script>
+function lcHashKey(s) {
+  return decodeURIComponent(String(s || '')).trim().toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/[^\w ]/g, '');   /* drop punctuation so quotes/braces/brackets never block a match */
+}
+function tagGalleryTiles() {
+  document.querySelectorAll('.gallery-item').forEach(item => {
+    if (item.dataset.lcHash) return;
+    const t = item.querySelector('.gallery-overlay-title')?.textContent;
+    if (t) item.dataset.lcHash = lcHashKey(t);
+  });
+}
 function openFromHash() {
   const hash = decodeURIComponent(window.location.hash.slice(1));
   if (!hash) return false;
-  const norm = s => (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
-  const hashNorm = norm(hash);
+  tagGalleryTiles();
+  const key = lcHashKey(hash);
   let found = false;
   document.querySelectorAll('.gallery-item:not(.locked)').forEach(item => {
     if (found) return;
-    const title = item.querySelector('.gallery-overlay-title')?.textContent;
-    if (title && norm(title) === hashNorm) {
+    if (item.dataset.lcHash === key) {
       item.click();
       found = true;
-      return;
     }
   });
   return found;
 }
 window.addEventListener('load', () => {
   if (!window.location.hash) return;
-  if (window.location.hash === '#stills') { document.getElementById('stills')?.scrollIntoView({ behavior: 'smooth' }); return; }
-  if (window.location.hash === '#traditional') { document.getElementById('traditional')?.scrollIntoView({ behavior: 'smooth' }); return; }
-  if (window.location.hash === '#wips') { document.getElementById('wips')?.scrollIntoView({ behavior: 'smooth' }); return; }
   if (openFromHash()) return;
-  [50, 200, 500, 1000].forEach(delay => { setTimeout(() => { if (!lb.classList.contains('open')) openFromHash(); }, delay); });
+  const sect = window.location.hash;
+  if (sect === '#stills' || sect === '#traditional' || sect === '#wips') {
+    const id = sect.slice(1);
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    [50, 200, 500, 1000, 2000, 4000].forEach(delay => { setTimeout(() => { if (!lb.classList.contains('open')) openFromHash(); }, delay); });
+    return;
+  }
+  [50, 200, 500, 1000, 2000, 4000].forEach(delay => { setTimeout(() => { if (!lb.classList.contains('open')) openFromHash(); }, delay); });
 });
 </script>
 <script>
