@@ -306,10 +306,10 @@ async function loadAllContent() {
         const game = item.game ? ` · ${item.game}` : '';
         const typeDisplay = isLocked ? `Stills · ${item.tier==='devoted'?'Devoted':'Bound'}` : `Stills${game}`;
         addEntry(new Date(item.date||0).getTime(), makeCard(
-          isLocked ? 'membership.html' : 'gallery.html#stills',
+          isLocked ? 'membership.html' : `gallery.html#${encodeURIComponent(item.title)}`,
           item.image||'', item.title, 'Stills', typeDisplay,
           isLocked, 'stills', !isLocked,
-          isLocked ? null : () => { window.location.href = 'gallery.html#stills'; }
+          isLocked ? null : () => { window.location.href = `gallery.html#${encodeURIComponent(item.title)}`; }
         ), item.title);
       });
     }
