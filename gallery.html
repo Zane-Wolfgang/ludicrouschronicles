@@ -1290,13 +1290,37 @@ async function loadStills() {
 <script src="auth.js"></script>
 <script src="socials.js"></script>
 <script>
-loadCMSGallery().then(() => checkHardcodedLocks()).then(() => {
-  if (window.location.hash && window.location.hash !== '#stills' && window.location.hash !== '#traditional' && window.location.hash !== '#wips') openFromHash();
-});
-function tryOpenFromHash() { if (!lb.classList.contains('open')) openFromHash(); }
-loadStills().then(tryOpenFromHash);
-loadTraditional().then(tryOpenFromHash);
-loadWips().then(tryOpenFromHash);
+/* Loaders run independently and async, so a title-hash (e.g. a linked still) can be
+   requested before its section has rendered its .gallery-item. Keep retrying
+   openFromHash until the item exists or a timeout hits, so clicking/linking a still
+   actually opens the lightbox instead of only scrolling to the section. */
+var _lcHashOpenDone = false;
+function _lcTryHashOpen() {
+  if (_lcHashOpenDone) return true;
+  if (lb.classList.contains('open')) { _lcHashOpenDone = true; return true; }
+  var hash = window.location.hash;
+  if (!hash) return true;
+  if (hash === '#stills' || hash === '#traditional' || hash === '#wips') return true;
+  if (openFromHash()) { _lcHashOpenDone = true; return true; }
+  return false;
+}
+function _lcHashOpenRetryLoop() {
+  if (_lcTryHashOpen()) return;
+  var tries = 0;
+  var iv = setInterval(function () {
+    tries++;
+    if (_lcTryHashOpen() || tries > 60) clearInterval(iv);
+  }, 100);
+}
+
+loadCMSGallery()
+  .then(function () { return checkHardcodedLocks(); })
+  .then(function () { _lcTryHashOpen(); });
+
+loadStills().then(_lcTryHashOpen);
+loadTraditional().then(_lcTryHashOpen);
+loadWips().then(_lcTryHashOpen);
+_lcHashOpenRetryLoop();
 </script>
 <script>
 function openFromHash() {
@@ -1308,16 +1332,12 @@ function openFromHash() {
     if (found) return;
     const title = item.querySelector('.gallery-overlay-title')?.textContent?.trim();
     if (title && title.toLowerCase() === hashLower) {
-      /* Trigger the item's own onclick — this correctly calls openSlideshow for
-         multi-image sets (with arrows) or openLightbox for singles. */
-      const onclickAttr = item.getAttribute('onclick');
-      if (onclickAttr) {
-        try { new Function(onclickAttr)(); found = true; return; } catch(_) {}
-      }
-      /* Fallback: open directly if no onclick attribute */
-      const img = item.querySelector('img');
-      const type = item.querySelector('.gallery-overlay-type')?.textContent?.trim();
-      if (img) { openLightbox(img.src, title, type || ''); found = true; }
+      /* Fire the tile's own click so it opens exactly as a normal click would —
+         openSlideshow for multi-image sets (with arrows), openLightbox for singles.
+         Using the real click avoids fragile onclick-string reconstruction. */
+      item.click();
+      found = true;
+      return;
     }
   });
   return found;
