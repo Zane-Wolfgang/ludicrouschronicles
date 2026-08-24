@@ -411,6 +411,48 @@
   <p class="section-body fade-up fade-up-3">Illustrations made for the Chronicles — every piece drawn by hand.</p>
 </div>
 
+<div class="gallery-search-wrap">
+  <div class="gallery-search-inner">
+    <svg class="gallery-search-icon" viewBox="0 0 24 24"><path d="M10 2a8 8 0 105.3 14l5.4 5.3 1.4-1.4-5.3-5.3A8 8 0 0010 2zm0 2a6 6 0 110 12 6 6 0 010-12z"/></svg>
+    <input type="text" id="gallery-search" placeholder="Search by title, type, or year…" autocomplete="off" />
+    <button id="gallery-search-clear" type="button" aria-label="Clear" style="display:none;">✕</button>
+  </div>
+  <div class="gallery-search-suggest" id="gallery-search-suggest">
+    <span class="gss-label">Try:</span>
+    <button type="button" data-q="Character Art">Character Art</button>
+    <button type="button" data-q="Stills">Stills</button>
+    <button type="button" data-q="Traditional Art">Traditional Art</button>
+    <button type="button" data-q="Chapter Art">Chapter Art</button>
+    <span id="gallery-search-years"></span>
+  </div>
+  <div class="gallery-search-count" id="gallery-search-count"></div>
+</div>
+<style>
+  .gallery-search-wrap { max-width: 640px; margin: 0 auto 1rem; padding: 0 1rem; }
+  .gallery-search-inner { position: relative; display: flex; align-items: center; border: 1px solid var(--border-bright); background: rgba(10,8,6,0.6); }
+  .gallery-search-inner:focus-within { border-color: var(--gold-dim); }
+  .gallery-search-icon { width: 16px; height: 16px; fill: var(--gold-dim); margin-left: 0.9rem; flex-shrink: 0; }
+  #gallery-search {
+    flex: 1; background: transparent; border: none; outline: none;
+    font-family: 'Cinzel', serif; font-size: 0.85rem; letter-spacing: 0.05em;
+    color: var(--parchment); padding: 0.85rem 0.9rem;
+  }
+  #gallery-search::placeholder { color: var(--text-muted); letter-spacing: 0.1em; }
+  #gallery-search-clear { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; padding: 0 0.9rem; transition: color 0.2s; }
+  #gallery-search-clear:hover { color: var(--gold); }
+  .gallery-search-count { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); text-align: center; margin-top: 0.6rem; min-height: 12px; }
+  .gallery-search-suggest { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 0.7rem; }
+  .gallery-search-suggest .gss-label { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
+  .gallery-search-suggest button {
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text-muted); background: rgba(201,168,76,0.04); border: 1px solid var(--border);
+    padding: 0.35em 0.85em; cursor: pointer; transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .gallery-search-suggest button:hover { border-color: var(--gold-dim); color: var(--gold); background: rgba(201,168,76,0.09); }
+  .search-hidden { display: none !important; }
+  .gallery-nomatch { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); text-align: center; padding: 3rem 0; }
+</style>
+
 <section>
   <div class="section-inner">
     <div class="gallery-grid" id="gallery-grid">
@@ -624,6 +666,106 @@
     window.addEventListener('scroll', update, { passive: true });
     update();
   })();
+</script>
+
+<script>
+/* ── Gallery search: filter by title, type, or year ── */
+(function () {
+  const input = document.getElementById('gallery-search');
+  const clearBtn = document.getElementById('gallery-search-clear');
+  const countEl = document.getElementById('gallery-search-count');
+  if (!input) return;
+
+  const norm = s => (s || '').toLowerCase();
+
+  function tileText(item) {
+    if (item._lcSearch) return item._lcSearch;
+    const title = item.querySelector('.gallery-overlay-title')?.textContent || '';
+    const type  = item.querySelector('.gallery-overlay-type')?.textContent || '';
+    let date    = item.querySelector('.gallery-overlay-date')?.textContent || '';
+    const tier  = item.querySelector('.gallery-tier-label')?.textContent || '';
+    /* Hardcoded digital-art tiles have no date element — pull their date from
+       HARDCODED_DATES so year search covers them too. */
+    if (!date && typeof HARDCODED_DATES !== 'undefined' && title) {
+      const raw = HARDCODED_DATES[title.trim()];
+      if (raw) {
+        try { date = new Date(raw).getFullYear() + ' ' + raw; } catch (_) { date = raw; }
+      }
+    }
+    const txt = norm(`${title} ${type} ${date} ${tier}`);
+    item._lcSearch = txt;
+    return txt;
+  }
+
+  /* the four section wrappers we hide when they have no visible matches */
+  const sections = ['gallery-grid', 'stills', 'traditional', 'wips']
+    .map(id => document.getElementById(id))
+    .filter(Boolean);
+
+  function apply() {
+    const q = norm(input.value.trim());
+    clearBtn.style.display = q ? 'block' : 'none';
+    const terms = q.split(/\s+/).filter(Boolean);
+    let shown = 0;
+
+    document.querySelectorAll('.gallery-item').forEach(item => {
+      if (!q) { item.classList.remove('search-hidden'); shown++; return; }
+      const txt = tileText(item);
+      const ok = terms.every(t => txt.includes(t));
+      item.classList.toggle('search-hidden', !ok);
+      if (ok) shown++;
+    });
+
+    /* hide a whole section wrapper if none of its tiles matched. All four wrappers
+       live inside ONE <section>, so we hide the wrapper div itself, never the parent. */
+    sections.forEach(sec => {
+      const anyVisible = sec.querySelector('.gallery-item:not(.search-hidden)');
+      if (q) sec.classList.toggle('search-hidden', !anyVisible);
+      else sec.classList.remove('search-hidden');
+    });
+
+    countEl.textContent = q ? (shown ? shown + (shown === 1 ? ' result' : ' results') : 'No matches') : '';
+  }
+
+  /* re-scan when async tiles load in */
+  const debounced = () => { clearTimeout(input._t); input._t = setTimeout(apply, 120); };
+  input.addEventListener('input', debounced);
+  clearBtn.addEventListener('click', () => { input.value = ''; apply(); input.focus(); });
+
+  /* suggestion chips: fill the box and search */
+  function wireChip(btn) {
+    btn.addEventListener('click', () => { input.value = btn.dataset.q || btn.textContent.trim(); apply(); input.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+  }
+  document.querySelectorAll('#gallery-search-suggest button').forEach(wireChip);
+
+  /* Build year chips from the years actually present, newest first — updates itself
+     as new work is added in future years, no hardcoding. */
+  const yearsWrap = document.getElementById('gallery-search-years');
+  function refreshYearChips() {
+    if (!yearsWrap) return;
+    const years = new Set();
+    document.querySelectorAll('.gallery-item').forEach(item => {
+      const m = tileText(item).match(/\b(19|20)\d{2}\b/g);
+      if (m) m.forEach(y => years.add(y));
+    });
+    const sorted = [...years].sort((a, b) => b - a);
+    const existing = new Set([...yearsWrap.querySelectorAll('button')].map(b => b.dataset.q));
+    sorted.forEach(y => {
+      if (existing.has(y)) return;
+      const b = document.createElement('button');
+      b.type = 'button'; b.dataset.q = y; b.textContent = y;
+      wireChip(b); yearsWrap.appendChild(b);
+    });
+  }
+  refreshYearChips();
+
+  /* Async loaders append tiles after this script runs; observe the grids so any
+     newly-added tile is filtered under the active query without depending on
+     script/definition order. */
+  const gridIds = ['gallery-grid', 'stills-grid', 'traditional-grid', 'wips-grid'];
+  const mo = new MutationObserver(() => { refreshYearChips(); if (input.value.trim()) debounced(); });
+  gridIds.forEach(id => { const g = document.getElementById(id); if (g) mo.observe(g, { childList: true }); });
+})();
 </script>
 
 <!-- Socials Sidebar -->
