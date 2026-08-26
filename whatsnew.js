@@ -31,6 +31,7 @@
   const LS = {
     seen:     scope => `lc_whatsnew_seen_${scope}`,      // JSON array of seen ids
     baseline: scope => `lc_whatsnew_baseline_${scope}`,  // ms timestamp of first visit
+    count:    scope => `lc_whatsnew_count_${scope}`,      // last-known unseen-new count
   };
 
   function readSeen(scope) {
@@ -124,6 +125,8 @@
     });
 
     updateBanner(scope, newCount);
+    try { localStorage.setItem(LS.count(scope), String(newCount)); } catch (_) {}
+    refreshNavDots();
     if (typeof cfg.onCount === 'function') cfg.onCount(newCount);
     return { newCount };
   }
@@ -190,19 +193,32 @@
     rescan: scan,
     markSeen,
     markAllSeen,
-    /* Nav-link dot helper: pass a selector for the nav <a> and the scope(s) to watch.
-       Shows a small dot on the link if any watched scope has unseen-new items. */
+    /* Nav-link dot: shows a dot on a nav <a> when any of the given scopes has
+       unseen-new items. Reads the LAST-KNOWN count from localStorage, so it works
+       on pages that don't themselves load that scope's data (e.g. show the Gallery
+       dot while sitting on the Content page). The count is refreshed to truth
+       whenever the visitor actually opens that scope's page. */
     navDot(linkSelector, scopes) {
-      const link = document.querySelector(linkSelector);
-      if (!link) return;
-      const update = () => {
-        const any = scopes.some(s => (scan(s).newCount > 0));
-        let dot = link.querySelector('.lc-nav-new-dot');
-        if (any && !dot) { dot = document.createElement('span'); dot.className = 'lc-nav-new-dot'; link.appendChild(dot); }
-        else if (!any && dot) dot.remove();
-      };
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', update);
-      else update();
+      navDotRegistry.push({ linkSelector, scopes });
+      const run = () => refreshNavDots();
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+      else run();
     }
   };
+
+  const navDotRegistry = [];
+  function storedCount(scope) {
+    const v = localStorage.getItem(LS.count(scope));
+    return v ? Number(v) : 0;
+  }
+  function refreshNavDots() {
+    navDotRegistry.forEach(({ linkSelector, scopes }) => {
+      const link = document.querySelector(linkSelector);
+      if (!link) return;
+      const any = scopes.some(s => storedCount(s) > 0);
+      let dot = link.querySelector('.lc-nav-new-dot');
+      if (any && !dot) { dot = document.createElement('span'); dot.className = 'lc-nav-new-dot'; link.appendChild(dot); }
+      else if (!any && dot) dot.remove();
+    });
+  }
 })();
