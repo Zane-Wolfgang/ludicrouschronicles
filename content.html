@@ -393,6 +393,11 @@ async function loadAllContent() {
     bannerMount: '#content-grid',
     bannerText: n => `${n} new since your last visit`
   });
+  if (window.LCWhatsNew) {
+    LCWhatsNew.navDot('nav a[href="gallery.html"]', ['gallery']);
+    LCWhatsNew.navDot('nav a[href="content.html"]', ['content']);
+    LCWhatsNew.navDot('nav a[href="videos.html"]', ['videos']);
+  }
 </script>
 <script>
 (async () => { await new Promise(r => setTimeout(r, 100)); loadAllContent(); })();
