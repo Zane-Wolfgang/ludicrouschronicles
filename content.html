@@ -258,7 +258,7 @@ async function loadAllContent() {
   const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
   grid.innerHTML = '<div style="grid-column:1/-1;padding:3rem 2rem;text-align:center;font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold-dim);">Loading...</div>';
   const seen = new Set(), allCards = [];
-  function addEntry(date, card, title) { if (seen.has(title)) return; seen.add(title); allCards.push({ date: new Date(date || 0).getTime(), card }); }
+  function addEntry(date, card, title) { if (seen.has(title)) return; seen.add(title); const ms = new Date(date || 0).getTime(); try { if (card && card.setAttribute && ms) card.setAttribute('data-lc-date', ms); } catch(_) {} allCards.push({ date: ms, card }); }
 
   try {
     const res = await fetch('/_data/content-index.json');
@@ -381,6 +381,19 @@ async function loadAllContent() {
 </script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
+<script src="whatsnew.js"></script>
+<script>
+  if (window.LCWhatsNew) LCWhatsNew.init({
+    scope: 'content',
+    itemSelector: '.content-card',
+    getId: el => el.querySelector('.content-title')?.textContent?.trim(),
+    getDate: el => { const d = el.getAttribute('data-lc-date'); return d ? Number(d) : null; },
+    dotTarget: el => el.querySelector('.content-thumb') || el,
+    observe: ['#content-grid'],
+    bannerMount: '#content-grid',
+    bannerText: n => `${n} new since your last visit`
+  });
+</script>
 <script>
 (async () => { await new Promise(r => setTimeout(r, 100)); loadAllContent(); })();
 </script>
