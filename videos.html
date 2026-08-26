@@ -581,6 +581,19 @@
 <script src="emojis.js"></script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
+<script src="whatsnew.js"></script>
+<script>
+  if (window.LCWhatsNew) LCWhatsNew.init({
+    scope: 'videos',
+    itemSelector: '.video-item',
+    getId: el => el.querySelector('.video-item-title')?.textContent?.replace(/🔒/g,'').trim(),
+    getDate: el => { const d = el.getAttribute('data-lc-date'); return d ? Number(d) : null; },
+    dotTarget: el => el.querySelector('.video-thumb') || el,
+    observe: ['#video-list'],
+    bannerMount: '#video-list',
+    bannerText: n => `${n} new since your last visit`
+  });
+</script>
 <script>
 async function loadCMSVideos() {
   const list = document.getElementById('video-list');
@@ -598,6 +611,8 @@ async function loadCMSVideos() {
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
       const btn = document.createElement('button');
       btn.className = 'video-item' + (idx === 0 && !isLocked ? ' active' : '');
+      const _vd = new Date(item.premiere_at || item.date || 0).getTime();
+      if (_vd) btn.setAttribute('data-lc-date', _vd);
       if (isLocked) { btn.setAttribute('onclick', "window.location.href='membership.html'"); }
       else {
         const videoSrc = item.video || '';
