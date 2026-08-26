@@ -1435,6 +1435,24 @@ async function loadStills() {
 <script src="emojis.js"></script>
 <script src="auth.js"></script>
 <script src="socials.js"></script>
+<script src="whatsnew.js"></script>
+<script>
+  if (window.LCWhatsNew) LCWhatsNew.init({
+    scope: 'gallery',
+    itemSelector: '.gallery-item',
+    getId: el => el.querySelector('.gallery-overlay-title')?.textContent?.trim(),
+    getDate: el => {
+      const t = el.querySelector('.gallery-overlay-date')?.textContent?.trim();
+      if (t) return t;
+      const title = el.querySelector('.gallery-overlay-title')?.textContent?.trim();
+      if (title && typeof HARDCODED_DATES !== 'undefined' && HARDCODED_DATES[title]) return HARDCODED_DATES[title];
+      return null;
+    },
+    observe: ['#gallery-grid', '#stills-grid', '#traditional-grid', '#wips-grid'],
+    bannerMount: '.gallery-search-wrap',
+    bannerText: n => `${n} new since your last visit`
+  });
+</script>
 <script>
 /* Loaders run independently and async, so a title-hash (e.g. a linked still) can be
    requested before its section has rendered its .gallery-item. Keep retrying
