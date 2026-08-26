@@ -593,6 +593,11 @@
     bannerMount: '#video-list',
     bannerText: n => `${n} new since your last visit`
   });
+  if (window.LCWhatsNew) {
+    LCWhatsNew.navDot('nav a[href="gallery.html"]', ['gallery']);
+    LCWhatsNew.navDot('nav a[href="content.html"]', ['content']);
+    LCWhatsNew.navDot('nav a[href="videos.html"]', ['videos']);
+  }
 </script>
 <script>
 async function loadCMSVideos() {
