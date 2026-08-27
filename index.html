@@ -365,6 +365,14 @@
   </div>
 </section>
 
+<section class="recent-strip" id="recent-strip" style="display:none;">
+  <div class="section-inner">
+    <div class="section-label">Fresh Off the Page</div>
+    <h2 class="section-title">Recently Added</h2>
+    <div class="recent-grid" id="recent-grid"></div>
+  </div>
+</section>
+
 <section class="teaser-strip">
   <div class="section-inner">
     <div class="section-label">What Awaits</div>
@@ -391,6 +399,141 @@
     </div>
   </div>
 </section>
+
+<style>
+  .recent-strip { padding-top: 1rem; }
+  .recent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 2.5rem; }
+  .recent-card { position: relative; display: block; border: 1px solid var(--border); overflow: hidden; text-decoration: none; background: var(--surface); border-radius: 12px; transition: border-color 0.25s, transform 0.25s; }
+  .recent-card:hover { border-color: var(--gold-dim); transform: translateY(-3px); }
+
+  /* Entrance: fade up with a big twist, staggered left-to-right. Cards start
+     hidden; the .recent-in class (added on load) plays the animation. */
+  .recent-card { opacity: 0; }
+  .recent-card.recent-in { animation: recentTwistUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  .recent-card.recent-in:nth-child(1) { animation-delay: 0.05s; }
+  .recent-card.recent-in:nth-child(2) { animation-delay: 0.28s; }
+  .recent-card.recent-in:nth-child(3) { animation-delay: 0.52s; }
+  @keyframes recentTwistUp {
+    0%   { opacity: 0; transform: translateY(55px) rotate(-9deg) scale(0.9); }
+    60%  { opacity: 1; transform: translateY(-6px) rotate(3deg) scale(1.02); }
+    100% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+  }
+  /* hover transform must not fight the finished entrance */
+  .recent-card.recent-in { }
+  @media (prefers-reduced-motion: reduce) {
+    .recent-card { opacity: 1; }
+    .recent-card.recent-in { animation: none; }
+  }
+
+  .recent-card-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; filter: brightness(0.9); transition: filter 0.45s ease; }
+  .recent-card-noimg { background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(10,8,6,0.4)); }
+  .recent-card:hover .recent-card-img { filter: brightness(1.05); }
+  /* Vintage mode: cards wear the same 1920s sepia as the rest of the site, and
+     bleed back to full colour when hovered. Specificity is raised (section id +
+     img) so these win over the global `body.vintage img{}` fallback rule. */
+  body.vintage #recent-strip img.recent-card-img { filter: sepia(0.85) saturate(0.6) brightness(0.84) contrast(0.9); transition: filter 0.45s ease; }
+  body.vintage #recent-strip .recent-card:hover img.recent-card-img { filter: sepia(0) saturate(1) brightness(1.05) contrast(1); }
+  .recent-card-body { padding: 0.85rem 1rem 1rem; }
+  .recent-card-type { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
+  .recent-card-title { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--parchment); margin-top: 0.3rem; letter-spacing: 0.03em; }
+  .recent-card-date { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; color: var(--text-muted); margin-top: 0.4rem; }
+  @media (max-width: 768px) { .recent-grid { grid-template-columns: 1fr; } }
+</style>
+<script>
+window.addEventListener('load', function () {
+  (async function () {
+    const grid = document.getElementById('recent-grid');
+    const strip = document.getElementById('recent-strip');
+    if (!grid) return;
+
+    async function resolveTier() {
+      for (let i = 0; i < 30; i++) {
+        if (window.getUserTier) { try { return await window.getUserTier(); } catch (_) { return 'free'; } }
+        await new Promise(r => setTimeout(r, 100));
+      }
+      return 'free';
+    }
+    const parseLocalDate = s => { if (!s) return null; const p = String(s).split(/[-T]/); return new Date(+p[0], +p[1]-1, +p[2]); };
+    const fetchJSON = async url => { try { const r = await fetch(url); return r.ok ? await r.json() : []; } catch (_) { return []; } };
+
+    try {
+      const userTier = await resolveTier();
+      const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
+      const now = new Date();
+      const locked = item => tRank[item.tier || 'free'] > tRank[userTier];
+      const premiered = item => { const t = item.premiere_at || item.date; return !t || new Date(t) <= now; };
+
+      const pool = [];
+      const seenTitles = new Set();
+      const addToPool = entry => {
+        const key = (entry.title || '').trim().toLowerCase();
+        if (!key || seenTitles.has(key)) return;   /* no duplicate titles across feeds */
+        seenTitles.add(key);
+        pool.push(entry);
+      };
+
+      /* Drawings — gallery-index → open the piece in the gallery lightbox */
+      (await fetchJSON('/_data/gallery-index.json')).forEach(item => {
+        if (locked(item) || !premiered(item)) return;
+        addToPool({
+          title: item.title,
+          type: item.type || 'Illustration',
+          date: item.date,
+          img: (item.images && item.images[0]) || item.image || '',
+          href: 'gallery.html#' + encodeURIComponent(item.title)
+        });
+      });
+
+      /* Videos & chapters (and any stills/art) — content-index */
+      (await fetchJSON('/_data/content-index.json')).forEach(item => {
+        if (locked(item) || !premiered(item)) return;
+        let href, type;
+        if (item.type === 'Video') { href = 'videos.html?play=' + encodeURIComponent(item.title); type = 'Video'; }
+        else if (item.type === 'Chapter') { href = item.href || 'content.html'; type = 'Ghost in Me Book'; }
+        else { href = item.href || 'content.html'; type = item.type || 'Content'; }
+        /* Never let a card dead-end at a bare gallery section anchor — open the piece. */
+        if (/^gallery\.html#(stills|traditional|wips)$/i.test(href || '')) {
+          href = 'gallery.html#' + encodeURIComponent(item.title);
+        }
+        addToPool({ title: item.title, type, date: item.date, img: item.thumbnail || '', href });
+      });
+
+      pool.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+      const top = pool.slice(0, 3);
+      if (!top.length) return;
+
+      grid.innerHTML = top.map(it => {
+        const date = it.date ? parseLocalDate(it.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+        const imgHtml = it.img
+          ? `<img class="recent-card-img" src="${it.img}" alt="${it.title}" loading="lazy" />`
+          : `<div class="recent-card-img recent-card-noimg"></div>`;
+        return `<a class="recent-card" href="${it.href}">
+          ${imgHtml}
+          <div class="recent-card-body">
+            <div class="recent-card-type">${it.type}</div>
+            <div class="recent-card-title">${it.title}</div>
+            <div class="recent-card-date">${date}</div>
+          </div>
+        </a>`;
+      }).join('');
+
+      strip.style.display = '';
+      /* trigger the staggered twist-up entrance on the next frame so the browser
+         registers the starting (hidden) state first */
+      requestAnimationFrame(() => {
+        grid.querySelectorAll('.recent-card').forEach(c => {
+          c.classList.add('recent-in');
+          const finish = () => { c.style.animation = 'none'; c.style.opacity = '1'; };
+          c.addEventListener('animationend', finish, { once: true });
+          /* safety net: if animationend never fires (interrupted, reduced-motion,
+             or unsupported), force the card visible so it can't get stuck hidden */
+          setTimeout(finish, 1800);
+        });
+      });
+    } catch (_) { /* leave hidden on error */ }
+  })();
+});
+</script>
 
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
