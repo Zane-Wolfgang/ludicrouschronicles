@@ -411,7 +411,7 @@
   .recent-face { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
   .recent-front { position: relative; }
   .recent-back {
-    position: absolute; inset: 0; transform: rotateX(180deg);
+    position: absolute; inset: 0; transform: rotateY(180deg);
     display: flex; align-items: center; justify-content: center;
     background: radial-gradient(circle at 50% 45%, #171009, #0d0a06);
     border-color: rgba(201,168,76,0.28);
@@ -426,25 +426,25 @@
 
   .recent-card:hover .recent-front .recent-card-img { filter: brightness(1.08) saturate(1.15); }
 
-  /* Entrance: coin-tumble up on the horizontal axis, back-to-front, staggered.
-     Pre-set the hidden/flipped start state so there's no flash of the resting
-     front before the animation begins. */
-  .recent-card { opacity: 0; transform: translateY(80px) rotateX(180deg) scale(0.9); }
-  .recent-card.recent-in { animation: recentCoinUp 1.15s cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+  /* Entrance: corkscrew — rise while spinning on the vertical axis (right-to-left,
+     multiple turns) and land on the card's face. Pre-set the start state so there's
+     no flash of the resting front before it begins. */
+  .recent-card { opacity: 0; transform: translateY(110px) rotateY(540deg) scale(0.85); }
+  .recent-card.recent-in { animation: recentCorkscrew 1.25s cubic-bezier(0.18, 0.72, 0.24, 1) both; }
   .recent-card.recent-in:nth-child(1) { animation-delay: 0.10s; }
   .recent-card.recent-in:nth-child(2) { animation-delay: 0.42s; }
   .recent-card.recent-in:nth-child(3) { animation-delay: 0.74s; }
   /* Resting state after the entrance finishes — flat and visible; hover still lifts. */
   .recent-card.recent-done { opacity: 1; transform: none; }
   .recent-card.recent-done:hover { transform: translateY(-4px); }
-  @keyframes recentCoinUp {
-    0%   { opacity: 0; transform: translateY(80px) rotateX(180deg) scale(0.9); }
-    35%  { opacity: 1; }
-    70%  { transform: translateY(-8px) rotateX(-18deg) scale(1.02); }
-    100% { opacity: 1; transform: translateY(0) rotateX(0deg) scale(1); }
+  @keyframes recentCorkscrew {
+    0%   { opacity: 0; transform: translateY(110px) rotateY(540deg) scale(0.85); }
+    30%  { opacity: 1; }
+    80%  { transform: translateY(-9px) rotateY(-24deg) scale(1.03); }
+    100% { opacity: 1; transform: translateY(0) rotateY(0deg) scale(1); }
   }
   @media (prefers-reduced-motion: reduce) {
-    .recent-card { opacity: 1; }
+    .recent-card { opacity: 1; transform: none; }
     .recent-card.recent-in { animation: none; transform: none; }
   }
 
