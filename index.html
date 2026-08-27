@@ -402,36 +402,58 @@
 
 <style>
   .recent-strip { padding-top: 1rem; }
-  .recent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 2.5rem; perspective: 1200px; }
-  .recent-card { position: relative; display: block; border: 1px solid var(--border); overflow: hidden; text-decoration: none; background: var(--surface); border-radius: 12px; transition: border-color 0.25s, transform 0.25s; transform-origin: center bottom; }
-  .recent-card:hover { border-color: var(--gold-dim); transform: translateY(-4px); }
+  .recent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 2.5rem; perspective: 1400px; }
 
-  /* Entrance: rise up with a big twist, staggered left-to-right. Cards start
-     hidden; the .recent-in class (added on load) plays the animation. */
-  .recent-card { opacity: 0; }
-  .recent-card.recent-in { animation: recentTwistUp 1.1s cubic-bezier(0.18, 0.9, 0.28, 1.2) both; }
-  .recent-card.recent-in:nth-child(1) { animation-delay: 0.1s; }
-  .recent-card.recent-in:nth-child(2) { animation-delay: 0.38s; }
-  .recent-card.recent-in:nth-child(3) { animation-delay: 0.66s; }
-  @keyframes recentTwistUp {
-    0%   { opacity: 0; transform: translateY(90px) rotate(-14deg) rotateX(35deg) scale(0.82); }
-    55%  { opacity: 1; transform: translateY(-10px) rotate(5deg) rotateX(-6deg) scale(1.03); }
-    75%  { transform: translateY(3px) rotate(-2deg) rotateX(2deg) scale(0.995); }
-    100% { opacity: 1; transform: translateY(0) rotate(0deg) rotateX(0deg) scale(1); }
+  /* Outer link is the flip stage; .recent-flip is the rotating body with two faces. */
+  .recent-card { position: relative; display: block; text-decoration: none; border-radius: 12px; transform-style: preserve-3d; transition: transform 0.25s; }
+  .recent-card:hover { transform: translateY(-4px); }
+  .recent-flip { position: relative; transform-style: preserve-3d; }
+  .recent-face { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .recent-front { position: relative; }
+  .recent-back {
+    position: absolute; inset: 0; transform: rotateX(180deg);
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 45%, #171009, #0d0a06);
+    border-color: rgba(201,168,76,0.28);
+  }
+  /* Art Deco emblem on the back — pure CSS, subtle gold */
+  .recent-back-emblem { width: 46px; height: 46px; position: relative; opacity: 0.55; }
+  .recent-back-emblem::before, .recent-back-emblem::after {
+    content: ''; position: absolute; inset: 0; border: 1px solid var(--gold-dim); transform: rotate(45deg);
+  }
+  .recent-back-emblem::after { inset: 9px; border-color: rgba(201,168,76,0.45); transform: rotate(45deg) scale(0.7); }
+  .recent-back-dot { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--gold-dim); border-radius: 50%; box-shadow: 0 0 8px rgba(201,168,76,0.6); }
+
+  .recent-card:hover .recent-front .recent-card-img { filter: brightness(1.08) saturate(1.15); }
+
+  /* Entrance: coin-tumble up on the horizontal axis, back-to-front, staggered.
+     Pre-set the hidden/flipped start state so there's no flash of the resting
+     front before the animation begins. */
+  .recent-card { opacity: 0; transform: translateY(80px) rotateX(180deg) scale(0.9); }
+  .recent-card.recent-in { animation: recentCoinUp 1.15s cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+  .recent-card.recent-in:nth-child(1) { animation-delay: 0.10s; }
+  .recent-card.recent-in:nth-child(2) { animation-delay: 0.42s; }
+  .recent-card.recent-in:nth-child(3) { animation-delay: 0.74s; }
+  /* Resting state after the entrance finishes — flat and visible; hover still lifts. */
+  .recent-card.recent-done { opacity: 1; transform: none; }
+  .recent-card.recent-done:hover { transform: translateY(-4px); }
+  @keyframes recentCoinUp {
+    0%   { opacity: 0; transform: translateY(80px) rotateX(180deg) scale(0.9); }
+    35%  { opacity: 1; }
+    70%  { transform: translateY(-8px) rotateX(-18deg) scale(1.02); }
+    100% { opacity: 1; transform: translateY(0) rotateX(0deg) scale(1); }
   }
   @media (prefers-reduced-motion: reduce) {
     .recent-card { opacity: 1; }
-    .recent-card.recent-in { animation: none; }
+    .recent-card.recent-in { animation: none; transform: none; }
   }
 
   .recent-card-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; filter: brightness(0.9); transition: filter 0.45s ease; }
-  .recent-card-noimg { background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(10,8,6,0.4)); }
-  .recent-card:hover .recent-card-img { filter: brightness(1.05); }
-  /* Vintage mode: cards wear the same 1920s sepia as the rest of the site, and
-     bleed back to full colour when hovered. Specificity is raised (section id +
-     img) so these win over the global `body.vintage img{}` fallback rule. */
-  body.vintage #recent-strip img.recent-card-img { filter: sepia(0.85) saturate(0.6) brightness(0.84) contrast(0.9); transition: filter 0.45s ease; }
-  body.vintage #recent-strip .recent-card:hover img.recent-card-img { filter: sepia(0) saturate(1) brightness(1.05) contrast(1); }
+  .recent-card-noimg { background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(10,8,6,0.4)); aspect-ratio: 4/3; }
+  /* Vintage mode: cards wear the site's 1920s sepia, bleeding to fuller, MORE
+     saturated colour on hover. Specificity raised to beat the global img fallback. */
+  body.vintage #recent-strip img.recent-card-img { filter: sepia(0.85) saturate(0.6) brightness(0.84) contrast(0.9); transition: filter 0.5s ease; }
+  body.vintage #recent-strip .recent-card:hover img.recent-card-img { filter: sepia(0) saturate(1.25) brightness(1.06) contrast(1.02); }
   .recent-card-body { padding: 0.85rem 1rem 1rem; }
   .recent-card-type { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
   .recent-card-title { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--parchment); margin-top: 0.3rem; letter-spacing: 0.03em; }
@@ -507,11 +529,18 @@ window.addEventListener('load', function () {
           ? `<img class="recent-card-img" src="${it.img}" alt="${it.title}" loading="lazy" />`
           : `<div class="recent-card-img recent-card-noimg"></div>`;
         return `<a class="recent-card" href="${it.href}">
-          ${imgHtml}
-          <div class="recent-card-body">
-            <div class="recent-card-type">${it.type}</div>
-            <div class="recent-card-title">${it.title}</div>
-            <div class="recent-card-date">${date}</div>
+          <div class="recent-flip">
+            <div class="recent-face recent-front">
+              ${imgHtml}
+              <div class="recent-card-body">
+                <div class="recent-card-type">${it.type}</div>
+                <div class="recent-card-title">${it.title}</div>
+                <div class="recent-card-date">${date}</div>
+              </div>
+            </div>
+            <div class="recent-face recent-back" aria-hidden="true">
+              <div class="recent-back-emblem"><span class="recent-back-dot"></span></div>
+            </div>
           </div>
         </a>`;
       }).join('');
@@ -524,7 +553,10 @@ window.addEventListener('load', function () {
       requestAnimationFrame(() => {
         grid.querySelectorAll('.recent-card').forEach(c => {
           c.classList.add('recent-in');
-          const finish = () => { c.style.animation = 'none'; c.style.opacity = '1'; };
+          const finish = () => {
+            c.style.animation = 'none';
+            c.classList.add('recent-done');   /* CSS resting state; keeps hover working */
+          };
           c.addEventListener('animationend', finish, { once: true });
           setTimeout(finish, 2600);
         });
