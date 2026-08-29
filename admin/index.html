@@ -757,6 +757,23 @@
       vid.addEventListener('error', function() { URL.revokeObjectURL(blobUrl); callback(null); });
     }
 
+    /* Prominent, dismissible warning for oversized videos. */
+    var _sizeWarn = null;
+    function showSizeWarning(mb) {
+      if (!_sizeWarn) {
+        _sizeWarn = document.createElement('div');
+        _sizeWarn.style.cssText = 'position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:2147483001;background:#3a1414;border:1px solid #c9968a;color:#f3d9d2;padding:.85rem 1.1rem;font-family:Georgia,serif;font-size:13px;line-height:1.5;border-radius:8px;max-width:440px;box-shadow:0 4px 20px rgba(0,0,0,.55);';
+        document.body.appendChild(_sizeWarn);
+      }
+      _sizeWarn.innerHTML = '<strong style="color:#ffb3a3;">⚠ Video is ' + mb + ' MB — too large to upload.</strong><br>'
+        + 'GitHub caps direct uploads at ~25 MB. On the <strong>Video File</strong> field, click '
+        + '<em>Remove</em> (or <em>Choose different</em>) to drop this file, then upload the video to '
+        + 'Backblaze and paste its direct link into the <strong>Video URL</strong> field instead.'
+        + '<div style="margin-top:.6rem;"><button type="button" style="font-size:11px;letter-spacing:.05em;color:#3a1414;background:#e0b0a4;border:none;border-radius:5px;padding:.35em .9em;cursor:pointer;">Got it</button></div>';
+      _sizeWarn.querySelector('button').onclick = function () { _sizeWarn.style.display = 'none'; };
+      _sizeWarn.style.display = 'block';
+    }
+
     function watchVideoInputs() {
       document.querySelectorAll('input[type="file"]').forEach(function(inp) {
         if (inp._lcVideoWatched) return;
@@ -764,6 +781,17 @@
         inp.addEventListener('change', function() {
           var file = inp.files && inp.files[0];
           if (!file || !file.type.startsWith('video/')) return;
+          /* Size gate: warn and stop before wasting time on a doomed upload. */
+          var LIMIT = 25 * 1024 * 1024;
+          if (file.size > LIMIT) {
+            var mb = (file.size / (1024 * 1024)).toFixed(1);
+            showSizeWarning(mb);
+            /* NOTE: we do NOT clear inp.value — Decap has already captured the file
+               into its own state by the time this 'change' fires, so clearing the
+               native input wouldn't remove it. The warning tells the user to use
+               Decap's own Remove/Choose-different control instead. */
+            return;                                 /* skip thumbnail extraction */
+          }
           toast('Extracting thumbnail from video…');
           extractFrame(file, 2, async function(blob) {
             if (!blob) { toast('⚠ Could not extract frame', 3000); return; }
@@ -1426,6 +1454,158 @@
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(tick, 400); });
     else setTimeout(tick, 400);
+  })();
+  </script>
+  <!-- ── Publish verifier + connection indicator: trusts GitHub, not Decap's bar ── -->
+  <script>
+  (function () {
+    'use strict';
+    var repo = function () { return window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles'; };
+
+    /* ---------- connection quality indicator (always visible) ---------- */
+    var connEl = null;
+    function ensureConn() {
+      if (connEl) return;
+      connEl = document.createElement('div');
+      connEl.id = '_lc_conn';
+      connEl.style.cssText = 'position:fixed;bottom:4.4rem;left:1.5rem;z-index:2147483000;font-family:Georgia,serif;font-size:11px;letter-spacing:.05em;padding:.35rem .7rem;border-radius:14px;border:1px solid #333;background:#14100a;color:#9a8c78;box-shadow:0 2px 8px rgba(0,0,0,.4);';
+      document.body.appendChild(connEl);
+    }
+    function setConn(label, color, title) {
+      ensureConn();
+      connEl.textContent = '● ' + label;
+      connEl.style.color = color;
+      connEl.title = title || '';
+    }
+    /* Measure connection by timing a tiny GitHub API call. */
+    var lastPingMs = null;
+    async function pingConnection() {
+      if (!navigator.onLine) { setConn('offline', '#e07a5f', 'No network connection'); return; }
+      var t0 = performance.now();
+      try {
+        var tok = window._lcLiveToken;
+        var r = await fetch('https://api.github.com/rate_limit', {
+          headers: tok ? { Authorization: 'token ' + tok } : {},
+          cache: 'no-store'
+        });
+        var dt = performance.now() - t0;
+        lastPingMs = dt;
+        /* also factor in the browser's own estimate if present */
+        var eff = (navigator.connection && navigator.connection.effectiveType) || '';
+        if (!r.ok && r.status === 0) { setConn('poor wifi', '#e0a45f', 'Requests are failing — publishing may not complete'); return; }
+        if (dt > 2500 || eff === '2g' || eff === 'slow-2g') { setConn('poor wifi', '#e0a45f', Math.round(dt) + 'ms to GitHub — publishes may stall; verify before trusting the bar'); }
+        else if (dt > 1000 || eff === '3g') { setConn('slow', '#d9c48a', Math.round(dt) + 'ms to GitHub'); }
+        else { setConn('good', '#7fae6a', Math.round(dt) + 'ms to GitHub'); }
+      } catch (_) {
+        setConn('poor wifi', '#e0a45f', 'Could not reach GitHub — publishing may silently fail');
+      }
+    }
+    setInterval(pingConnection, 15000);
+    setTimeout(pingConnection, 1500);
+    window.addEventListener('online', pingConnection);
+    window.addEventListener('offline', pingConnection);
+
+    /* ---------- publish verifier ---------- */
+    var banner = null;
+    function ensureBanner() {
+      if (banner) return;
+      banner = document.createElement('div');
+      banner.id = '_lc_pubverify';
+      banner.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:2147483002;font-family:Georgia,serif;font-size:13px;line-height:1.5;padding:.7rem 1.1rem;border-radius:8px;max-width:460px;box-shadow:0 4px 20px rgba(0,0,0,.55);display:none;';
+      document.body.appendChild(banner);
+    }
+    function showBanner(html, kind) {
+      ensureBanner();
+      var styles = {
+        working: 'background:#1a1710;border:1px solid #c9a84c;color:#e8dcc4;',
+        ok:      'background:#14240f;border:1px solid #7fae6a;color:#d7f0c8;',
+        fail:    'background:#3a1414;border:1px solid #c9968a;color:#f3d9d2;'
+      };
+      banner.style.cssText = banner.style.cssText.replace(/background:[^;]*;|border:[^;]*;|color:[^;]*;/g, '');
+      banner.setAttribute('style', banner.getAttribute('style') + (styles[kind] || styles.working));
+      banner.innerHTML = html;
+      banner.style.display = 'block';
+    }
+    function hideBanner() { if (banner) banner.style.display = 'none'; }
+
+    async function latestCommitSha() {
+      var tok = await window._lcGetToken().catch(function () { return window._lcLiveToken; });
+      if (!tok) return null;
+      try {
+        var r = await fetch('https://api.github.com/repos/' + repo() + '/commits?sha=main&per_page=1', {
+          headers: { Authorization: 'token ' + tok, Accept: 'application/vnd.github+json' }, cache: 'no-store'
+        });
+        if (!r.ok) return null;
+        var j = await r.json();
+        return (j && j[0] && j[0].sha) || null;
+      } catch (_) { return null; }
+    }
+
+    /* Keep a rolling "last known commit before any publish" so the baseline is ready
+       the instant Publish is pressed — capturing it *during* onPublishStart races the
+       commit itself on fast connections. Refreshed only while NOT verifying. */
+    var knownSha = null;
+    var verifying = false;
+    async function refreshKnownSha() {
+      if (verifying) return;               /* don't move the baseline mid-verify */
+      var s = await latestCommitSha();
+      if (s) knownSha = s;
+    }
+    setInterval(refreshKnownSha, 12000);
+    setTimeout(refreshKnownSha, 2000);
+
+    /* Watch the CMS store for a publish (isPersisting rising edge). */
+    var wasPersisting = false;
+    var baselineSha = null;
+    async function onPublishStart() {
+      verifying = true;
+      /* Use the SHA captured before publish; only fetch now as a last resort. */
+      baselineSha = knownSha || await latestCommitSha();
+      showBanner('<strong>Publishing…</strong> verifying it actually reaches GitHub — don\u2019t close this tab yet.', 'working');
+      verifyLoop(0);
+    }
+    async function verifyLoop(attempt) {
+      /* Poll for a NEW commit for up to ~60s (bad wifi can be very slow). */
+      var MAX = 40;              /* attempts */
+      var DELAY = 1500;          /* ms between checks */
+      var sha = await latestCommitSha();
+      /* Confirm ONLY when we have both a valid baseline AND a valid new sha that
+         differs. A null baseline or null current sha must never read as success —
+         that would be a false confirm on a failed fetch. */
+      if (sha && baselineSha && sha !== baselineSha) {
+        verifying = false;
+        knownSha = sha;
+        showBanner('<strong>✓ Publish confirmed.</strong> Your entry is committed to the repo and is going live.'
+          + '<div style="margin-top:.5rem;"><button type="button" style="font-size:11px;color:#14240f;background:#a9d492;border:none;border-radius:5px;padding:.3em .8em;cursor:pointer;">Dismiss</button></div>', 'ok');
+        banner.querySelector('button').onclick = hideBanner;
+        return;
+      }
+      if (attempt >= MAX) {
+        verifying = false;
+        var msg = baselineSha
+          ? 'After 60 seconds no new commit reached GitHub — your connection likely dropped it. '
+          : 'Could not reach GitHub to verify (connection down). ';
+        showBanner('<strong>✗ Publish NOT confirmed.</strong> ' + msg
+          + 'Your work is still saved in <strong>Drafts</strong> (top-right). Check your wifi and try publishing again.'
+          + '<div style="margin-top:.5rem;"><button type="button" style="font-size:11px;color:#3a1414;background:#e0b0a4;border:none;border-radius:5px;padding:.3em .8em;cursor:pointer;">Dismiss</button></div>', 'fail');
+        banner.querySelector('button').onclick = hideBanner;
+        return;
+      }
+      /* keep the user informed on slow connections */
+      if (attempt === 8) showBanner('<strong>Still verifying…</strong> your connection is slow, but the publish may still land. Keeping this tab open.', 'working');
+      setTimeout(function () { verifyLoop(attempt + 1); }, DELAY);
+    }
+
+    function watch() {
+      try {
+        var st = window.CMS && window.CMS.store && window.CMS.store.getState();
+        var draft = st && (st.get ? st.get('entryDraft') : null);
+        var persisting = draft && draft.get ? !!draft.get('isPersisting') : false;
+        if (persisting && !wasPersisting) onPublishStart();
+        wasPersisting = persisting;
+      } catch (_) {}
+    }
+    setInterval(watch, 300);
   })();
   </script>
 </body>
