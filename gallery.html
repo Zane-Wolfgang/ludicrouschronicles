@@ -161,6 +161,7 @@
   }
   .lightbox-close:hover { color: var(--gold); }
   .lightbox.zoomed .lightbox-close { display: none; }
+  .lightbox.zoomed .lightbox-nav { display: none !important; }
 
   .lightbox-nav {
     position: absolute;
@@ -1101,6 +1102,7 @@ var _prevHash = '';
 function openLightbox(src, title, type, notes) {
   _prevHash = location.hash;
   safeReplaceState('#' + encodeURIComponent(title));
+  slideImages = [src]; slideTitles = [title]; slideIndex = 0;   /* single image: no paging */
   lbImg.src = src;
   lb.classList.add('open'); lb.classList.remove('zoomed');
   document.body.classList.remove('lc-zoomed');
@@ -1188,7 +1190,14 @@ document.getElementById('lb-img-wrap').addEventListener('click', e => {
   }
 });
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+document.addEventListener('keydown', e => {
+  if (!lb.classList.contains('open')) return;
+  if (e.key === 'Escape') { closeLightbox(); return; }
+  if (zoomed) return;                         /* don't page while zoomed in */
+  if (slideImages.length < 2) return;         /* single image: nothing to page */
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); if (slideIndex > 0) { slideIndex--; showSlide(slideIndex); } }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); if (slideIndex < slideImages.length - 1) { slideIndex++; showSlide(slideIndex); } }
+});
 document.addEventListener('contextmenu', e => {
   if (e.target.closest('.gallery-item, .lightbox-img-wrap, .stills-section, #traditional, #wips')) e.preventDefault();
 });
