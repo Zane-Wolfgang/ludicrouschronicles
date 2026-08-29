@@ -620,7 +620,7 @@ async function loadCMSVideos() {
       if (_vd) btn.setAttribute('data-lc-date', _vd);
       if (isLocked) { btn.setAttribute('onclick', "window.location.href='membership.html'"); }
       else {
-        const videoSrc = item.video || '';
+        const videoSrc = item.video_url || item.video || '';
         btn.setAttribute('onclick', `loadVideo('${videoSrc}', this)`);
         if (item.description) _videoDescriptions.set(videoSrc, item.description);
       }
