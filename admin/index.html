@@ -1130,5 +1130,236 @@
     closeBtn.addEventListener('click', function () { overlay.classList.remove('open'); });
     overlay.addEventListener('click',  function (e) { if (e.target === overlay) overlay.classList.remove('open'); });
   </script>
+  <!-- ── Local Drafts: offline save-point for bad-wifi. Self-contained; localStorage only. ── -->
+  <script>
+  (function () {
+    'use strict';
+    var LS_KEY = '_lc_local_drafts';
+    var AUTOSAVE_MS = 4000;
+
+    function readDrafts() { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch (_) { return []; } }
+    function writeDrafts(d) { try { localStorage.setItem(LS_KEY, JSON.stringify(d)); } catch (_) {} }
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function fmt(t) { try { return new Date(t).toLocaleString(); } catch (_) { return ''; } }
+
+    /* ---- read the CMS editor state (same store path the rest of this file uses) ---- */
+    function editorContext() {
+      var h = window.location.hash || '';
+      var m = /\/collections\/([^\/]+)\/(new|entries\/([^\/?]+))/.exec(h);
+      if (!m) return null;
+      return { collection: m[1], slug: m[3] || 'new', isNew: m[2] === 'new' };
+    }
+    function readDraftData() {
+      try {
+        var st = window.CMS && window.CMS.store && window.CMS.store.getState();
+        if (!st) return null;
+        var data = st.getIn(['entryDraft', 'entry', 'data']);
+        if (!data) return null;
+        return data.toJS ? data.toJS() : data;
+      } catch (_) { return null; }
+    }
+    function draftTitle(data) {
+      if (!data) return '(untitled)';
+      return data.title || data.name || data.label || data.caption || '(untitled)';
+    }
+    function isEmpty(data) {
+      if (!data) return true;
+      var keys = Object.keys(data);
+      if (!keys.length) return true;
+      /* consider empty if every value is blank/empty */
+      return keys.every(function (k) {
+        var v = data[k];
+        if (v == null) return true;
+        if (typeof v === 'string') return v.trim() === '';
+        if (Array.isArray(v)) return v.length === 0;
+        return false;
+      });
+    }
+
+    /* stable id per collection+slug so editing the same entry updates one draft */
+    function draftId(ctx) { return ctx.collection + '::' + ctx.slug; }
+
+    /* ---- autosave ---- */
+    var lastSerialized = '';
+    function autosave() {
+      var ctx = editorContext();
+      if (!ctx) return;
+      var data = readDraftData();
+      if (isEmpty(data)) return;                 /* nothing worth saving yet */
+      var serialized = JSON.stringify(data);
+      if (serialized === lastSerialized) return; /* unchanged since last save */
+      lastSerialized = serialized;
+
+      var drafts = readDrafts();
+      var id = draftId(ctx);
+      var existing = null;
+      for (var i = 0; i < drafts.length; i++) { if (drafts[i].id === id) { existing = drafts[i]; break; } }
+      var entry = {
+        id: id,
+        collection: ctx.collection,
+        slug: ctx.slug,
+        title: draftTitle(data),
+        data: data,
+        savedAt: Date.now()
+      };
+      if (existing) { for (var k in entry) existing[k] = entry[k]; }
+      else drafts.push(entry);
+      writeDrafts(drafts);
+      refreshPanel();
+    }
+    setInterval(autosave, AUTOSAVE_MS);
+    window.addEventListener('beforeunload', autosave);
+    window.addEventListener('hashchange', function () { lastSerialized = ''; setTimeout(refreshPanel, 300); });
+
+    /* ---- auto-clear on CONFIRMED publish ---- */
+    /* Only delete a draft once its entry is confirmed committed, so a bad-wifi false
+       "success" never wipes the safety net. We capture which draft is being saved at
+       the moment persist STARTS (while the editor is still open), then clear it when
+       persist finishes cleanly — because Decap often navigates away from the editor
+       on success, making editorContext() null by the time we'd otherwise check. */
+    var wasPersisting = false;
+    var persistingDraftId = null;
+    function watchPublish() {
+      try {
+        var st = window.CMS && window.CMS.store && window.CMS.store.getState();
+        if (!st) return;
+        var draft = st.get ? st.get('entryDraft') : null;
+        var persisting = draft && draft.get ? !!draft.get('isPersisting') : false;
+
+        if (persisting && !wasPersisting) {
+          /* persist just began — remember which draft, while the editor is still open */
+          var ctx = editorContext();
+          persistingDraftId = ctx ? draftId(ctx) : null;
+        }
+        if (!persisting && wasPersisting) {
+          /* persist just ended. Confirm it truly committed: no persist error present
+             and the draft no longer flags unsaved changes. */
+          var hasError = false, hasChanged = false;
+          try { hasError = !!(draft && draft.get && draft.get('error')); } catch (_) {}
+          try { hasChanged = !!(draft && draft.get && draft.get('hasChanged')); } catch (_) {}
+          if (persistingDraftId && !hasError && !hasChanged) {
+            clearDraft(persistingDraftId);
+          }
+          persistingDraftId = null;
+        }
+        wasPersisting = persisting;
+      } catch (_) {}
+    }
+    setInterval(watchPublish, 300);
+
+    function clearDraft(id) {
+      var drafts = readDrafts().filter(function (d) { return d.id !== id; });
+      writeDrafts(drafts);
+      lastSerialized = '';
+      refreshPanel();
+    }
+
+    /* ---- restore ---- */
+    function restoreDraft(d) {
+      /* Navigate to the collection's new-entry editor, then write fields back in. */
+      var targetHash = '#/collections/' + d.collection + '/new';
+      var needNav = (window.location.hash || '').indexOf('/collections/' + d.collection + '/new') === -1;
+      if (needNav) window.location.hash = targetHash;
+
+      var tries = 0;
+      var iv = setInterval(function () {
+        tries++;
+        var st = window.CMS && window.CMS.store && window.CMS.store.getState();
+        var ready = st && st.getIn(['entryDraft', 'entry']);
+        if (ready) {
+          clearInterval(iv);
+          writeFields(d.data);
+        } else if (tries > 40) {
+          clearInterval(iv);
+          alert('Could not open the editor to restore this draft — open a New entry in "' + d.collection + '" first, then restore.');
+        }
+      }, 150);
+    }
+    function writeFields(data) {
+      /* Fill fields with the same verified multi-shape Redux dispatch the rest of
+         this admin uses for setting values. Verifies each write against the store. */
+      var store = window.CMS && window.CMS.store;
+      function shim(name) { var d = { name: name }; return { get: function (k) { return d[k]; }, getIn: function (ks) { return d[ks && ks[0]]; }, toJS: function () { return d; } }; }
+      function read(name) { try { return store.getState().getIn(['entryDraft', 'entry', 'data', name]); } catch (_) { return undefined; } }
+      function setOne(field, value) {
+        if (!store) return false;
+        var shapes = [
+          { type: 'DRAFT_CHANGE_FIELD', payload: { field: shim(field), value: value, metadata: undefined, entries: [] } },
+          { type: 'DRAFT_CHANGE_FIELD', payload: { field: shim(field), value: value } },
+          { type: 'DRAFT_CHANGE_FIELD', payload: { path: field, value: value, field: shim(field) } },
+          { type: 'ENTRY_DRAFT_CHANGE_FIELD', payload: { path: field, value: value, field: shim(field) } }
+        ];
+        for (var i = 0; i < shapes.length; i++) {
+          try { store.dispatch(shapes[i]); } catch (_) {}
+          var cur = read(field);
+          if (cur === value || (cur && cur.toJS && JSON.stringify(cur.toJS()) === JSON.stringify(value))) return true;
+        }
+        return false;
+      }
+      var missed = [];
+      Object.keys(data).forEach(function (field) {
+        var val = data[field];
+        if (val == null || val === '') return;
+        if (!setOne(field, val)) missed.push(field);
+      });
+      setTimeout(refreshPanel, 300);
+      if (missed.length) {
+        setTimeout(function () {
+          alert('Restored. A few fields could not be auto-filled and may need re-entering: ' + missed.join(', '));
+        }, 400);
+      }
+    }
+
+    /* ---- UI: a Drafts button + slide-in panel ---- */
+    var btn = null, panel = null;
+    function ensureUI() {
+      if (btn) return;
+      btn = document.createElement('button');
+      btn.id = '_lc_drafts_btn';
+      btn.style.cssText = 'position:fixed;top:8px;right:8px;z-index:2147483000;background:#1c140c;color:#d9c48a;border:1px solid #8a6e2f;border-radius:18px;padding:.42rem .95rem;font-family:Georgia,serif;font-size:11px;letter-spacing:.08em;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.45);';
+      btn.onclick = togglePanel;
+      document.body.appendChild(btn);
+
+      panel = document.createElement('div');
+      panel.id = '_lc_drafts_panel';
+      panel.style.cssText = 'position:fixed;top:46px;right:8px;width:340px;max-height:70vh;overflow:auto;z-index:2147483000;background:#14100a;color:#e8dcc4;border:1px solid #8a6e2f;border-radius:10px;padding:.75rem;font-family:Georgia,serif;box-shadow:0 6px 26px rgba(0,0,0,.6);display:none;';
+      document.body.appendChild(panel);
+    }
+    function togglePanel() { ensureUI(); panel.style.display = (panel.style.display === 'none') ? 'block' : 'none'; refreshPanel(); }
+
+    function refreshPanel() {
+      ensureUI();
+      var drafts = readDrafts().sort(function (a, b) { return b.savedAt - a.savedAt; });
+      btn.textContent = '📝 Drafts' + (drafts.length ? ' (' + drafts.length + ')' : '');
+      if (panel.style.display === 'none') return;
+      if (!drafts.length) {
+        panel.innerHTML = '<div style="font-size:12px;color:#9a8c78;padding:.5rem;">No saved drafts. Your work autosaves here while you edit — a safety net for bad connections.</div>';
+        return;
+      }
+      var html = '<div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#c9a84c;margin:.2rem 0 .6rem;">Local Drafts</div>';
+      drafts.forEach(function (d) {
+        html += '<div style="border:1px solid #2a2018;border-radius:8px;padding:.55rem .6rem;margin-bottom:.5rem;">'
+          + '<div style="font-size:13px;color:#f0e6d2;margin-bottom:.15rem;">' + esc(d.title) + '</div>'
+          + '<div style="font-size:10px;color:#9a8c78;margin-bottom:.5rem;">' + esc(d.collection) + ' · ' + esc(fmt(d.savedAt)) + '</div>'
+          + '<button data-act="restore" data-id="' + esc(d.id) + '" style="font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#1c140c;background:#c9a84c;border:none;border-radius:5px;padding:.35em .8em;cursor:pointer;margin-right:.4rem;">Restore</button>'
+          + '<button data-act="delete" data-id="' + esc(d.id) + '" style="font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#c9968a;background:none;border:1px solid #5a2a2a;border-radius:5px;padding:.35em .8em;cursor:pointer;">Delete</button>'
+          + '</div>';
+      });
+      panel.innerHTML = html;
+      panel.querySelectorAll('button[data-act]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var id = b.getAttribute('data-id'), act = b.getAttribute('data-act');
+          var d = readDrafts().filter(function (x) { return x.id === id; })[0];
+          if (act === 'delete') { if (confirm('Delete this draft?')) clearDraft(id); }
+          else if (act === 'restore' && d) restoreDraft(d);
+        });
+      });
+    }
+
+    /* boot */
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { ensureUI(); refreshPanel(); });
+    else { ensureUI(); refreshPanel(); }
+  })();
+  </script>
 </body>
 </html>
