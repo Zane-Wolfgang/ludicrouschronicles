@@ -1361,5 +1361,72 @@
     else { ensureUI(); refreshPanel(); }
   })();
   </script>
+  <!-- ── Login watchdog: auto-resume the GitHub session after a short grace period ── -->
+  <script>
+  (function () {
+    'use strict';
+    var GRACE_MS = 2000;      /* wait this long for Decap to restore a session on its own */
+    var MAX_WAIT_MS = 12000;  /* give up looking for the button after this */
+    var autoClicked = false;
+
+    function hasSession() {
+      try {
+        var raw = localStorage.getItem('decap-cms.user') || localStorage.getItem('netlify-cms-user');
+        if (!raw) return false;
+        var p = JSON.parse(raw);
+        return !!(p && (p.token || (p.data && p.data.token)));
+      } catch (_) { return false; }
+    }
+
+    /* We deliberately do NOT try to detect "app loaded" via Decap's minified class
+       names (they're hashed and version-specific — guessing them risks a false
+       "logged out" and clicking login mid-session). Instead: the ONLY thing we act
+       on is the clear, unambiguous presence of a "Login with GitHub" button. If it's
+       not on screen, we assume you're fine and do nothing. */
+
+    /* Find Decap's login button ONLY by explicit, unambiguous GitHub-login text. */
+    function findLoginButton() {
+      var candidates = document.querySelectorAll('button, [role="button"], a');
+      for (var i = 0; i < candidates.length; i++) {
+        var t = (candidates[i].textContent || '').trim().toLowerCase();
+        /* require both a login word AND github — no loose fallbacks that could match
+           an unrelated button and click it by mistake */
+        if (/(log ?in|sign ?in).*github|github.*(log ?in|sign ?in)/.test(t)) return candidates[i];
+      }
+      return null;
+    }
+
+    function log(msg) { try { console.log('[LC login watchdog]', msg); } catch (_) {} }
+
+    var started = Date.now();
+    function tick() {
+      var btn = findLoginButton();
+
+      /* No login button visible → either logged in or Decap still booting. Either way,
+         nothing to click. Keep watching until MAX_WAIT in case it appears late. */
+      if (!btn) {
+        if (Date.now() - started < MAX_WAIT_MS) setTimeout(tick, 400);
+        return;
+      }
+
+      /* Login button IS present. Give Decap the grace period to log itself back in
+         (session restore can briefly show the button), then auto-click if it persists. */
+      var waited = Date.now() - started;
+      if (!autoClicked && waited >= GRACE_MS) {
+        /* re-confirm the button is still there after the grace period */
+        if (findLoginButton()) {
+          autoClicked = true;
+          log('login button persisted past grace period — auto-clicking GitHub login (' + (hasSession() ? 'stored session present' : 'no stored session') + ')');
+          try { btn.click(); } catch (_) {}
+        }
+        return;
+      }
+      if (waited < MAX_WAIT_MS) setTimeout(tick, 400);
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(tick, 400); });
+    else setTimeout(tick, 400);
+  })();
+  </script>
 </body>
 </html>
