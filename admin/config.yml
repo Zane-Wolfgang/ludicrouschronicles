@@ -168,8 +168,16 @@ collections:
   - label: Video File
     name: video
     widget: file
-    hint: 'Direct upload limit: ~25 MB (GitHub API cap). For larger videos, paste
-      a YouTube or Vimeo URL instead — thumbnails will be generated automatically.'
+    required: false
+    hint: 'Direct upload limit: ~25 MB (GitHub API cap). For larger videos, leave this
+      empty and paste a direct link in the Video URL field below.'
+  - label: Video URL
+    name: video_url
+    widget: string
+    required: false
+    hint: 'For large videos: paste a DIRECT video file link (Backblaze, Dropbox direct
+      download, etc. ending in .mp4/.webm). If both this and a Video File are set, this
+      URL is used. (YouTube/Vimeo page links will not play in the built-in player.)'
   - label: Thumbnail
     name: thumbnail
     widget: image
