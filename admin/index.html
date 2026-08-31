@@ -615,11 +615,8 @@
       buttons.forEach(function (btn) {
         var t = (btn.textContent || '').trim();
         if (t !== 'Choose an image' && t !== 'Choose different image') return;
-        if (btn._lcBoxed) return;              /* this exact button already handled */
-        btn._lcBoxed = true;
-        /* Anchor to the button's own control wrapper: the nearest ancestor that also
-           contains this field's "URL" button (Decap groups the two together). Never
-           climb past that, so each field keeps its own box. */
+
+        /* Walk to the button-group wrapper (same logic as before). */
         var wrapper = btn.parentElement;
         var hops = 0;
         while (wrapper && hops < 4) {
@@ -630,16 +627,21 @@
             if (bt === 'Choose an image' || bt === 'Choose different image') hasChoose = true;
             if (/url/i.test(bt)) hasUrl = true;
           }
-          if (hasChoose && (hasUrl || hops >= 1)) break;   /* found this field's own group */
+          if (hasChoose && (hasUrl || hops >= 1)) break;
           wrapper = wrapper.parentElement; hops++;
         }
         if (!wrapper) wrapper = btn.parentElement;
-        /* Guard: if this wrapper already owns a box as a direct-ish child, skip */
-        if (wrapper.querySelector(':scope > .lc-pastebox, :scope > * > .lc-pastebox')) return;
+
+        /* Remove any stale paste box in this wrapper first (handles re-renders where
+           the box already exists but the button was replaced). Then add a fresh one.
+           This ensures one box per wrapper regardless of how many times Decap
+           re-renders the inner buttons — and avoids walking up to shared ancestors. */
+        var existing = wrapper.querySelector(':scope > .lc-pastebox, :scope > * > .lc-pastebox');
+        if (existing) return;
+
         var thisBtn = btn;
         wrapper.appendChild(makeBox(function () {
           if (document.contains(thisBtn)) return thisBtn;
-          /* button was re-rendered — find the Choose button inside this wrapper again */
           return Array.prototype.find.call(wrapper.querySelectorAll('button'), function (b) {
             var x = (b.textContent || '').trim();
             return x === 'Choose an image' || x === 'Choose different image';
