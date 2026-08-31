@@ -125,6 +125,18 @@
             }
           } catch(_) {}
         }
+        /* Publish detection at the network layer (store-independent): Decap writes an
+           entry via a mutating call to the git/contents API. Flag it so the verifier
+           can fire even when window.CMS.store is empty on this build. Ignore our OWN
+           verification/ping GETs (those are _lcOwnRequest and are GETs anyway). */
+        if (isRepoCall && !window._lcOwnRequest) {
+          var method = (opts && opts.method ? String(opts.method) : 'GET').toUpperCase();
+          var isWrite = method === 'PUT' || method === 'POST' || method === 'PATCH' || method === 'DELETE';
+          var isContentWrite = isWrite && /\/(contents|git\/(commits|refs|trees|blobs))\b|\/git\//.test(url);
+          if (isContentWrite && typeof window._lcOnPublishDetected === 'function') {
+            try { window._lcOnPublishDetected(); } catch (_) {}
+          }
+        }
       }
       return _origFetch.apply(this, arguments);
     };
@@ -1394,8 +1406,6 @@
   (function () {
     'use strict';
     var GRACE_MS = 2000;      /* wait this long for Decap to restore a session on its own */
-    var MAX_WAIT_MS = 12000;  /* give up looking for the button after this */
-    var autoClicked = false;
 
     function hasSession() {
       try {
@@ -1427,29 +1437,55 @@
     function log(msg) { try { console.log('[LC login watchdog]', msg); } catch (_) {} }
 
     var started = Date.now();
+    var highlighted = false;
+    function highlightLogin(btn) {
+      if (highlighted) return;
+      highlighted = true;
+      /* A programmatic .click() is NOT a user gesture, so the browser blocks the OAuth
+         popup it opens — that's the "Cannot read properties of null (reading 'focus')"
+         crash you saw. So we do NOT auto-click. We make the real button obvious and
+         nudge you to click it yourself; your click IS a gesture and opens the popup. */
+      try {
+        btn.style.outline = '3px solid #c9a84c';
+        btn.style.outlineOffset = '3px';
+        btn.style.boxShadow = '0 0 0 6px rgba(201,168,76,0.25)';
+        btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (_) {}
+      if (!document.getElementById('_lc_login_note')) {
+        var note = document.createElement('div');
+        note.id = '_lc_login_note';
+        note.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:2147483003;background:#1a1710;border:1px solid #c9a84c;color:#e8dcc4;font-family:Georgia,serif;font-size:13px;padding:.6rem 1rem;border-radius:8px;box-shadow:0 4px 18px rgba(0,0,0,.5);';
+        note.textContent = 'Your session expired — click the highlighted “Login with GitHub” button to sign back in.';
+        document.body.appendChild(note);
+      }
+    }
+    function clearLoginNudge() {
+      highlighted = false;
+      var note = document.getElementById('_lc_login_note');
+      if (note) note.remove();
+    }
     function tick() {
       var btn = findLoginButton();
 
-      /* No login button visible → either logged in or Decap still booting. Either way,
-         nothing to click. Keep watching until MAX_WAIT in case it appears late. */
+      /* No login button visible → logged in (or Decap still booting). If we'd shown a
+         nudge, the login succeeded — clear it. Keep a slow watch so a later logout is
+         caught too. */
       if (!btn) {
-        if (Date.now() - started < MAX_WAIT_MS) setTimeout(tick, 400);
+        if (highlighted) clearLoginNudge();
+        setTimeout(tick, 1500);
         return;
       }
 
-      /* Login button IS present. Give Decap the grace period to log itself back in
-         (session restore can briefly show the button), then auto-click if it persists. */
+      /* Login button present. After the grace period (in case Decap self-restores),
+         highlight it so the user's own click opens the OAuth popup. */
       var waited = Date.now() - started;
-      if (!autoClicked && waited >= GRACE_MS) {
-        /* re-confirm the button is still there after the grace period */
-        if (findLoginButton()) {
-          autoClicked = true;
-          log('login button persisted past grace period — auto-clicking GitHub login (' + (hasSession() ? 'stored session present' : 'no stored session') + ')');
-          try { btn.click(); } catch (_) {}
-        }
+      if (waited >= GRACE_MS) {
+        log('login button present past grace period — highlighting for a manual click (' + (hasSession() ? 'stored session present' : 'no stored session') + ')');
+        highlightLogin(btn);
+        setTimeout(tick, 1000);   /* keep watching so we can clear the nudge on success */
         return;
       }
-      if (waited < MAX_WAIT_MS) setTimeout(tick, 400);
+      setTimeout(tick, 400);
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(tick, 400); });
@@ -1462,13 +1498,26 @@
     'use strict';
     var repo = function () { return window._lcRepo || 'Zane-Wolfgang/ludicrouschronicles'; };
 
+    /* A stale token from a previous session is still "truthy", so a presence check
+       isn't enough — it 401-spams. Track validity: any 401 marks the current token
+       invalid and we go quiet until the fetch interceptor captures a fresh one. */
+    var tokenInvalid = false;
+    var lastSeenToken = null;
+    function tokenUsable() {
+      var t = window._lcLiveToken;
+      if (!t) return false;
+      if (t !== lastSeenToken) { tokenInvalid = false; lastSeenToken = t; } /* new token → give it a chance */
+      return !tokenInvalid;
+    }
+    function noteStatus(status) { if (status === 401 || status === 403) tokenInvalid = true; }
+
     /* ---------- connection quality indicator (always visible) ---------- */
     var connEl = null;
     function ensureConn() {
       if (connEl) return;
       connEl = document.createElement('div');
       connEl.id = '_lc_conn';
-      connEl.style.cssText = 'position:fixed;bottom:4.4rem;left:1.5rem;z-index:2147483000;font-family:Georgia,serif;font-size:11px;letter-spacing:.05em;padding:.35rem .7rem;border-radius:14px;border:1px solid #333;background:#14100a;color:#9a8c78;box-shadow:0 2px 8px rgba(0,0,0,.4);';
+      connEl.style.cssText = 'position:fixed;bottom:1rem;right:1rem;z-index:2147483000;font-family:Georgia,serif;font-size:11px;letter-spacing:.05em;padding:.35rem .7rem;border-radius:14px;border:1px solid #333;background:#14100a;color:#9a8c78;box-shadow:0 2px 8px rgba(0,0,0,.4);';
       document.body.appendChild(connEl);
     }
     function setConn(label, color, title) {
@@ -1481,22 +1530,26 @@
     var lastPingMs = null;
     async function pingConnection() {
       if (!navigator.onLine) { setConn('offline', '#e07a5f', 'No network connection'); return; }
+      /* Logged out or token known-invalid → don't call (avoids 401 spam). */
+      if (!tokenUsable()) { setConn('signed out', '#9a8c78', 'Not logged in — sign in to enable status'); return; }
       var t0 = performance.now();
       try {
         var tok = window._lcLiveToken;
+        window._lcOwnRequest = true;
         var r = await fetch('https://api.github.com/rate_limit', {
-          headers: tok ? { Authorization: 'token ' + tok } : {},
-          cache: 'no-store'
+          headers: { Authorization: 'token ' + tok }, cache: 'no-store'
         });
+        window._lcOwnRequest = false;
+        noteStatus(r.status);
+        if (r.status === 401 || r.status === 403) { setConn('signed out', '#9a8c78', 'Session expired — sign in again'); return; }
         var dt = performance.now() - t0;
         lastPingMs = dt;
-        /* also factor in the browser's own estimate if present */
         var eff = (navigator.connection && navigator.connection.effectiveType) || '';
-        if (!r.ok && r.status === 0) { setConn('poor wifi', '#e0a45f', 'Requests are failing — publishing may not complete'); return; }
         if (dt > 2500 || eff === '2g' || eff === 'slow-2g') { setConn('poor wifi', '#e0a45f', Math.round(dt) + 'ms to GitHub — publishes may stall; verify before trusting the bar'); }
         else if (dt > 1000 || eff === '3g') { setConn('slow', '#d9c48a', Math.round(dt) + 'ms to GitHub'); }
         else { setConn('good', '#7fae6a', Math.round(dt) + 'ms to GitHub'); }
       } catch (_) {
+        window._lcOwnRequest = false;
         setConn('poor wifi', '#e0a45f', 'Could not reach GitHub — publishing may silently fail');
       }
     }
@@ -1529,16 +1582,20 @@
     function hideBanner() { if (banner) banner.style.display = 'none'; }
 
     async function latestCommitSha() {
-      var tok = await window._lcGetToken().catch(function () { return window._lcLiveToken; });
+      if (!tokenUsable()) return null;
+      var tok = window._lcLiveToken;
       if (!tok) return null;
       try {
+        window._lcOwnRequest = true;
         var r = await fetch('https://api.github.com/repos/' + repo() + '/commits?sha=main&per_page=1', {
           headers: { Authorization: 'token ' + tok, Accept: 'application/vnd.github+json' }, cache: 'no-store'
         });
+        window._lcOwnRequest = false;
+        noteStatus(r.status);
         if (!r.ok) return null;
         var j = await r.json();
         return (j && j[0] && j[0].sha) || null;
-      } catch (_) { return null; }
+      } catch (_) { window._lcOwnRequest = false; return null; }
     }
 
     /* Keep a rolling "last known commit before any publish" so the baseline is ready
@@ -1548,6 +1605,7 @@
     var verifying = false;
     async function refreshKnownSha() {
       if (verifying) return;               /* don't move the baseline mid-verify */
+      if (!tokenUsable()) return;          /* logged out or stale token — skip */
       var s = await latestCommitSha();
       if (s) knownSha = s;
     }
@@ -1606,6 +1664,18 @@
       } catch (_) {}
     }
     setInterval(watch, 300);
+
+    /* Store-independent trigger: the fetch interceptor calls this the moment Decap
+       writes to the repo. Debounced so a publish's several write calls (blob, tree,
+       commit, ref) only kick off ONE verification. */
+    var _pubDebounce = 0;
+    window._lcOnPublishDetected = function () {
+      if (verifying) return;                 /* already verifying this publish */
+      var now = Date.now();
+      if (now - _pubDebounce < 8000) return; /* within the same publish burst */
+      _pubDebounce = now;
+      onPublishStart();
+    };
   })();
   </script>
 </body>
