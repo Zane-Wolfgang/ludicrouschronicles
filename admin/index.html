@@ -1482,7 +1482,9 @@
          highlight it so the user's own click opens the OAuth popup. */
       var waited = Date.now() - started;
       if (waited >= GRACE_MS) {
-        log('login button present past grace period — highlighting for a manual click (' + (hasSession() ? 'stored session present' : 'no stored session') + ')');
+        if (!highlighted) {
+          log('login button present past grace period — highlighting for a manual click (' + (hasSession() ? 'stored session present' : 'no stored session') + ')');
+        }
         highlightLogin(btn);
         setTimeout(tick, 1000);   /* keep watching so we can clear the nudge on success */
         return;
