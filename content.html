@@ -294,10 +294,10 @@ async function loadAllContent() {
            image, never a bare section anchor. Rewrite #stills/#traditional/#wips (or
            a missing href) to the title hash. */
         if (!isLocked && /^gallery\.html#(stills|traditional|wips)$/i.test(href || '')) {
-          href = `gallery.html#${encodeURIComponent(item.title)}`;
+          href = `gallery.html?piece=${encodeURIComponent(item.title)}`;
         }
         if (!isLocked && /still|traditional/i.test(item.type || '') && (!href || href === '#')) {
-          href = `gallery.html#${encodeURIComponent(item.title)}`;
+          href = `gallery.html?piece=${encodeURIComponent(item.title)}`;
         }
         const filterType = item.type === 'Video' ? 'video' : (item.filter_type || 'story');
         addEntry(new Date(item.date||0).getTime(), makeCard(href, item.thumbnail||'', displayTitle, item.label||item.type, typeDisplay, isLocked, filterType, !isLocked, null, item.is_voice === true), displayTitle);
@@ -313,7 +313,7 @@ async function loadAllContent() {
       items.filter(item => { const t=item.premiere_at||item.date; return !t||new Date(t)<=now; }).forEach(item => {
         const isLocked = tRank[item.tier||'free'] > tRank[userTier];
         addEntry(new Date(item.date||0).getTime(), makeCard(
-          isLocked ? 'membership.html' : `gallery.html#${encodeURIComponent(item.title)}`, item.image||'', item.title,
+          isLocked ? 'membership.html' : `gallery.html?piece=${encodeURIComponent(item.title)}`, item.image||'', item.title,
           item.type||'Illustration', isLocked ? `Art · ${item.tier==='devoted'?'Devoted':'Bound'}` : 'Art',
           isLocked, 'art', !isLocked,
           null
@@ -331,7 +331,7 @@ async function loadAllContent() {
         const game = item.game ? ` · ${item.game}` : '';
         const typeDisplay = isLocked ? `Stills · ${item.tier==='devoted'?'Devoted':'Bound'}` : `Stills${game}`;
         addEntry(new Date(item.date||0).getTime(), makeCard(
-          isLocked ? 'membership.html' : `gallery.html#${encodeURIComponent(item.title)}`,
+          isLocked ? 'membership.html' : `gallery.html?piece=${encodeURIComponent(item.title)}`,
           item.image||'', item.title, 'Stills', typeDisplay,
           isLocked, 'stills', !isLocked,
           null
@@ -350,7 +350,7 @@ async function loadAllContent() {
     ['images/art-13-rain.png','In the Rain','Character Art'],
   ];
   const baseDate = new Date(2024,0,1).getTime();
-  freeGallery.forEach(([img, title, type], i) => { addEntry(baseDate - (i * 86400000), makeCard(`gallery.html#${encodeURIComponent(title)}`, img, title, type, 'Art', false, 'art', false, null), title); });
+  freeGallery.forEach(([img, title, type], i) => { addEntry(baseDate - (i * 86400000), makeCard(`gallery.html?piece=${encodeURIComponent(title)}`, img, title, type, 'Art', false, 'art', false, null), title); });
 
   const paidArt = [
     { img: 'images/art-birthday.png', title: 'Happy Birthday', tier: 'devoted' },
@@ -361,7 +361,7 @@ async function loadAllContent() {
   const oldestDate = new Date(2023,0,1).getTime();
   paidArt.forEach((item, i) => {
     const isLocked = tRank[item.tier] > tRank[userTier];
-    addEntry(oldestDate - (i * 86400000), makeCard(isLocked ? 'membership.html' : `gallery.html#${encodeURIComponent(item.title)}`, item.img, item.title, 'Illustration', isLocked ? 'Art · Devoted' : 'Art', isLocked, 'art', false), item.title);
+    addEntry(oldestDate - (i * 86400000), makeCard(isLocked ? 'membership.html' : `gallery.html?piece=${encodeURIComponent(item.title)}`, item.img, item.title, 'Illustration', isLocked ? 'Art · Devoted' : 'Art', isLocked, 'art', false), item.title);
   });
 
   grid.innerHTML = '';
