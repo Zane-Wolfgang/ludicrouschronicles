@@ -517,7 +517,7 @@ window.addEventListener('load', function () {
           type: item.type || 'Illustration',
           date: item.date,
           img: (item.images && item.images[0]) || item.image || '',
-          href: 'gallery.html#' + encodeURIComponent(item.title)
+          href: 'gallery.html?piece=' + encodeURIComponent(item.title)
         });
       });
 
@@ -530,7 +530,7 @@ window.addEventListener('load', function () {
         else { href = item.href || 'content.html'; type = item.type || 'Content'; }
         /* Never let a card dead-end at a bare gallery section anchor — open the piece. */
         if (/^gallery\.html#(stills|traditional|wips)$/i.test(href || '')) {
-          href = 'gallery.html#' + encodeURIComponent(item.title);
+          href = 'gallery.html?piece=' + encodeURIComponent(item.title);
         }
         addToPool({ title: item.title, type, date: item.date, img: item.thumbnail || '', href });
       });
