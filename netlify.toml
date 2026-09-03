@@ -16,3 +16,24 @@
   for = "/images/uploads/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+# ── Edge functions: per-item Open Graph link previews ──
+[[edge_functions]]
+  path = "/gallery.html"
+  function = "og-preview"
+
+[[edge_functions]]
+  path = "/videos.html"
+  function = "og-preview"
+
+[[edge_functions]]
+  path = "/content.html"
+  function = "og-preview"
+
+[[edge_functions]]
+  path = "/chapter.html"
+  function = "og-preview"
+
+# ── Image CDN: enables downscaled preview images ──
+[images]
+  remote_images = ["https://ludicrous-chronicles.netlify.app/.*"]
