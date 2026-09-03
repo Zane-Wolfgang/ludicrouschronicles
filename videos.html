@@ -385,7 +385,7 @@
               <div class="lb-comment-footer">
                 <button class="lb-comment-like-btn${liked ? ' liked' : ''}" data-id="${c.id}">
                   <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
-                  <span class="lb-clc">${likeCount > 0 ? likeCount : ''}</span>
+                  <span class="lb-clc" data-count="${likeCount}">${likeCount}</span>
                 </button>
                 ${_veIsAdmin ? `<button class="lb-comment-delete-btn" data-id="${c.id}">Delete</button>` : ''}
               </div>`;
@@ -396,7 +396,9 @@
                 await veFetch('comment_likes', { method: 'POST', body: { comment_id: c.id, visitor_id: visitorId } });
                 this.classList.add('liked');
                 const countEl = this.querySelector('.lb-clc');
-                countEl.textContent = (parseInt(countEl.textContent || 0) + 1) || 1;
+                const next = (parseInt(countEl.dataset.count, 10) || 0) + 1;
+                countEl.dataset.count = next;
+                countEl.textContent = next;
                 likedSet.add(String(c.id));
                 try { localStorage.setItem(likedLocalKey, JSON.stringify([...likedSet])); } catch(e) {}
               } catch(e) {}
