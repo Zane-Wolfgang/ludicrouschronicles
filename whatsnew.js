@@ -78,6 +78,11 @@
         color: var(--text-muted, #9a8c78); font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em;
         text-transform: uppercase; padding: 0.3em 0.8em; cursor: pointer; transition: color 0.2s, border-color 0.2s; }
       .lc-new-banner button:hover { color: var(--gold, #c9a84c); border-color: var(--gold-dim, #8a6e2f); }
+      /* the count itself is a jump control — reads as text, behaves as a link */
+      .lc-new-banner .lc-new-banner-jump { margin-left: 0; border: none; padding: 0;
+        color: var(--gold, #c9a84c); font-size: 10px; letter-spacing: 0.2em; text-decoration: underline;
+        text-underline-offset: 3px; text-decoration-color: rgba(201,168,76,0.4); }
+      .lc-new-banner .lc-new-banner-jump:hover { color: var(--gold-bright, #e8c96a); text-decoration-color: currentColor; }
       .lc-nav-new-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%;
         background: #c9a84c; box-shadow: 0 0 6px rgba(201,168,76,0.8); margin-left: 5px; vertical-align: super; }
     `;
@@ -131,6 +136,60 @@
     return { newCount };
   }
 
+  /* Jump to the next still-new item, cycling through them on repeated clicks.
+     Saves hunting for a small gold dot in a long grid. */
+  const jumpIndex = {};
+  const jumpRetried = {};
+  const jumpFlash = { timer: null, host: null, prev: '' };
+  function jumpToNext(scope) {
+    const cfg = registry[scope];
+    if (!cfg) return;
+    const seen = readSeen(scope);
+    const baseline = getBaseline(scope);
+    const newOnes = [...document.querySelectorAll(cfg.itemSelector)].filter(el => {
+      const id = cfg.getId(el);
+      if (!id || seen.has(id)) return false;
+      /* skip anything currently hidden (e.g. by an active search filter) —
+         scrolling to a display:none element does nothing */
+      if (el.classList.contains('search-hidden') || el.offsetParent === null) return false;
+      const t = toTime(cfg.getDate(el));
+      return t != null && baseline != null && t > baseline;
+    });
+    if (!newOnes.length) {
+      /* everything new is filtered out of view — clear the search once and retry */
+      const searchBox = document.getElementById('gallery-search');
+      if (searchBox && searchBox.value.trim() && !jumpRetried[scope]) {
+        jumpRetried[scope] = true;
+        searchBox.value = '';
+        searchBox.dispatchEvent(new Event('input', { bubbles: true }));
+        setTimeout(() => { jumpToNext(scope); jumpRetried[scope] = false; }, 250);
+      }
+      return;
+    }
+
+    const i = (jumpIndex[scope] || 0) % newOnes.length;
+    jumpIndex[scope] = i + 1;
+    const target = newOnes[i];
+
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    /* brief gold flash so it's obvious which one we landed on.
+       Clear any in-flight flash first — otherwise a rapid second click captures
+       the gold value as "previous" and restores it permanently. */
+    const host = (cfg.dotTarget ? cfg.dotTarget(target) : target) || target;
+    if (jumpFlash.timer) {
+      clearTimeout(jumpFlash.timer);
+      if (jumpFlash.host) jumpFlash.host.style.boxShadow = jumpFlash.prev || '';
+    }
+    jumpFlash.host = host;
+    jumpFlash.prev = host.style.boxShadow;
+    host.style.transition = 'box-shadow 0.35s ease';
+    host.style.boxShadow = '0 0 0 3px #c9a84c, 0 0 22px rgba(201,168,76,0.75)';
+    jumpFlash.timer = setTimeout(() => {
+      host.style.boxShadow = jumpFlash.prev || '';
+      jumpFlash.timer = null; jumpFlash.host = null;
+    }, 1600);
+  }
+
   function updateBanner(scope, count) {
     const cfg = registry[scope];
     if (!cfg || !cfg.bannerMount) return;
@@ -145,12 +204,16 @@
       banner = document.createElement('div');
       banner.id = 'lc-new-banner-' + scope;
       banner.className = 'lc-new-banner';
-      banner.innerHTML = `<span class="lc-new-banner-dot"></span><span class="lc-new-banner-text"></span>` +
-                         `<button type="button">Mark all seen</button>`;
-      banner.querySelector('button').addEventListener('click', () => markAllSeen(scope));
+      banner.innerHTML = `<span class="lc-new-banner-dot"></span>` +
+                         `<button type="button" class="lc-new-banner-jump"><span class="lc-new-banner-text"></span></button>` +
+                         `<button type="button" class="lc-new-banner-seen">Mark all seen</button>`;
+      banner.querySelector('.lc-new-banner-seen').addEventListener('click', () => markAllSeen(scope));
+      banner.querySelector('.lc-new-banner-jump').addEventListener('click', () => jumpToNext(scope));
       mount.parentNode.insertBefore(banner, mount);
     }
     banner.querySelector('.lc-new-banner-text').textContent = text;
+    const jump = banner.querySelector('.lc-new-banner-jump');
+    if (jump) jump.title = 'Click to jump to the next new item';
   }
 
   function markSeen(scope, id) {
