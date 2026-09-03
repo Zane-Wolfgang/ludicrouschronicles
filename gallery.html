@@ -3,23 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="ImageToolbar" content="no">
-<title>Gallery — Ludicrous Chronicles</title>
+<title>Ludicrous Chronicles</title>
 <!-- ── Link preview (Open Graph / Twitter card) ── -->
 <meta property="og:site_name" content="Ludicrous Chronicles">
 <meta property="og:type" content="website">
-<meta property="og:title" content="The Gallery — Ludicrous Chronicles">
-<meta property="og:description" content="Illustrations made for the Chronicles — every piece drawn by hand.">
-<meta property="og:url" content="https://ludicrous-chronicles.netlify.app/gallery.html">
-<meta property="og:image" content="https://ludicrous-chronicles.netlify.app/images/art-02-dark-garden.png">
+<meta property="og:title" content="Ludicrous Chronicles">
+<meta property="og:description" content="An illustrated audiobook of an era long forgotten, yet still longed for — voiced, drawn, and penned by a singular hand.">
+<meta property="og:url" content="https://ludicrous-chronicles.netlify.app/">
+<meta property="og:image" content="https://ludicrous-chronicles.netlify.app/images/book-cover.png">
 <meta property="og:image:type" content="image/png">
-<meta property="og:image:secure_url" content="https://ludicrous-chronicles.netlify.app/images/art-02-dark-garden.png">
-<meta property="og:image:alt" content="Original illustration from the Ludicrous Chronicles">
+<meta property="og:image:secure_url" content="https://ludicrous-chronicles.netlify.app/images/book-cover.png">
+<meta property="og:image:alt" content="Ludicrous Chronicles cover art">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="The Gallery — Ludicrous Chronicles">
-<meta name="twitter:description" content="Illustrations made for the Chronicles — every piece drawn by hand.">
-<meta name="twitter:image" content="https://ludicrous-chronicles.netlify.app/images/art-02-dark-garden.png">
-<meta name="description" content="Illustrations made for the Chronicles — every piece drawn by hand.">
+<meta name="twitter:title" content="Ludicrous Chronicles">
+<meta name="twitter:description" content="An illustrated audiobook of an era long forgotten, yet still longed for.">
+<meta name="twitter:image" content="https://ludicrous-chronicles.netlify.app/images/book-cover.png">
+<meta name="description" content="An illustrated audiobook of an era long forgotten, yet still longed for — voiced, drawn, and penned by a singular hand.">
 <meta name="theme-color" content="#c9a84c">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,373 +27,314 @@
   <link rel="icon" type="image/png" href="images/favicon.png">
 <link rel="stylesheet" href="style.css">
 <style>
-  .gallery-grid { columns: 3; column-gap: 12px; margin-top: 3rem; }
-  .gallery-item { break-inside: avoid; margin-bottom: 12px; position: relative; overflow: hidden; cursor: pointer; display: block; border: 1px solid var(--border); transition: border-color 0.25s, transform 0.25s; }
-  .gallery-item:hover { border-color: var(--gold-dim); transform: scale(1.01); }
-  .gallery-item img { width: 100%; display: block; filter: brightness(0.92); transition: filter 0.3s; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; user-drag: none; pointer-events: none; }
-  .gallery-item:hover img { filter: brightness(1.05); }
-  .gallery-overlay { position: absolute; bottom: -8px; left: 0; right: 0; padding: 2rem 1rem 1.2rem; background: linear-gradient(0deg, rgba(10,8,6,0.85) 0%, transparent 100%); opacity: 0; transition: opacity 0.25s; z-index: 2; }
-  .gallery-item:hover .gallery-overlay { opacity: 1; }
-  .gallery-overlay-title { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--parchment); margin-bottom: 0.2rem; }
-  .gallery-overlay-type { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
-  .gallery-overlay-date { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; color: var(--text-muted); margin-top: 0.2rem; }
-  .lightbox-date { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
-  /* Transparent overlay on every item — blocks Chrome Lens button from attaching to img */
-  .gallery-item::after { content: ''; position: absolute; inset: 0; z-index: 1; }
-  .gallery-item.locked { position: relative; }
-  .gallery-item.locked .gallery-overlay { top: 0; bottom: auto; padding: 1rem 1rem 2rem; background: linear-gradient(180deg, rgba(10,8,6,0.85) 0%, transparent 100%); }
-  .gallery-item.locked img { pointer-events: none !important; filter: brightness(0.92) blur(6px); transform: scale(1.05); }
-  .gallery-item.locked::after { content: ''; position: absolute; inset: 0; z-index: 3; cursor: pointer; }
-  .gallery-item.locked:hover img { filter: brightness(1.0) blur(5px); }
-  .gallery-lock-badge { position: absolute; top: 0.75rem; right: 0.75rem; width: 24px; height: 24px; border: 1px solid rgba(201,168,76,0.5); background: rgba(10,8,6,0.8); display: flex; align-items: center; justify-content: center; z-index: 2; }
-  .gallery-lock-badge svg { width: 10px; height: 10px; fill: var(--gold-dim); }
-  .gallery-tier-label { position: absolute; bottom: 0.75rem; left: 0.75rem; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); background: rgba(10,8,6,0.8); padding: 0.2em 0.6em; border: 1px solid var(--border); z-index: 2; }
-
-  /* ── Stills section ── */
-  .stills-section { margin-top: 5rem; padding-top: 4rem; border-top: 1px solid var(--border); }
-  .stills-section .section-label { margin-bottom: 0.5rem; }
-  .stills-grid { columns: 3; column-gap: 12px; margin-top: 2rem; }
-  .stills-empty { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); padding: 3rem 0; text-align: center; }
-
-  /* ── Section nav tab ── */
-  .gallery-section-nav {
-    position: fixed !important;
-    right: 0 !important;
-    left: auto !important;
-    top: 55% !important;
-    width: 22px !important;
-    z-index: 200;
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    height: 180vh;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    pointer-events: none;
-  }
-  .gallery-section-nav a {
-    pointer-events: all;
-    display: block;
-    background: rgba(10,8,6,0.92);
-    border: 1px solid var(--border);
-    border-right: none;
-    width: 22px;
-    overflow: hidden;
-    text-decoration: none;
-    box-sizing: border-box;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .gallery-section-nav a span {
-    display: block;
-    padding: 0.85em 0.35em;
-    font-family: 'Cinzel', serif;
-    font-size: 7px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    white-space: nowrap;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    transition: color 0.2s;
-  }
-  .gallery-section-nav a:hover { border-color: var(--gold-dim); background: rgba(201,168,76,0.07); }
-  .gallery-section-nav a:hover span, .gallery-section-nav a.active span { color: var(--gold); }
-  .gallery-section-nav a.active { border-color: var(--gold-dim); }
-  @media (max-width: 900px) { .gallery-section-nav { display: none; } }
-
-  /* ── Lightbox ── */
-  .lightbox {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(10,8,6,0.96);
-    z-index: 9000;
-    overflow-y: auto;
-    padding: 3rem 1rem 4rem;
-  }
-  .lightbox.open { display: block; }
-  .lightbox.zoomed { overflow: hidden; padding: 0; }
-
-  .lightbox-card {
-    max-width: 780px;
-    margin: 0 auto;
-    position: relative;
-  }
-
-  /* Image section */
-  .lightbox-img-wrap {
-    position: relative;
+    align-items: center;
+    justify-content: flex-end;
     text-align: center;
-    background: #000;
-  }
-  .lightbox-img {
-    display: block;
-    max-width: 100%;
-    max-height: 80vh;
-    object-fit: contain;
-    margin: 0 auto;
-    -webkit-user-drag: none;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
-    cursor: zoom-in;
-    transition: opacity 0.2s ease;
-    border: 1px solid var(--border);
-  }
-  .lightbox-img:hover { opacity: 0.95; }
-
-  /* Zoom mode — image takes over full screen */
-  .lightbox.zoomed .lightbox-card { max-width: none; }
-  .lightbox.zoomed .lightbox-img-wrap {
-    position: fixed;
-    inset: 0;
-    z-index: 9010;
-    overflow: auto;
-    display: flex;
-    background: rgba(10,8,6,0.99);
-  }
-  .lightbox.zoomed .lightbox-img {
-    max-width: none;
-    max-height: none;
-    width: 150vw;
-    height: auto;
-    margin: auto;
-    cursor: zoom-out;
-    border: none;
+    padding: 0 2rem 5rem;
   }
 
-  .lightbox-close {
-    position: fixed;
-    top: 1rem;
-    right: 1.5rem;
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    background: none;
-    border: none;
-    cursor: pointer;
-    z-index: 9020;
-    transition: color 0.2s;
-  }
-  .lightbox-close:hover { color: var(--gold); }
-  .lightbox.zoomed .lightbox-close { display: none; }
-  .lightbox.zoomed .lightbox-nav { display: none !important; }
-
-  .lightbox-nav {
+  .hero-parallax-bg {
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%) translateZ(0);
-    width: 40px; height: 40px;
-    background: rgba(10,8,6,0.7);
-    border: 1px solid var(--border-bright);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; z-index: 9020;
-    transition: border-color 0.2s;
-    will-change: transform;
-  }
-  .lightbox-nav:hover { border-color: var(--gold); }
-  .lightbox-nav svg { width: 14px; height: 14px; fill: var(--gold); }
-  .lightbox-nav.prev { left: 0.75rem; }
-  .lightbox-nav.next { right: 0.75rem; }
-  .lightbox-nav.hidden { display: none; }
-  .lightbox-page-count {
-    text-align: center;
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    color: var(--text-muted);
-    padding: 0.5rem 0;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 100%;
+    background-image: url('images/book-cover.png');
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    animation: coverGlow 4s ease-in-out infinite alternate;
+    transition: opacity 0.3s;
   }
 
-  .lightbox-hint {
-    text-align: center;
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.2em;
+  .hero-parallax-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(10,8,6,0.15) 0%, rgba(10,8,6,0.0) 30%, rgba(10,8,6,0.5) 70%, rgba(10,8,6,0.95) 100%),
+      linear-gradient(90deg, rgba(10,8,6,0.4) 0%, transparent 20%, transparent 80%, rgba(10,8,6,0.4) 100%);
+  }
+
+  .hero-content {
+    position: sticky;
+    bottom: 5rem;
+    z-index: 2;
+  }
+
+  .hero-text-section {
+    position: sticky;
+    bottom: 5rem;
+    z-index: 2;
+    padding-bottom: 0;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 80%, rgba(201,168,76,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 20% 20%, rgba(201,168,76,0.04) 0%, transparent 60%),
+      linear-gradient(180deg, #0a0806 0%, #111009 60%, #0d0b07 100%);
+  }
+
+  .hero-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(201,168,76,0.04) 80px),
+      repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(201,168,76,0.03) 80px);
+  }
+
+  .hero-ornament {
+    position: relative;
+    font-size: 11px;
+    letter-spacing: 0.35em;
     text-transform: uppercase;
-    color: var(--text-muted);
-    opacity: 0.5;
-    padding: 0.4rem 0 0;
-    pointer-events: none;
-  }
-
-  /* Below image — caption, notes, comments */
-  .lightbox-below {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-top: none;
-  }
-  .lightbox.zoomed .lightbox-below { display: none; }
-  body.lc-zoomed #admin-tier-switcher,
-  body.lc-zoomed .admin-panel-tab,
-  body.lc-zoomed #lc-music-player,
-  body.lc-zoomed #lc-btn-wrap {
-    display: none !important;
-  }
-
-  .lightbox-caption-row {
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    margin-bottom: 2rem;
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem 1.5rem 0.75rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .lightbox-title {
-    font-family: 'Cinzel', serif;
-    font-size: 0.9rem;
-    color: var(--parchment);
-    letter-spacing: 0.05em;
-  }
-  .lightbox-type {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    white-space: nowrap;
+    align-items: center;
+    gap: 1.2rem;
+    text-shadow: 0 0 8px rgba(201,168,76,1), 0 0 20px rgba(180,120,0,1), 0 0 50px rgba(140,80,0,0.9), 0 0 4px rgba(0,0,0,1);
   }
 
-  /* Artist note */
-  .lightbox-notes {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    font-family: 'EB Garamond', serif;
-    font-size: 1rem;
-    font-style: italic;
-    line-height: 1.7;
-    color: var(--text-body);
+  .hero-ornament::before,
+  .hero-ornament::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim));
   }
-  .lightbox-notes-label {
+  .hero-ornament::after {
+    background: linear-gradient(270deg, transparent, var(--gold-dim));
+  }
+
+  .hero-title {
+    position: relative;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.4em;
+    text-shadow:
+      -2px -2px 0 #0a0600,
+       2px -2px 0 #0a0600,
+      -2px  2px 0 #0a0600,
+       2px  2px 0 #0a0600,
+      -3px  0   0 #0a0600,
+       3px  0   0 #0a0600,
+       0   -3px 0 #0a0600,
+       0    3px 0 #0a0600,
+      0 0 20px rgba(201,168,76,0.5),
+      0 0 50px rgba(180,120,0,0.4),
+      0 0 80px rgba(0,0,0,0.9);
+  }
+
+  .hero-subtitle {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: clamp(1rem, 2.5vw, 1.35rem);
+    color: var(--parchment);
+    max-width: 560px;
+    margin: 0 auto 3rem;
+    text-shadow: 0 0 8px rgba(201,168,76,1), 0 0 20px rgba(180,120,0,1), 0 0 50px rgba(140,80,0,0.9), 0 0 4px rgba(0,0,0,1);
+  }
+
+  .hero-divider {
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 0 auto 3rem;
+  }
+
+  .hero-ctas {
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    filter: drop-shadow(0 0 10px rgba(201,168,76,0.4)) drop-shadow(0 0 25px rgba(0,0,0,0.9));
+  }
+
+  @keyframes coverGlow {
+    0% { filter: brightness(0.9) saturate(1.0); }
+    100% { filter: brightness(1.05) saturate(1.15); }
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
     font-family: 'Cinzel', serif;
-    font-size: 8px;
+    font-size: 9px;
     letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: var(--gold-dim);
-    display: block;
-    margin-bottom: 0.5rem;
-    font-style: normal;
+    animation: floatHint 3s ease-in-out infinite;
   }
-  .lb-note-heading {
-    font-family: 'Cinzel', serif;
-    color: var(--parchment);
-    font-weight: 600;
-    margin: 0.6em 0 0.2em;
-    font-style: normal;
-    letter-spacing: 0.05em;
-  }
-  h1.lb-note-heading { font-size: 1.3rem; }
-  h2.lb-note-heading { font-size: 1.15rem; }
-  h3.lb-note-heading { font-size: 1.05rem; }
-  h4.lb-note-heading, h5.lb-note-heading, h6.lb-note-heading { font-size: 0.95rem; }
-  .lb-note-big { font-size: 1.3em; }
-  .lb-note-small { font-size: 0.75em; }
 
-  /* Comments section */
-  .lightbox-comments { padding: 1rem 1.5rem 1.5rem; }
-  .lightbox-comments-label {
+  .scroll-hint-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(180deg, var(--gold-dim), transparent);
+  }
+
+  @keyframes floatHint {
+    0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+    50% { opacity: 0.9; transform: translateX(-50%) translateY(6px); }
+  }
+
+  /* ── TEASER STRIP ── */
+  .teaser-strip {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 5rem 2rem;
+  }
+
+  .teaser-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 3rem;
+  }
+
+  .teaser-card {
+    background: var(--deep);
+    padding: 2.5rem 2rem;
+    text-decoration: none;
+    transition: background 0.2s;
+    display: block;
+  }
+
+  .teaser-card:hover { background: var(--mid); }
+
+  .teaser-icon {
     font-family: 'Cinzel', serif;
     font-size: 9px;
     letter-spacing: 0.3em;
     text-transform: uppercase;
     color: var(--gold-dim);
-    margin-bottom: 1rem;
+    margin-bottom: 1.2rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
   }
-  .lightbox-comments-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .lb-comment-item { padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
-  .lb-comment-item:last-child { border-bottom: none; }
-  .lb-comment-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem; }
-  .lb-comment-name { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--parchment); }
-  .lb-comment-date { font-family: 'Cinzel', serif; font-size: 8px; color: var(--text-muted); }
-  .lb-comment-body { font-family: 'EB Garamond', serif; font-size: 0.95rem; line-height: 1.6; color: var(--text-body); }
-  .lb-no-comments { font-family: 'EB Garamond', serif; font-style: italic; color: var(--text-muted); font-size: 0.9rem; padding: 0.5rem 0 1rem; }
 
-  .lightbox-comment-form { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
-  .lb-form-label { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-dim); display: block; margin-bottom: 0.75rem; }
-  .lb-input { width: 100%; background: var(--deep); border: 1px solid var(--border); padding: 0.6rem 0.75rem; font-family: 'EB Garamond', serif; font-size: 0.9rem; color: var(--text-body); outline: none; transition: border-color 0.2s; box-sizing: border-box; margin-bottom: 0.5rem; }
-  .lb-input:focus { border-color: var(--gold-dim); }
-  .lb-input::placeholder { color: var(--text-muted); }
-  textarea.lb-input { resize: vertical; min-height: 80px; }
-  .lb-submit { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); background: var(--gold); border: none; padding: 0.75em 2em; cursor: pointer; transition: background 0.2s; }
-  .lb-submit:hover { background: var(--gold-bright); }
-  .lb-submit:disabled { opacity: 0.5; cursor: default; }
-
-  .lb-comment-footer { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.4rem; }
-  .lb-comment-like-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); padding: 0; transition: color 0.2s; }
-  .lb-comment-like-btn svg { width: 11px; height: 11px; fill: var(--text-muted); transition: fill 0.2s; }
-  .lb-comment-like-btn:hover, .lb-comment-like-btn.liked { color: var(--gold); }
-  .lb-comment-like-btn:hover svg, .lb-comment-like-btn.liked svg { fill: var(--gold); }
-  .lb-comment-delete-btn { background: none; border: none; cursor: pointer; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); padding: 0; margin-left: auto; transition: color 0.2s; display: none; }
-  .lb-comment-delete-btn:hover { color: #c0705a; }
-  .is-admin .lb-comment-delete-btn { display: block; }
-
-  .lb-engagement {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    padding: 0.75rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
+  .teaser-icon::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background: var(--gold-dim);
+    transform: rotate(45deg);
   }
-  .lb-stat {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+
+  .teaser-card h3 {
     font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-muted);
+    font-size: 1.1rem;
+    color: var(--parchment);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
   }
-  .lb-stat svg { width: 13px; height: 13px; fill: var(--gold-dim); }
-  .lb-like-btn {
-    margin-left: auto;
-    background: none;
-    border: 1px solid var(--border);
-    padding: 0.45em 1.1em;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
+
+  .teaser-card p {
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  .teaser-arrow {
+    display: inline-block;
+    margin-top: 1.5rem;
     font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.2em;
+    font-size: 9px;
+    letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: var(--text-muted);
-    transition: all 0.2s;
+    color: var(--gold-dim);
+    transition: color 0.2s;
   }
-  .lb-like-btn svg { width: 13px; height: 13px; fill: var(--text-muted); transition: fill 0.2s; }
-  .lb-like-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
-  .lb-like-btn:hover svg, .lb-like-btn.liked svg { fill: var(--gold); }
-  .lb-like-btn.liked { border-color: var(--gold); color: var(--gold); }
 
+  .teaser-card:hover .teaser-arrow { color: var(--gold); }
 
+  /* ── MOBILE ── */
   @media (max-width: 768px) {
-    .gallery-grid, .stills-grid { margin-top: 1.5rem; }
-    .gallery-item:not(.locked) .gallery-overlay { opacity: 1; bottom: 0; }
-    .lightbox { padding: 2rem 0 3rem; }
-    .lightbox-img { max-height: 60vh; }
-    .lightbox-close { top: 0.5rem; right: 0.75rem; }
-    .lightbox-nav { width: 52px; height: 52px; }
-    .lightbox-nav.prev { left: 0.25rem; }
-    .lightbox-nav.next { right: 0.25rem; }
-    .lightbox-caption-row { flex-direction: column; gap: 0.25rem; }
-    .stills-grid { columns: 1; }
-    .stills-section { margin-top: 3rem; padding-top: 2.5rem; }
+    .hero-parallax-bg {
+      background-attachment: scroll;
+      background-position: center 15%;
+      background-size: cover;
+    }
+    .hero {
+      height: 110vh;
+      padding: 0 1.25rem 4rem;
+    }
+    .hero-content, .hero-text-section {
+      bottom: 3rem;
+    }
+    .hero-ornament {
+      font-size: 9px;
+      gap: 0.75rem;
+    }
+    .hero-ornament::before, .hero-ornament::after {
+      width: 30px;
+    }
+    .hero-divider { margin: 0 auto 2rem; }
+    .hero-ctas {
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .teaser-grid {
+      grid-template-columns: 1fr;
+    }
+    .teaser-strip {
+      padding: 3rem 1.25rem;
+    }
+    .teaser-card {
+      padding: 1.75rem 1.25rem;
+    }
+  }
+
+  @media (max-width: 900px) and (orientation: landscape) {
+    .hero {
+      height: 160vh;
+    }
+    .hero-parallax-bg {
+      background-attachment: scroll;
+    }
   }
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
+<script src="connection.js"></script>
 
 <nav>
   <a href="index.html" class="nav-brand">Ludicrous Chronicles</a>
   <ul class="nav-links">
     <li><a href="about.html">About</a></li>
     <li><a href="content.html">Content</a></li>
-    <li><a href="gallery.html" class="active">Gallery</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
     <li><a href="videos.html">Videos</a></li>
     <li class="nav-news-item">
       <a href="news.html">News<span class="nav-news-dot" id="news-dot"></span></a>
@@ -422,384 +362,259 @@
   })();
 </script>
 
-<div class="page-header">
-  <div class="section-label fade-up fade-up-1">Original Art</div>
-  <h1 class="section-title fade-up fade-up-2">The Gallery</h1>
-  <p class="section-body fade-up fade-up-3">Illustrations made for the Chronicles — every piece drawn by hand.</p>
-</div>
+<section class="hero" id="hero">
+  <div class="hero-parallax-bg" id="parallax-bg"></div>
 
-<div class="gallery-search-wrap">
-  <div class="gallery-search-inner">
-    <svg class="gallery-search-icon" viewBox="0 0 24 24"><path d="M10 2a8 8 0 105.3 14l5.4 5.3 1.4-1.4-5.3-5.3A8 8 0 0010 2zm0 2a6 6 0 110 12 6 6 0 010-12z"/></svg>
-    <input type="text" id="gallery-search" placeholder="Search by title, type, or year…" autocomplete="off" />
-    <button id="gallery-search-clear" type="button" aria-label="Clear" style="display:none;">✕</button>
+  <div class="hero-content hero-text-section fade-up fade-up-2">
+    <div class="hero-ornament">Stories by yours truly</div>
+    <h1 class="hero-title">Ludicrous<br>Chronicles</h1>
+    <p class="hero-subtitle">An illustrated audiobook of an era long forgotten, yet still longed for — voiced, drawn, and penned by a singular hand.</p>
+    <div class="hero-divider"></div>
+    <div class="hero-ctas">
+      <a href="content.html" class="btn-primary">Enter the Archive</a>
+      <a href="membership.html" class="btn-ghost">Become a Patron</a>
+    </div>
   </div>
-  <div class="gallery-search-suggest" id="gallery-search-suggest">
-    <span class="gss-label">Try:</span>
-    <button type="button" data-q="Character Art">Character Art</button>
-    <button type="button" data-q="Stills">Stills</button>
-    <button type="button" data-q="Traditional Art">Traditional Art</button>
-    <button type="button" data-q="Chapter Art">Chapter Art</button>
-    <span id="gallery-search-years"></span>
-  </div>
-  <div class="gallery-search-count" id="gallery-search-count"></div>
-</div>
-<style>
-  .gallery-search-wrap { max-width: 640px; margin: 0 auto 1rem; padding: 0 1rem; }
-  .gallery-search-inner { position: relative; display: flex; align-items: center; border: 1px solid var(--border-bright); background: rgba(10,8,6,0.6); }
-  .gallery-search-inner:focus-within { border-color: var(--gold-dim); }
-  .gallery-search-icon { width: 16px; height: 16px; fill: var(--gold-dim); margin-left: 0.9rem; flex-shrink: 0; }
-  #gallery-search {
-    flex: 1; background: transparent; border: none; outline: none;
-    font-family: 'Cinzel', serif; font-size: 0.85rem; letter-spacing: 0.05em;
-    color: var(--parchment); padding: 0.85rem 0.9rem;
-  }
-  #gallery-search::placeholder { color: var(--text-muted); letter-spacing: 0.1em; }
-  #gallery-search-clear { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; padding: 0 0.9rem; transition: color 0.2s; }
-  #gallery-search-clear:hover { color: var(--gold); }
-  .gallery-search-count { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); text-align: center; margin-top: 0.6rem; min-height: 12px; }
-  .gallery-search-suggest { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 0.7rem; }
-  .gallery-search-suggest .gss-label { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
-  .gallery-search-suggest button {
-    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--text-muted); background: rgba(201,168,76,0.04); border: 1px solid var(--border);
-    padding: 0.35em 0.85em; cursor: pointer; transition: border-color 0.2s, color 0.2s, background 0.2s;
-  }
-  .gallery-search-suggest button:hover { border-color: var(--gold-dim); color: var(--gold); background: rgba(201,168,76,0.09); }
-  .search-hidden { display: none !important; }
-  .gallery-nomatch { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); text-align: center; padding: 3rem 0; }
-</style>
 
-<section>
-  <div class="section-inner">
-    <div class="gallery-grid" id="gallery-grid">
-
-      <div class="gallery-item" onclick="openLightbox('images/art-01-witch-lantern.png', 'Nearly There', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-01-witch-lantern.png" alt="Nearly There" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Nearly There</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-02-dark-garden.png', 'The Dark Garden', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-02-dark-garden.png" alt="The Dark Garden" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">The Dark Garden</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-03-bridge.png', 'The Offer', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-03-bridge.png" alt="The Offer" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">The Offer</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-04-train.png', 'The Beginning', 'Chapter Art')">
-        <img loading="lazy" decoding="async" src="images/art-04-train.png" alt="The Beginning" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">The Beginning</div><div class="gallery-overlay-type">Chapter Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-05-asteroid.png', 'Among Asteroids', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-05-asteroid.png" alt="Among Asteroids" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Among Asteroids</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-06-tunnel.png', 'The Tunnel', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-06-tunnel.png" alt="The Tunnel" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">The Tunnel</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-07-steampunk.png', 'Fix You Up', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-07-steampunk.png" alt="Fix You Up" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Fix You Up</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-08-lightning.png', 'The Storm', 'Chapter Art')">
-        <img loading="lazy" decoding="async" src="images/art-08-lightning.png" alt="The Storm" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">The Storm</div><div class="gallery-overlay-type">Chapter Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-09-needle.png', 'Patching Up', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-09-needle.png" alt="Patching Up" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Patching Up</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-10-cards.png', 'Faces of the Suits', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-10-cards.png" alt="Faces of the Suits" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Faces of the Suits</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-11-portraits.png', 'Oh What Could Have Been', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-11-portraits.png" alt="Oh What Could Have Been" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Oh What Could Have Been</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-12-gentleman.png', 'To Law And Order', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-12-gentleman.png" alt="To Law And Order" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">To Law And Order</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-      <div class="gallery-item" onclick="openLightbox('images/art-13-rain.png', 'In the Rain', 'Character Art')">
-        <img loading="lazy" decoding="async" src="images/art-13-rain.png" alt="In the Rain" />
-        <div class="gallery-overlay"><div class="gallery-overlay-title">In the Rain</div><div class="gallery-overlay-type">Character Art</div></div>
-      </div>
-
-      <div class="gallery-item locked" onclick="window.location.href='membership.html'">
-        <img loading="lazy" decoding="async" src="images/art-birthday.png" alt="Happy Birthday" />
-        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Devoted</div>
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Happy Birthday</div></div>
-      </div>
-      <div class="gallery-item locked" onclick="window.location.href='membership.html'">
-        <img loading="lazy" decoding="async" src="images/art-dont-miss-legs.png" alt="Don't You Miss Your Legs?" />
-        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Devoted</div>
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Don't You Miss Your Legs?</div></div>
-      </div>
-      <div class="gallery-item locked" id="helping-hand-item" onclick="window.location.href='membership.html'">
-        <img loading="lazy" decoding="async" src="images/art-helping-hand.png" alt="A Helping Hand" />
-        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Devoted</div>
-        <div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / 2</div>
-        <div class="gallery-overlay"><div class="gallery-overlay-title">A Helping Hand</div></div>
-      </div>
-      <div class="gallery-item locked" onclick="window.location.href='membership.html'">
-        <img loading="lazy" decoding="async" src="images/art-blue-threads.png" alt="Blue Threads" />
-        <div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div>
-        <div class="gallery-tier-label">Devoted</div>
-        <div class="gallery-overlay"><div class="gallery-overlay-title">Blue Threads</div></div>
-      </div>
-
-    </div>
-
-    <!-- ── Stills Section ── -->
-    <div class="stills-section" id="stills">
-      <div class="section-label">Roblox Stills</div>
-      <h2 class="section-title">Stills</h2>
-      <p class="section-body">Posed character photoshoots — composed and curated, not drawn.</p>
-      <div class="stills-grid" id="stills-grid">
-        <div class="stills-empty" id="stills-loading">Loading...</div>
-      </div>
-    </div>
-
-    <!-- ── Traditional Art Section ── -->
-    <div class="stills-section" id="traditional">
-      <div class="section-label">On Paper</div>
-      <h2 class="section-title">Traditional Art</h2>
-      <p class="section-body">Pencil, ink, and everything in between — drawn by hand on actual paper.</p>
-      <div class="stills-grid" id="traditional-grid">
-        <div class="stills-empty" id="traditional-loading">Loading...</div>
-      </div>
-    </div>
-
-    <!-- ── WIPs & Sketches Section ── -->
-    <div class="stills-section" id="wips">
-      <div class="section-label">Behind the Scenes</div>
-      <h2 class="section-title">WIPs &amp; Sketches</h2>
-      <p class="section-body">Works in progress, rough sketches, and timelapse stills.</p>
-      <div class="stills-grid" id="wips-grid">
-        <div class="stills-empty" id="wips-loading">Loading...</div>
-      </div>
-    </div>
-
+  <div class="scroll-hint">
+    <div class="scroll-hint-line"></div>
+    Scroll
   </div>
 </section>
 
-<!-- ── Lightbox ── -->
-<div class="lightbox" id="lightbox">
-  <button class="lightbox-close" id="lb-close">Close ✕</button>
+<section class="recent-strip" id="recent-strip" style="display:none;">
+  <div class="section-inner">
+    <div class="section-label">Fresh Off the Page</div>
+    <h2 class="section-title">Recently Added</h2>
+    <div class="recent-grid" id="recent-grid"></div>
+  </div>
+</section>
 
-  <div class="lightbox-card" id="lb-card">
-
-    <!-- Image -->
-    <div class="lightbox-img-wrap" id="lb-img-wrap">
-      <img class="lightbox-img" id="lb-img" src="" alt="" />
-      <div class="lightbox-nav prev hidden" id="lb-prev"><svg viewBox="0 0 14 14"><path d="M9 2L4 7l5 5"/></svg></div>
-      <div class="lightbox-nav next hidden" id="lb-next"><svg viewBox="0 0 14 14"><path d="M5 2l5 5-5 5"/></svg></div>
-    </div>
-    <div class="lightbox-page-count" id="lb-pages"></div>
-    <div class="lightbox-hint" id="lb-hint">Click image to zoom · scroll for notes &amp; comments</div>
-
-    <!-- Below image: title, notes, comments -->
-    <div class="lightbox-below" id="lb-below">
-
-      <div class="lightbox-caption-row">
-        <span class="lightbox-title" id="lb-title"></span>
-        <span class="lightbox-type" id="lb-type"></span>
-        <span class="lightbox-date" id="lb-date"></span>
-      </div>
-
-      <!-- Engagement row -->
-      <div class="lb-engagement">
-        <div class="lb-stat">
-          <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5C21.3 7.6 17 4.5 12 4.5zm0 12.5c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z"/></svg>
-          <span id="lb-witness-count">—</span>&nbsp;Witnesses
-        </div>
-        <div class="lb-stat">
-          <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
-          <span id="lb-like-count">—</span>&nbsp;Kudos
-        </div>
-        <button id="lb-like-btn" class="lb-like-btn" title="Leave kudos">
-          <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
-          Kudos
-        </button>
-      </div>
-
-      <!-- Reactions -->
-      <div id="lb-reactions-container"></div>
-
-      <!-- Artist's note (hidden if empty) -->
-      <div class="lightbox-notes" id="lb-notes" style="display:none;">
-        <span class="lightbox-notes-label">Artist's Note</span>
-        <span id="lb-notes-text"></span>
-      </div>
-
-      <!-- Comments -->
-      <div class="lightbox-comments">
-        <div class="lightbox-comments-label">Comments</div>
-        <div id="lb-comments-list"><div class="lb-no-comments">Loading…</div></div>
-        <div class="lightbox-comment-form">
-          <span class="lb-form-label">Leave Your Mark</span>
-          <input type="text" class="lb-input" id="lb-comment-name" placeholder="Your name (optional)" maxlength="60" />
-          <div style="display:flex;gap:0.5rem;align-items:flex-end;margin-bottom:0.5rem;">
-            <textarea class="lb-input" id="lb-comment-msg" placeholder="What did you think?" maxlength="1000" style="margin-bottom:0;flex:1;"></textarea>
-            <div id="lb-emoji-picker-mount"></div>
-          </div>
-          <button class="lb-submit" id="lb-comment-submit">Leave Your Mark</button>
-        </div>
-      </div>
-
+<section class="teaser-strip">
+  <div class="section-inner">
+    <div class="section-label">What Awaits</div>
+    <h2 class="section-title">The Three Crafts</h2>
+    <div class="teaser-grid">
+      <a href="content.html?filter=story" class="teaser-card">
+        <div class="teaser-icon">Writing</div>
+        <h3>The Story</h3>
+        <p>A tale of questionable decisions, worse company, and the last living god who saved a girl, cursed himself for it, and has been someone else's problem ever since — the man in question leading the story.</p>
+        <span class="teaser-arrow">Read more →</span>
+      </a>
+      <a href="content.html?filter=voice" class="teaser-card">
+        <div class="teaser-icon">Voice Acting</div>
+        <h3>The Narration</h3>
+        <p>Most (main) characters voiced by me — a girl who drew, wrote, and narrated the whole affair and has yet to show any signs of becoming a retard. How I manage, who's to say?</p>
+        <span class="teaser-arrow">Listen →</span>
+      </a>
+      <a href="content.html?filter=art" class="teaser-card">
+        <div class="teaser-icon">Illustration</div>
+        <h3>The Art</h3>
+        <p>Original illustrations for each chapter. Because apparently writing it wasn't enough, no. Then I had to rope my friend to animate for my sake. Poor fella.</p>
+        <span class="teaser-arrow">View gallery →</span>
+      </a>
     </div>
   </div>
-</div>
+</section>
 
-<!-- ── Section Nav Tab ── -->
-<div class="gallery-section-nav" id="gallery-section-nav">
-  <a href="#gallery-grid"><span>Digital Art</span></a>
-  <a href="#stills"><span>Stills</span></a>
-  <a href="#traditional"><span>Traditional</span></a>
-  <a href="#wips"><span>WIPs</span></a>
-</div>
+<style>
+  .recent-strip { padding-top: 1rem; }
+  .recent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 2.5rem; perspective: 1400px; }
+
+  /* Outer link is the flip stage; .recent-flip is the rotating body with two faces. */
+  .recent-card { position: relative; display: block; text-decoration: none; border-radius: 12px; transform-style: preserve-3d; transition: transform 0.25s; }
+  .recent-card:hover { transform: translateY(-4px); }
+  .recent-flip { position: relative; transform-style: preserve-3d; }
+  .recent-face { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .recent-front { position: relative; }
+  .recent-back {
+    position: absolute; inset: 0; transform: rotateY(180deg);
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 45%, #171009, #0d0a06);
+    border-color: rgba(201,168,76,0.28);
+  }
+  /* Art Deco emblem on the back — pure CSS, subtle gold */
+  .recent-back-emblem { width: 46px; height: 46px; position: relative; opacity: 0.55; }
+  .recent-back-emblem::before, .recent-back-emblem::after {
+    content: ''; position: absolute; inset: 0; border: 1px solid var(--gold-dim); transform: rotate(45deg);
+  }
+  .recent-back-emblem::after { inset: 9px; border-color: rgba(201,168,76,0.45); transform: rotate(45deg) scale(0.7); }
+  .recent-back-dot { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--gold-dim); border-radius: 50%; box-shadow: 0 0 8px rgba(201,168,76,0.6); }
+
+  .recent-card:hover .recent-front .recent-card-img { filter: brightness(1.08) saturate(1.15); }
+
+  /* Entrance: corkscrew — rise while spinning on the vertical axis (right-to-left,
+     multiple turns) and land on the card's face. Pre-set the start state so there's
+     no flash of the resting front before it begins. */
+  .recent-card { opacity: 0; transform: translateY(110px) rotateY(540deg) scale(0.85); }
+  .recent-card.recent-in { animation: recentCorkscrew 1.25s cubic-bezier(0.18, 0.72, 0.24, 1) both; }
+  .recent-card.recent-in:nth-child(1) { animation-delay: 0.10s; }
+  .recent-card.recent-in:nth-child(2) { animation-delay: 0.42s; }
+  .recent-card.recent-in:nth-child(3) { animation-delay: 0.74s; }
+  /* Resting state after the entrance finishes — flat and visible; hover still lifts. */
+  .recent-card.recent-done { opacity: 1; transform: none; }
+  .recent-card.recent-done:hover { transform: translateY(-4px); }
+  @keyframes recentCorkscrew {
+    0%   { opacity: 0; transform: translateY(110px) rotateY(540deg) scale(0.85); }
+    30%  { opacity: 1; }
+    80%  { transform: translateY(-9px) rotateY(-24deg) scale(1.03); }
+    100% { opacity: 1; transform: translateY(0) rotateY(0deg) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .recent-card { opacity: 1; transform: none; }
+    .recent-card.recent-in { animation: none; transform: none; }
+  }
+
+  .recent-card-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; filter: brightness(0.9); transition: filter 0.45s ease; }
+  .recent-card-noimg { background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(10,8,6,0.4)); aspect-ratio: 4/3; }
+  /* Vintage mode: cards wear the site's 1920s sepia, bleeding to fuller, MORE
+     saturated colour on hover. Specificity raised to beat the global img fallback. */
+  body.vintage #recent-strip img.recent-card-img { filter: sepia(0.85) saturate(0.6) brightness(0.84) contrast(0.9); transition: filter 0.5s ease; }
+  body.vintage #recent-strip .recent-card:hover img.recent-card-img { filter: sepia(0) saturate(1.25) brightness(1.06) contrast(1.02); }
+  .recent-card-body { padding: 0.85rem 1rem 1rem; }
+  .recent-card-type { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); }
+  .recent-card-title { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--parchment); margin-top: 0.3rem; letter-spacing: 0.03em; }
+  .recent-card-date { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; color: var(--text-muted); margin-top: 0.4rem; }
+  @media (max-width: 768px) { .recent-grid { grid-template-columns: 1fr; } }
+</style>
 <script>
-  (function() {
-    var el = document.getElementById('gallery-section-nav');
-    var links = document.querySelectorAll('.gallery-section-nav a');
-    var targets = ['gallery-grid', 'stills', 'traditional', 'wips'].map(function(id) { return document.getElementById(id); });
-    // Nudge right to sit beside scrollbar — clamped 0-20px so it can never go wrong
-    try {
-      var sw = window.innerWidth - document.documentElement.clientWidth;
-      if (sw > 0 && sw <= 20) el.style.right = sw + 'px';
-    } catch(e) {}
-    function update() {
-      var current = 0;
-      targets.forEach(function(t, i) {
-        if (t && t.getBoundingClientRect().top <= window.innerHeight * 0.5) current = i;
-      });
-      links.forEach(function(l, i) { l.classList.toggle('active', i === current); });
-    }
-    window.addEventListener('scroll', update, { passive: true });
-    update();
-  })();
-</script>
+window.addEventListener('load', function () {
+  (async function () {
+    const grid = document.getElementById('recent-grid');
+    const strip = document.getElementById('recent-strip');
+    if (!grid) return;
 
-<script>
-/* ── Gallery search: filter by title, type, or year ── */
-(function () {
-  const input = document.getElementById('gallery-search');
-  const clearBtn = document.getElementById('gallery-search-clear');
-  const countEl = document.getElementById('gallery-search-count');
-  if (!input) return;
-
-  const norm = s => (s || '').toLowerCase();
-
-  function tileText(item) {
-    if (item._lcSearch) return item._lcSearch;
-    const title = item.querySelector('.gallery-overlay-title')?.textContent || '';
-    const type  = item.querySelector('.gallery-overlay-type')?.textContent || '';
-    let date    = item.querySelector('.gallery-overlay-date')?.textContent || '';
-    const tier  = item.querySelector('.gallery-tier-label')?.textContent || '';
-    /* Hardcoded digital-art tiles have no date element — pull their date from
-       HARDCODED_DATES so year search covers them too. */
-    if (!date && typeof HARDCODED_DATES !== 'undefined' && title) {
-      const raw = HARDCODED_DATES[title.trim()];
-      if (raw) {
-        try { date = new Date(raw).getFullYear() + ' ' + raw; } catch (_) { date = raw; }
+    async function resolveTier() {
+      for (let i = 0; i < 30; i++) {
+        if (window.getUserTier) { try { return await window.getUserTier(); } catch (_) { return 'free'; } }
+        await new Promise(r => setTimeout(r, 100));
       }
+      return 'free';
     }
-    const txt = norm(`${title} ${type} ${date} ${tier}`);
-    item._lcSearch = txt;
-    return txt;
-  }
+    const parseLocalDate = s => { if (!s) return null; const p = String(s).split(/[-T]/); return new Date(+p[0], +p[1]-1, +p[2]); };
+    const fetchJSON = async url => { try { const r = await fetch(url); return r.ok ? await r.json() : []; } catch (_) { return []; } };
 
-  /* the four section wrappers we hide when they have no visible matches */
-  const sections = ['gallery-grid', 'stills', 'traditional', 'wips']
-    .map(id => document.getElementById(id))
-    .filter(Boolean);
+    try {
+      const userTier = await resolveTier();
+      const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
+      const now = new Date();
+      const locked = item => tRank[item.tier || 'free'] > tRank[userTier];
+      const premiered = item => { const t = item.premiere_at || item.date; return !t || new Date(t) <= now; };
 
-  function apply() {
-    const q = norm(input.value.trim());
-    clearBtn.style.display = q ? 'block' : 'none';
-    const terms = q.split(/\s+/).filter(Boolean);
-    let shown = 0;
+      const pool = [];
+      const seenTitles = new Set();
+      const addToPool = entry => {
+        const key = (entry.title || '').trim().toLowerCase();
+        if (!key || seenTitles.has(key)) return;   /* no duplicate titles across feeds */
+        seenTitles.add(key);
+        pool.push(entry);
+      };
 
-    document.querySelectorAll('.gallery-item').forEach(item => {
-      if (!q) { item.classList.remove('search-hidden'); shown++; return; }
-      const txt = tileText(item);
-      const ok = terms.every(t => txt.includes(t));
-      item.classList.toggle('search-hidden', !ok);
-      if (ok) shown++;
-    });
+      /* Drawings — gallery-index → open the piece in the gallery lightbox */
+      (await fetchJSON('/_data/gallery-index.json')).forEach(item => {
+        if (locked(item) || !premiered(item)) return;
+        addToPool({
+          title: item.title,
+          type: item.type || 'Illustration',
+          date: item.date,
+          img: (item.images && item.images[0]) || item.image || '',
+          href: 'gallery.html?piece=' + encodeURIComponent(item.title)
+        });
+      });
 
-    /* hide a whole section wrapper if none of its tiles matched. All four wrappers
-       live inside ONE <section>, so we hide the wrapper div itself, never the parent. */
-    sections.forEach(sec => {
-      const anyVisible = sec.querySelector('.gallery-item:not(.search-hidden)');
-      if (q) sec.classList.toggle('search-hidden', !anyVisible);
-      else sec.classList.remove('search-hidden');
-    });
+      /* Videos & chapters (and any stills/art) — content-index */
+      (await fetchJSON('/_data/content-index.json')).forEach(item => {
+        if (locked(item) || !premiered(item)) return;
+        let href, type;
+        if (item.type === 'Video') { href = 'videos.html?play=' + encodeURIComponent(item.title); type = 'Video'; }
+        else if (item.type === 'Chapter') { href = item.href || 'content.html'; type = 'Ghost in Me Book'; }
+        else { href = item.href || 'content.html'; type = item.type || 'Content'; }
+        /* Never let a card dead-end at a bare gallery section anchor — open the piece. */
+        if (/^gallery\.html#(stills|traditional|wips)$/i.test(href || '')) {
+          href = 'gallery.html?piece=' + encodeURIComponent(item.title);
+        }
+        addToPool({ title: item.title, type, date: item.date, img: item.thumbnail || '', href });
+      });
 
-    countEl.textContent = q ? (shown ? shown + (shown === 1 ? ' result' : ' results') : 'No matches') : '';
-  }
+      pool.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+      const top = pool.slice(0, 3);
+      if (!top.length) return;
 
-  /* re-scan when async tiles load in */
-  const debounced = () => { clearTimeout(input._t); input._t = setTimeout(apply, 120); };
-  input.addEventListener('input', debounced);
-  clearBtn.addEventListener('click', () => { input.value = ''; apply(); input.focus(); });
+      grid.innerHTML = top.map(it => {
+        const date = it.date ? parseLocalDate(it.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+        const imgHtml = it.img
+          ? `<img class="recent-card-img" src="${it.img}" alt="${it.title}" loading="lazy" />`
+          : `<div class="recent-card-img recent-card-noimg"></div>`;
+        return `<a class="recent-card" href="${it.href}">
+          <div class="recent-flip">
+            <div class="recent-face recent-front">
+              ${imgHtml}
+              <div class="recent-card-body">
+                <div class="recent-card-type">${it.type}</div>
+                <div class="recent-card-title">${it.title}</div>
+                <div class="recent-card-date">${date}</div>
+              </div>
+            </div>
+            <div class="recent-face recent-back" aria-hidden="true">
+              <div class="recent-back-emblem"><span class="recent-back-dot"></span></div>
+            </div>
+          </div>
+        </a>`;
+      }).join('');
 
-  /* suggestion chips: fill the box and search */
-  function wireChip(btn) {
-    btn.addEventListener('click', () => { input.value = btn.dataset.q || btn.textContent.trim(); apply(); input.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
-  }
-  document.querySelectorAll('#gallery-search-suggest button').forEach(wireChip);
-
-  /* Build year chips from the years actually present, newest first — updates itself
-     as new work is added in future years, no hardcoding. */
-  const yearsWrap = document.getElementById('gallery-search-years');
-  function refreshYearChips() {
-    if (!yearsWrap) return;
-    const years = new Set();
-    document.querySelectorAll('.gallery-item').forEach(item => {
-      const m = tileText(item).match(/\b(19|20)\d{2}\b/g);
-      if (m) m.forEach(y => years.add(y));
-    });
-    const sorted = [...years].sort((a, b) => b - a);
-    const existing = new Set([...yearsWrap.querySelectorAll('button')].map(b => b.dataset.q));
-    sorted.forEach(y => {
-      if (existing.has(y)) return;
-      const b = document.createElement('button');
-      b.type = 'button'; b.dataset.q = y; b.textContent = y;
-      wireChip(b); yearsWrap.appendChild(b);
-    });
-  }
-  refreshYearChips();
-
-  /* Async loaders append tiles after this script runs; observe the grids so any
-     newly-added tile is filtered under the active query without depending on
-     script/definition order. */
-  const gridIds = ['gallery-grid', 'stills-grid', 'traditional-grid', 'wips-grid'];
-  const mo = new MutationObserver(() => { refreshYearChips(); if (input.value.trim()) debounced(); });
-  gridIds.forEach(id => { const g = document.getElementById(id); if (g) mo.observe(g, { childList: true }); });
-})();
+      strip.style.display = '';
+      /* Force a reflow now that the strip is visible, so the browser registers the
+         cards' hidden start state BEFORE we add the animation class — otherwise the
+         display:none→visible flip in the same frame skips the entrance entirely. */
+      void strip.offsetHeight;
+      requestAnimationFrame(() => {
+        grid.querySelectorAll('.recent-card').forEach(c => {
+          c.classList.add('recent-in');
+          const finish = () => {
+            c.style.animation = 'none';
+            c.classList.add('recent-done');   /* CSS resting state; keeps hover working */
+          };
+          c.addEventListener('animationend', finish, { once: true });
+          setTimeout(finish, 2600);
+        });
+      });
+    } catch (_) { /* leave hidden on error */ }
+  })();
+});
 </script>
 
 <!-- Socials Sidebar -->
 <div class="socials-trigger" id="socials-trigger">
   <div class="socials-panel" id="socials-panel">
     <div class="socials-title">Find Me</div>
-    <a class="socials-link" href="https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>YouTube</a>
-    <a class="socials-link" href="https://discord.gg/pEu4xNsESG" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>Discord</a>
-    <a class="socials-link" href="https://x.com/spite_mstrs" target="_blank"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>X / Twitter</a>
-    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank" title="Note: This work is for authorized viewers only. However, it's available on this site to read for free"><svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>AO3</a>
+    <a class="socials-link" href="https://youtube.com/@theludicrouschronicles?si=d2zKJ1VwKy73bCtw" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+      YouTube
+    </a>
+    <a class="socials-link" href="https://discord.gg/pEu4xNsESG" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M20.3 4.4A19.8 19.8 0 0015.4 3c-.2.4-.5.9-.7 1.3a18.3 18.3 0 00-5.5 0A12.7 12.7 0 008.6 3a19.7 19.7 0 00-4.9 1.4C.5 8.8-.3 13 .1 17.2a20 20 0 006 3c.5-.6.9-1.3 1.3-2a13 13 0 01-2-.9l.5-.4a14.3 14.3 0 0012.2 0l.5.4a13 13 0 01-2 1c.4.7.8 1.4 1.3 2a19.9 19.9 0 006-3c.5-4.8-.8-9-3.6-12.8zM8 14.7c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>
+      Discord
+    </a>
+    <a class="socials-link" href="https://x.com/spite_mstrs" target="_blank">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg>
+      X / Twitter
+    </a>
+    <a class="socials-link" href="https://archiveofourown.org/works/71042381" target="_blank" title="Note: This work is for authorized viewers only. However, it's available on this site to read for free">
+      <svg class="socials-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.9 14.5l-1.4.8-3.5-6-3.5 6-1.4-.8 4.9-8.5 4.9 8.5z"/></svg>
+      AO3
+    </a>
   </div>
-  <div class="socials-arrow" id="socials-arrow"><svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg></div>
+  <div class="socials-arrow" id="socials-arrow">
+    <svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg>
+  </div>
 </div>
 <script>
   const trigger = document.getElementById('socials-trigger');
   const panel = document.getElementById('socials-panel');
-  document.getElementById('socials-arrow').addEventListener('click', () => { trigger.classList.toggle('open'); panel.classList.toggle('open'); });
+  document.getElementById('socials-arrow').addEventListener('click', () => {
+    trigger.classList.toggle('open');
+    panel.classList.toggle('open');
+  });
 </script>
 
 <footer>
@@ -809,771 +624,49 @@
 </footer>
 
 <script>
-// ── Supabase for gallery comments (scoped) ──
-const _gcUrl = 'https://stdxmneifvavkzwttbzj.supabase.co';
-const _gcKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZHhtbmVpZnZhdmt6d3R0YnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDczNTYsImV4cCI6MjA5MTg4MzM1Nn0.jWNSXOaSw5KEoFFPHSZqFZi17d9diq2ScBWCeS2o4XU';
-const _gcHdr = { 'apikey': _gcKey, 'Authorization': 'Bearer ' + _gcKey, 'Content-Type': 'application/json' };
+  const bg = document.getElementById('parallax-bg');
+  const hero = document.getElementById('hero');
 
-async function gcFetch(path, opts = {}) {
-  const res = await fetch(_gcUrl + '/rest/v1/' + path, {
-    headers: { ..._gcHdr, 'Prefer': opts.prefer || 'return=minimal', ...opts.headers },
-    method: opts.method || 'GET',
-    body: opts.body ? JSON.stringify(opts.body) : undefined
-  });
-  if (!opts.method || opts.method === 'GET') return res.json();
-  return res;
-}
-
-let _gcIsAdmin = false;
-let _gcAdminChecked = false;
-
-async function checkGCAdmin() {
-  if (_gcAdminChecked) return;
-  _gcAdminChecked = true;
-  try {
-    if (!window.waitForIdentity) return;
-    const user = await window.waitForIdentity();
-    if (user && user.app_metadata?.roles?.includes('admin')) _gcIsAdmin = true;
-  } catch(e) {}
-}
-
-function getVisitorIdGC() {
-  let id = localStorage.getItem('lc_visitor_id');
-  if (!id) { id = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('lc_visitor_id', id); }
-  return id;
-}
-
-async function loadGalleryComments(title) {
-  await checkGCAdmin();
-  const id = 'gallery-' + title;
-  const list = document.getElementById('lb-comments-list');
-  if (_gcIsAdmin) list.classList.add('is-admin');
-  list.innerHTML = '<div class="lb-no-comments">Loading…</div>';
-  const visitorId = getVisitorIdGC();
-  try {
-    const data = await gcFetch(`comments?chapter=eq.${encodeURIComponent(id)}&order=created_at.asc&select=*`);
-    if (!Array.isArray(data) || data.length === 0) {
-      list.innerHTML = '<div class="lb-no-comments">No comments yet — be the first.</div>';
-      return;
-    }
-
-    const likedSet = new Set();
-    const likedLocalKey = `lc_liked_${visitorId}`;
-    try {
-      const localLiked = JSON.parse(localStorage.getItem(likedLocalKey) || '[]');
-      localLiked.forEach(id => likedSet.add(id));
-    } catch(e) {}
-    try {
-      const myLikes = await gcFetch(`comment_likes?visitor_id=eq.${encodeURIComponent(visitorId)}&select=comment_id`);
-      if (Array.isArray(myLikes)) {
-        myLikes.forEach(l => likedSet.add(String(l.comment_id)));
-        localStorage.setItem(likedLocalKey, JSON.stringify([...likedSet]));
-      }
-    } catch(e) {}
-
-    const likeCounts = {};
-    try {
-      const allLikes = await gcFetch(`comment_likes?select=comment_id`);
-      if (Array.isArray(allLikes)) {
-        allLikes.forEach(l => { likeCounts[l.comment_id] = (likeCounts[l.comment_id] || 0) + 1; });
-      }
-    } catch(e) {}
-
-    list.innerHTML = '';
-    data.forEach(c => {
-      const date = new Date(c.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-      const liked = likedSet.has(String(c.id));
-      const likeCount = likeCounts[c.id] || 0;
-      const div = document.createElement('div');
-      div.className = 'lb-comment-item';
-      div.dataset.commentId = c.id;
-      div.innerHTML = `
-        <div class="lb-comment-meta">
-          <span class="lb-comment-name">${c.name || 'Anonymous'}</span>
-          <span class="lb-comment-date">${date}</span>
-        </div>
-        <div class="lb-comment-body">${window.renderEmojiShortcodes ? window.renderEmojiShortcodes(c.message) : c.message}</div>
-        <div class="lb-comment-footer">
-          <button class="lb-comment-like-btn${liked ? ' liked' : ''}" data-id="${c.id}" title="${likeCount} ${likeCount === 1 ? 'person likes' : 'people like'} this">
-            <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
-            <span class="lb-clc" data-count="${likeCount}">${likeCount}</span>
-          </button>
-          <button class="lb-comment-delete-btn" data-id="${c.id}">Delete</button>
-        </div>`;
-
-      div.querySelector('.lb-comment-like-btn').addEventListener('click', async function() {
-        if (this.classList.contains('liked')) return;
-        try {
-          await gcFetch('comment_likes', { method: 'POST', body: { comment_id: c.id, visitor_id: visitorId }, prefer: 'return=minimal' });
-          this.classList.add('liked');
-          const countEl = this.querySelector('.lb-clc');
-          /* read from data-count, not textContent — reliable even when blank/odd */
-          const next = (parseInt(countEl.dataset.count, 10) || 0) + 1;
-          countEl.dataset.count = next;
-          countEl.textContent = next;
-          this.title = `${next} ${next === 1 ? 'person likes' : 'people like'} this`;
-          likedSet.add(String(c.id));
-          try { localStorage.setItem(likedLocalKey, JSON.stringify([...likedSet])); } catch(e) {}
-        } catch(e) {}
-      });
-
-      div.querySelector('.lb-comment-delete-btn').addEventListener('click', async function() {
-        if (!confirm('Delete this comment?')) return;
-        try {
-          await gcFetch(`comments?id=eq.${c.id}`, { method: 'DELETE' });
-          div.remove();
-          if (!list.querySelector('.lb-comment-item')) {
-            list.innerHTML = '<div class="lb-no-comments">No comments yet — be the first.</div>';
-          }
-        } catch(e) {}
-      });
-
-      list.appendChild(div);
-    });
-  } catch(e) {
-    list.innerHTML = '<div class="lb-no-comments">Could not load comments.</div>';
-  }
-}
-
-document.getElementById('lb-comment-submit').addEventListener('click', async () => {
-  const title = document.getElementById('lb-title').textContent;
-  const id    = 'gallery-' + title;
-  const name  = document.getElementById('lb-comment-name').value.trim() || 'Anonymous';
-  const msg   = document.getElementById('lb-comment-msg').value.trim();
-  if (!msg) return;
-  const btn = document.getElementById('lb-comment-submit');
-  btn.disabled = true; btn.textContent = 'Leaving mark…';
-  try {
-    await gcFetch('comments', { method: 'POST', body: { chapter: id, name, message: msg, pinned: false }, prefer: 'return=minimal' });
-    document.getElementById('lb-comment-name').value = '';
-    document.getElementById('lb-comment-msg').value = '';
-    await loadGalleryComments(title);
-  } catch(e) {}
-  btn.disabled = false; btn.textContent = 'Leave Your Mark';
-});
-</script>
-
-<script>
-// ── Gallery engagement: witnesses + likes ──
-(function() {
-  const _GE_URL = 'https://stdxmneifvavkzwttbzj.supabase.co';
-  const _GE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZHhtbmVpZnZhdmt6d3R0YnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDczNTYsImV4cCI6MjA5MTg4MzM1Nn0.jWNSXOaSw5KEoFFPHSZqFZi17d9diq2ScBWCeS2o4XU';
-  const _GE_HDR = { 'apikey': _GE_KEY, 'Authorization': 'Bearer ' + _GE_KEY, 'Content-Type': 'application/json' };
-
-  function getVisitorId() {
-    let id = localStorage.getItem('lc_visitor_id');
-    if (!id) { id = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('lc_visitor_id', id); }
-    return id;
-  }
-
-  async function geFetch(path, opts = {}) {
-    const res = await fetch(_GE_URL + '/rest/v1/' + path, {
-      headers: { ..._GE_HDR, 'Prefer': opts.prefer || 'return=minimal', ...opts.headers },
-      method: opts.method || 'GET',
-      body: opts.body ? JSON.stringify(opts.body) : undefined
-    });
-    if (!opts.method || opts.method === 'GET') return res.json();
-    return res;
-  }
-
-  async function loadGalleryEngagement(title) {
-    const id = 'gallery-' + title;
-    const visitorId = getVisitorId();
-    const witnessEl = document.getElementById('lb-witness-count');
-    const likeEl    = document.getElementById('lb-like-count');
-    const likeBtn   = document.getElementById('lb-like-btn');
-
-    if (witnessEl) witnessEl.textContent = '—';
-    if (likeEl)    likeEl.textContent    = '—';
-    if (likeBtn)   likeBtn.classList.remove('liked');
-
-    try {
-      const witnesses = await geFetch(`witnesses?chapter=eq.${encodeURIComponent(id)}&select=id`);
-      let wCount = Array.isArray(witnesses) ? witnesses.length : 0;
-      if (witnessEl) witnessEl.textContent = wCount;
-      const seen = localStorage.getItem('witnessed_' + id);
-      if (!seen) {
-        await geFetch('witnesses', { method: 'POST', body: { chapter: id, visitor_id: visitorId }, prefer: 'return=minimal' });
-        localStorage.setItem('witnessed_' + id, '1');
-        if (witnessEl) witnessEl.textContent = wCount + 1;
-      }
-
-      const likes = await geFetch(`likes?chapter=eq.${encodeURIComponent(id)}&select=id`);
-      if (likeEl) likeEl.textContent = Array.isArray(likes) ? likes.length : 0;
-      const myLike = await geFetch(`likes?chapter=eq.${encodeURIComponent(id)}&visitor_id=eq.${visitorId}&select=id`);
-      if (Array.isArray(myLike) && myLike.length > 0 && likeBtn) likeBtn.classList.add('liked');
-    } catch(e) {}
-  }
-
-  document.getElementById('lb-like-btn').addEventListener('click', async () => {
-    const btn   = document.getElementById('lb-like-btn');
-    const likeEl = document.getElementById('lb-like-count');
-    if (btn.classList.contains('liked')) return;
-    const title = document.getElementById('lb-title').textContent;
-    const id    = 'gallery-' + title;
-    const visitorId = getVisitorId();
-    try {
-      await geFetch('likes', { method: 'POST', body: { chapter: id, visitor_id: visitorId }, prefer: 'return=minimal' });
-      btn.classList.add('liked');
-      btn.style.transform = 'scale(1.2)';
-      setTimeout(() => { btn.style.transform = ''; }, 300);
-      if (likeEl) likeEl.textContent = parseInt(likeEl.textContent || 0) + 1;
-    } catch(e) {}
-  });
-
-  window.loadGalleryEngagement = loadGalleryEngagement;
-})();
-
-let slideImages = [], slideTitles = [], slideType = '', slideIndex = 0;
-function safeReplaceState(hash) {
-  try { history.replaceState(null, '', hash); }
-  catch (_) { /* sandboxed/cross-origin preview blocks replaceState — ignore */ }
-}
-const galleryNotes = new Map();
-
-const lb      = document.getElementById('lightbox');
-const lbCard  = document.getElementById('lb-card');
-const lbImg   = document.getElementById('lb-img');
-let zoomed = false;
-
-function parseLocalDate(s) {
-  if (!s) return null;
-  const p = s.split(/[-T]/);
-  return new Date(+p[0], +p[1]-1, +p[2]);
-}
-
-function renderNotes(md) {
-  if (!md) return '';
-  const inline = s => s
-    .replace(/\\([*_~{}+\-.[\]()\\#`!^,])/g, (_, c) => '&#'+c.charCodeAt(0)+';')
-    .replace(/\^\^(.+?)\^\^/g,      '<span class="lb-note-big">$1</span>')
-    .replace(/,,(.+?),,/g,          '<span class="lb-note-small">$1</span>')
-    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-    .replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>')
-    .replace(/__(.+?)__/g,          '<u>$1</u>')
-    .replace(/\*([^*\n]+?)\*/g,     '<em>$1</em>')
-    .replace(/(?<![\w])_([^_\n]+?)_(?![\w])/g, '<em>$1</em>')
-    .replace(/~~(.+?)~~/g,          '<del>$1</del>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-  return md
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .split(/\n\n+/)
-    .map(para => {
-      /* Lone backslash paragraph = Decap blank-line artefact, discard */
-      if (/^\s*\\\s*$/.test(para)) return '';
-      /* Hard line breaks within paragraph:
-         Decap 3.x: backslash + optional horiz-space + newline (NOT \s* — that eats para breaks)
-         Standard:  two spaces + newline */
-      para = para
-        .replace(/\\[ \t]*\n/g, '\x00')   /* backslash hard break */
-        .replace(/  \n/g,       '\x00')   /* two-space hard break */
-        .replace(/\\[ \t]*$/,   '');      /* trailing backslash at para end — discard */
-      const h = para.match(/^(#{1,6}) +(.+)$/);
-      if (h) { const lvl=Math.min(h[1].length,6); return `<h${lvl} class="lb-note-heading">${inline(h[2])}</h${lvl}>`; }
-      return inline(para.replace(/\n/g,'<br>').replace(/\x00/g,'<br>'));
-    })
-    .filter(p => p !== '')
-    .join('<br><br>');
-}
-
-function setLightboxContent(title, type, notes) {
-  document.getElementById('lb-title').textContent = title;
-  document.getElementById('lb-type').textContent  = type || '';
-  const dateEl = document.getElementById('lb-date');
-  const rawDate = galleryDates.get(title) || HARDCODED_DATES[title] || '';
-  dateEl.textContent = rawDate ? parseLocalDate(rawDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
-  const notesEl = document.getElementById('lb-notes');
-  const notesTxt = document.getElementById('lb-notes-text');
-  if (notes) {
-    notesTxt.innerHTML = renderNotes(notes);
-    notesEl.style.display = 'block';
-  } else {
-    notesEl.style.display = 'none';
-  }
-  loadGalleryComments(title);
-  if (window.loadGalleryEngagement) window.loadGalleryEngagement(title);
-  const reactContainer = document.getElementById('lb-reactions-container');
-  if (reactContainer && window.initReactions) window.initReactions('gallery-' + title, reactContainer);
-  const pickerMount = document.getElementById('lb-emoji-picker-mount');
-  if (pickerMount && !pickerMount.hasChildNodes() && window.createEmojiPicker) {
-    window.createEmojiPicker(document.getElementById('lb-comment-msg'), pickerMount);
-  }
-  document.getElementById('lb-comment-name').value = '';
-  document.getElementById('lb-comment-msg').value = '';
-  const btn = document.getElementById('lb-comment-submit');
-  btn.disabled = false; btn.textContent = 'Leave Your Mark';
-}
-
-function hideSocials() { const t = document.getElementById('socials-trigger'); if (t) t.style.visibility = 'hidden'; }
-function showSocials() { const t = document.getElementById('socials-trigger'); if (t) t.style.visibility = ''; }
-
-/* ── Premiere filtering: hide entries until their scheduled date+time ── */
-function isScheduled(item) {
-  if (!item) return false;
-  /* premiere_at is precise (datetime), date is fallback (midnight that day) */
-  const t = item.premiere_at || item.date;
-  if (!t) return false;
-  return new Date(t) > new Date();
-}
-
-/* Track the hash that was active before opening the lightbox (section anchor) */
-var _prevHash = '';
-
-function openLightbox(src, title, type, notes) {
-  _prevHash = location.hash;
-  safeReplaceState('#' + encodeURIComponent(title));
-  slideImages = [src]; slideTitles = [title]; slideIndex = 0;   /* single image: no paging */
-  lbImg.src = src;
-  lb.classList.add('open'); lb.classList.remove('zoomed');
-  document.body.classList.remove('lc-zoomed');
-  document.body.style.overflow = 'hidden'; zoomed = false;
-  lb.scrollTop = 0;
-  document.getElementById('lb-prev').classList.add('hidden');
-  document.getElementById('lb-next').classList.add('hidden');
-  document.getElementById('lb-pages').textContent = '';
-  const hint = document.getElementById('lb-hint');
-  hint.style.opacity = '0.5';
-  hint.textContent = 'Click image to zoom · scroll for notes & comments';
-  setLightboxContent(title, type, notes || galleryNotes.get(title) || HARDCODED_NOTES[title] || '');
-  hideSocials();
-}
-
-function openSlideshow(images, titles, type, notes) {
-  _prevHash = location.hash;
-  safeReplaceState('#' + encodeURIComponent(titles[0]));
-  slideImages = images; slideTitles = titles; slideType = type; slideIndex = 0;
-  lb.classList.add('open'); lb.classList.remove('zoomed');
-  document.body.classList.remove('lc-zoomed');
-  document.body.style.overflow = 'hidden'; zoomed = false;
-  lb.scrollTop = 0;
-  showSlide(0);
-  setLightboxContent(titles[0], type, notes || galleryNotes.get(titles[0]) || '');
-  hideSocials();
-}
-
-function showSlide(index) {
-  if (slideTitles && slideTitles[index])
-    safeReplaceState('#' + encodeURIComponent(slideTitles[index]));
-  lbImg.style.opacity = '0.2';
-  const incoming = new Image();
-  incoming.onload = () => { lbImg.src = slideImages[index]; lbImg.style.opacity = '1'; };
-  incoming.onerror = () => { lbImg.style.opacity = '1'; };
-  incoming.src = slideImages[index];
-  document.getElementById('lb-pages').textContent = slideImages.length > 1 ? (index + 1) + ' / ' + slideImages.length : '';
-  document.getElementById('lb-prev').classList.toggle('hidden', index === 0);
-  document.getElementById('lb-next').classList.toggle('hidden', index === slideImages.length - 1);
-  [index - 1, index + 1].forEach(i => { if (i >= 0 && i < slideImages.length) new Image().src = slideImages[i]; });
-}
-
-function closeLightbox() {
-  lb.classList.remove('open', 'zoomed');
-  document.body.classList.remove('lc-zoomed');
-  document.body.style.overflow = '';
-  zoomed = false;
-  /* Restore the section hash (e.g. #stills) or clear if we came from root */
-  safeReplaceState(_prevHash || location.pathname);
-  showSocials();
-}
-
-document.getElementById('lb-close').addEventListener('click', e => { e.stopPropagation(); closeLightbox(); });
-document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); if (slideIndex > 0) { slideIndex--; showSlide(slideIndex); } });
-document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); if (slideIndex < slideImages.length - 1) { slideIndex++; showSlide(slideIndex); } });
-
-let _lbMouseDownInCard = false;
-lb.addEventListener('mousedown', e => { _lbMouseDownInCard = lbCard.contains(e.target); });
-lb.addEventListener('click', e => {
-  if (_lbMouseDownInCard) return;
-  if (!lbCard.contains(e.target)) closeLightbox();
-});
-
-lbImg.style.pointerEvents = 'none';
-document.getElementById('lb-img-wrap').addEventListener('click', e => {
-  e.stopPropagation();
-  if (!zoomed) {
-    // Record where on the image they clicked (as fraction 0-1)
-    const rect = lbImg.getBoundingClientRect();
-    const fracX = (e.clientX - rect.left) / rect.width;
-    const fracY = (e.clientY - rect.top)  / rect.height;
-    lb.classList.add('zoomed');
-    document.body.classList.add('lc-zoomed');
-    zoomed = true;
-    // After layout updates, scroll so clicked spot is centered in viewport
-    requestAnimationFrame(() => {
-      const wrap = document.getElementById('lb-img-wrap');
-      wrap.scrollLeft = Math.max(0, fracX * lbImg.offsetWidth  - window.innerWidth  / 2);
-      wrap.scrollTop  = Math.max(0, fracY * lbImg.offsetHeight - window.innerHeight / 2);
-    });
-  } else {
-    lb.classList.remove('zoomed');
-    document.body.classList.remove('lc-zoomed');
-    zoomed = false;
-  }
-});
-
-document.addEventListener('keydown', e => {
-  if (!lb.classList.contains('open')) return;
-  if (e.key === 'Escape') { closeLightbox(); return; }
-  if (zoomed) return;                         /* don't page while zoomed in */
-  if (slideImages.length < 2) return;         /* single image: nothing to page */
-  if (e.key === 'ArrowLeft')  { e.preventDefault(); if (slideIndex > 0) { slideIndex--; showSlide(slideIndex); } }
-  else if (e.key === 'ArrowRight') { e.preventDefault(); if (slideIndex < slideImages.length - 1) { slideIndex++; showSlide(slideIndex); } }
-});
-document.addEventListener('contextmenu', e => {
-  if (e.target.closest('.gallery-item, .lightbox-img-wrap, .stills-section, #traditional, #wips')) e.preventDefault();
-});
-document.querySelectorAll('img').forEach(img => { img.setAttribute('draggable', 'false'); img.style.userSelect = 'none'; img.style.webkitUserDrag = 'none'; });
-
-if ('ontouchstart' in window) {
-  document.getElementById('lb-hint').textContent = 'Tap image to zoom · scroll for notes & comments';
-}
-</script>
-
-<script>
-const HARDCODED_NOTES = {
-  'Nearly There':           'Based on a song (https://www.youtube.com/watch?v=vFHBOKa_ZG0 Sleep Token Take me Back to Eden) I had long since listened to at the very beginnings of Ghost in Me. One of my first inspirations as a matter of fact. :] Finished 2/1/26',
-  'The Dark Garden':        'Finished on 3/15/26 - Perhaps watching Demon Slayer reviews for hours straight altered my ability to draw backgrounds...',
-  'The Offer':              'Originally finished during 9/4/25 (non-colored version) before I updated twice more (colored 10/2/25, cane change 5/9/26). I used an image I found on Pinterest as a guidance for the pose and sprouted this handsome specimen. Oh, if you could only see what he looked like with his glasses off.. I will probably post it at somepoint.',
-  'The Beginning':          'If I originally recall when I first did this piece I put it off for months. I would have rathered you dumped me at a mud site than force me to try and do that train perspective.. all of it was hell, I assure you. Finished 7/10/25.',
-  'Among Asteroids':        'Originally completed 7/20/25 (edits include various time-stamps of: 7/22/25, 8/5/25). Much like Silvester I found myself looking for a pose from a manga called Soul Eater from the character Asura. The eight eyes revolving around Eniazs head came from Asuras hair. Otherwise he came out surprisingly handsome.',
-  'The Tunnel':             'Finished on 6/13/25 before I entirely rehashed and redesigned him on 4/7/26, his pose actually came from a woman in League of Legends Pop/stars animation. I still reference that picture to this day, like many others.',
-  'Fix You Up':             'Initially completed on 9/13/15 before I colored him on 5/13/26, I.. actually had no design for him up until I decided to spontanously draw him at that point, so I gathered what little I could, conjured up a mockup in Roblox Pineridge, and based his outfit off what I made. Here I am delighted with the result of the cinnamon bun.',
-  'The Storm':              'Done on 9/23/25, I actually used a mouse for this one (for about five years I only used a mouse to draw until I was gifted a drawing pad that would prove to suck, only to be given a different one when I somehow ended up losing the pen for it when we moved), the pose itself was inspired by Sadists Ozymandias animation. A rather surprising result since I only used the lasso tool.',
-  'Patching Up':            'Made on 10/8/26, this was my first interpretation of Vasily stitching himself up. At that point it was not his brothers face--just some random, poor individuals. The idea came much much later to me after I realized I had.. no use for Vasilys brother..',
-  'Faces of the Suits':     'Objectively one of my favorite drawings of all time and probably will remain that way until I conjure something better one miraculous evening. Made thusly on 8/24/25 (before the various edits, colored 10/13/25 design changes 4/8/26). I just knew, as I was drawing it, it would be grand. Having shown no-one except my best friend I was going on for hours. I just.. I just knew it would be the shit.',
-  'Oh What Could Have Been':'Finished on 1/1/26, this was a rather difficult drawing for me to make. Its not often I dabble in realism and I dont think it was actually that bad for an attempt. Im more particularly fond of Boris than of Alik, and so I think Ill rehash Aliks design without the shadow to cover me (but its so coool!!) more properly to make him an actually handsome gent than... whatever this was.',
-  'To Law And Order':       'Done 1/14/26, I was actually shocked that this came out well all things considered. I often dont trust processes when I struggle through something, but I looked at it after a few days and realized it could be salvaged. Thank goodness I did, what splended thumbs I gave the man! Then I proceeded to fall into a severe art block after it.',
-  'Don\'t You Miss Your Legs?': 'Yes, that\'s both her deceased, crisped father and one of her surviving legs from many years ago. Luckily this isn\'t cannon :D Finished on 10/28/25.',
-  'A Helping Hand':         'This piece is actually lore-heavy~ :) though if it\'ll actually appear in the main story or not I\'m not entirely sure... made on 3/5/26.',
-  'In the Rain':            'My second drawing of the overall story (not counting my references). I would count this as the first because this was cannon (as much of a post as it was for fun rather than anything inheritantly meaningful it was) while the other one could be considered cannon, it was more of me just testing a brush. Finished 6/12/25.',
-};
-
-const HARDCODED_DATES = {
-  'Nearly There':           '2026-02-01',
-  'The Dark Garden':        '2026-03-15',
-  'The Offer':              '2025-09-04',
-  'The Beginning':          '2025-07-10',
-  'Among Asteroids':        '2025-07-20',
-  'The Tunnel':             '2025-06-13',
-  'Fix You Up':             '2025-09-13',
-  'The Storm':              '2025-09-23',
-  'Patching Up':            '2025-10-08',
-  'Faces of the Suits':     '2025-08-24',
-  'Oh What Could Have Been':'2026-01-01',
-  'To Law And Order':       '2026-01-14',
-  "Don't You Miss Your Legs?":'2025-10-28',
-  'A Helping Hand':         '2026-03-05',
-  'In the Rain':            '2025-06-12',
-};
-
-const galleryDates = new Map();
-
-const HARDCODED_SLIDESHOWS = {
-  'A Helping Hand': {
-    images: ['images/art-helping-hand.png', 'images/art-nobody-special.png'],
-    titles: ['A Helping Hand', 'Nobody Special'],
-    type: 'Character Art'
-  }
-};
-
-async function loadCMSGallery() {
-  try {
-    const res = await fetch('/_data/gallery-index.json');
-    if (!res.ok) return;
-    const items = await res.json();
-    if (!items || items.length === 0) return;
-    const userTier = window.getUserTier ? await window.getUserTier() : 'free';
-    const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-    const grid = document.querySelector('.gallery-grid');
-    if (!grid) return;
-    items.forEach(item => { if (item.notes) galleryNotes.set(item.title, item.notes); if (item.date) galleryDates.set(item.title, item.date); });
-    const sets = {}, singles = [];
-    items.forEach(item => { if (item.set) { if (!sets[item.set]) sets[item.set] = []; sets[item.set].push(item); } else { singles.push(item); } });
-    Object.values(sets).forEach(s => s.sort((a,b) => a.set_order - b.set_order));
-    /* Sort descending (newest first) — most recently posted appears first */
-    singles.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
-    const firstHardcoded = grid.firstChild;
-    singles.filter(item => !isScheduled(item))
-           .forEach(item => { grid.insertBefore(makeCMSGalleryItem(item, userTier, tRank), firstHardcoded); });
-    const setEntries = Object.entries(sets).sort((a,b) => new Date(b[1][0].date||0) - new Date(a[1][0].date||0));
-    setEntries.filter(([, s]) => !isScheduled(s[0]))
-              .forEach(([, s]) => { grid.insertBefore(makeCMSGalleryItem(s[0], userTier, tRank), firstHardcoded); });
-  } catch(e) {}
-}
-
-function makeCMSGalleryItem(item, userTier, tRank) {
-  userTier = userTier || 'free'; tRank = tRank || { free: 0, devoted: 1, bound: 2 };
-  const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
-  const images = item.images && item.images.length > 0 ? item.images : [item.image];
-  const titles = images.map((_, i) => i === 0 ? item.title : `${item.title} (${i+1})`);
-  const isSlideshow = images.length > 1;
-  const notes = item.notes || '';
-  const div = document.createElement('div');
-  if (isLocked) {
-    div.className = 'gallery-item locked';
-    div.setAttribute('onclick', "window.location.href='membership.html'");
-    div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div><div class="gallery-tier-label">${item.tier === 'devoted' ? 'Devoted' : 'Bound'}</div>${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div></div>`;
-  } else {
-    div.className = 'gallery-item';
-    const notesJson = JSON.stringify(notes);
-    div.setAttribute('onclick', isSlideshow
-      ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, '${item.type}', ${notesJson})`
-      : `openLightbox(${JSON.stringify(images[0])}, ${JSON.stringify(item.title)}, ${JSON.stringify(item.type)}, ${notesJson})`);
-    div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-overlay-date" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(10,8,6,0.7);padding:0.15em 0.5em;">${item.date ? parseLocalDate(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div>${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">${item.type}${isSlideshow ? ' · ' + images.length + ' pages' : ''}</div></div>`;
-  }
-  return div;
-}
-
-async function checkHardcodedLocks() {
-  const userTier = window.getUserTier ? await window.getUserTier() : 'free';
-  const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-  if (tRank[userTier] === 0) return;
-  document.querySelectorAll('.gallery-item.locked').forEach(item => {
-    const tierLabel = item.querySelector('.gallery-tier-label');
-    if (!tierLabel) return;
-    const itemTier = tierLabel.textContent.trim() === 'Devoted' ? 'devoted' : 'bound';
-    if (tRank[userTier] >= tRank[itemTier]) {
-      item.classList.remove('locked');
-      const img = item.querySelector('img');
-      const title = item.querySelector('.gallery-overlay-title')?.textContent?.trim() || '';
-      if (!img) return;
-      const slideshow = HARDCODED_SLIDESHOWS[title];
-      if (slideshow) {
-        const slideshowNote = HARDCODED_NOTES[title] || '';
-        item.setAttribute('onclick', `openSlideshow(${JSON.stringify(slideshow.images)}, ${JSON.stringify(slideshow.titles)}, ${JSON.stringify(slideshow.type)}, ${JSON.stringify(slideshowNote)})`);
-        const overlay = item.querySelector('.gallery-overlay');
-        if (overlay) overlay.innerHTML = `<div class="gallery-overlay-title">${title}</div><div class="gallery-overlay-type">${slideshow.type} · ${slideshow.images.length} pages</div>`;
-      } else {
-        item.setAttribute('onclick', `openLightbox(${JSON.stringify(img.getAttribute('src'))}, ${JSON.stringify(title)}, 'Illustration', ${JSON.stringify(HARDCODED_NOTES[title] || '')})`);
-      }
-      item.querySelector('.gallery-lock-badge')?.remove();
-      tierLabel.remove();
-    }
-  });
-}
-
-async function loadWips() {
-  const grid = document.getElementById('wips-grid');
-  const loading = document.getElementById('wips-loading');
-  try {
-    const res = await fetch('/_data/wips-index.json');
-    if (!res.ok) throw new Error();
-    const items = await res.json();
-    if (!items || items.length === 0) { if (loading) loading.textContent = 'No WIPs yet.'; return; }
-    const userTier = window.getUserTier ? await window.getUserTier() : 'free';
-    const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-    if (loading) loading.remove();
-    items.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
-    items.filter(item => !isScheduled(item)).forEach(item => {
-      if (item.date) galleryDates.set(item.title, item.date);
-      const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
-      const typeLabel = item.type || 'WIP';
-      const notes = item.note || '';
-      const div = document.createElement('div');
-      if (isLocked) {
-        div.className = 'gallery-item locked';
-        div.setAttribute('onclick', "window.location.href='membership.html'");
-        div.innerHTML = `<img loading="lazy" src="${item.image}" alt="${item.title}" /><div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div><div class="gallery-tier-label">${item.tier === 'devoted' ? 'Devoted' : 'Bound'}</div><div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div></div>`;
-      } else {
-        const notesJson = JSON.stringify(notes);
-        div.className = 'gallery-item';
-        div.setAttribute('onclick', `openLightbox(${JSON.stringify(item.image)}, ${JSON.stringify(item.title)}, ${JSON.stringify(typeLabel)}, ${notesJson})`);
-        div.innerHTML = `<img loading="lazy" src="${item.image}" alt="${item.title}" /><div class="gallery-overlay-date" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(10,8,6,0.7);padding:0.15em 0.5em;">${item.date ? parseLocalDate(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div><div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">${typeLabel}</div></div>`;
-      }
-      grid.appendChild(div);
-    });
-  } catch(e) { if (loading) loading.textContent = 'No WIPs yet.'; }
-}
-
-async function loadTraditional() {
-  const grid = document.getElementById('traditional-grid');
-  const loading = document.getElementById('traditional-loading');
-  try {
-    const res = await fetch('/_data/traditional-art-index.json');
-    if (!res.ok) throw new Error();
-    const items = await res.json();
-    if (!items || items.length === 0) { if (loading) loading.textContent = 'No traditional art yet.'; return; }
-    const userTier = window.getUserTier ? await window.getUserTier() : 'free';
-    const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-    if (loading) loading.remove();
-    items.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
-    items.filter(item => !isScheduled(item)).forEach(item => {
-      if (item.date) galleryDates.set(item.title, item.date);
-      if (item.note) galleryNotes.set(item.title, item.note);
-      const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
-      const images = item.images && item.images.length > 0 ? item.images : [item.image];
-      const titles = images.map((_, i) => i === 0 ? item.title : `${item.title} (${i+1})`);
-      const isSlideshow = images.length > 1;
-      const medium = item.medium ? ` · ${item.medium}` : '';
-      const notes = item.notes || '';
-      const div = document.createElement('div');
-      if (isLocked) {
-        div.className = 'gallery-item locked';
-        div.setAttribute('onclick', "window.location.href='membership.html'");
-        div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div><div class="gallery-tier-label">${item.tier === 'devoted' ? 'Devoted' : 'Bound'}</div><div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div></div>`;
-      } else {
-        const notesJson = JSON.stringify(notes);
-        div.className = 'gallery-item';
-        div.setAttribute('onclick', isSlideshow
-          ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, 'Traditional Art${medium}', ${notesJson})`
-          : `openLightbox(${JSON.stringify(images[0])}, ${JSON.stringify(item.title)}, ${JSON.stringify('Traditional Art' + medium)}, ${notesJson})`);
-        div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-overlay-date" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(10,8,6,0.7);padding:0.15em 0.5em;">${item.date ? parseLocalDate(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div>${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">Traditional Art${medium}</div></div>`;
-      }
-      grid.appendChild(div);
-    });
-  } catch(e) { if (loading) loading.textContent = 'No traditional art yet.'; }
-}
-
-async function loadStills() {
-  const grid = document.getElementById('stills-grid');
-  const loading = document.getElementById('stills-loading');
-  try {
-    const res = await fetch('/_data/stills-index.json');
-    if (!res.ok) throw new Error();
-    const items = await res.json();
-    if (!items || items.length === 0) { if (loading) loading.textContent = 'No stills yet.'; return; }
-    const userTier = window.getUserTier ? await window.getUserTier() : 'free';
-    const tRank = window.tierRank || { free: 0, devoted: 1, bound: 2 };
-    if (loading) loading.remove();
-    items.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
-    items.filter(item => !isScheduled(item)).forEach(item => {
-      if (item.date) galleryDates.set(item.title, item.date);
-      const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
-      const images = item.images && item.images.length > 0 ? item.images : [item.image];
-      const titles = images.map((_, i) => i === 0 ? item.title : `${item.title} (${i+1})`);
-      const isSlideshow = images.length > 1;
-      const game = item.game ? ` · ${item.game}` : '';
-      const notes = item.description || '';
-      const div = document.createElement('div');
-      if (isLocked) {
-        div.className = 'gallery-item locked';
-        div.setAttribute('onclick', "window.location.href='membership.html'");
-        div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div><div class="gallery-tier-label">${item.tier === 'devoted' ? 'Devoted' : 'Bound'}</div><div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div></div>`;
-      } else {
-        const notesJson = JSON.stringify(notes);
-        div.className = 'gallery-item';
-        div.setAttribute('onclick', isSlideshow
-          ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, 'Stills', ${notesJson})`
-          : `openLightbox(${JSON.stringify(images[0])}, ${JSON.stringify(item.title)}, ${JSON.stringify('Stills' + game)}, ${notesJson})`);
-        div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-overlay-date" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(10,8,6,0.7);padding:0.15em 0.5em;">${item.date ? parseLocalDate(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div>${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">Stills${game}${isSlideshow ? ' · ' + images.length + ' shots' : ''}</div></div>`;
-      }
-      grid.appendChild(div);
-    });
-  } catch(e) { if (loading) loading.textContent = 'No stills yet.'; }
-}
-</script>
-<script src="emojis.js"></script>
-<script src="auth.js"></script>
-<script src="socials.js"></script>
-<script src="whatsnew.js"></script>
-<script>
-  if (window.LCWhatsNew) LCWhatsNew.init({
-    scope: 'gallery',
-    itemSelector: '.gallery-item',
-    getId: el => el.querySelector('.gallery-overlay-title')?.textContent?.trim(),
-    getDate: el => {
-      const t = el.querySelector('.gallery-overlay-date')?.textContent?.trim();
-      if (t) return t;
-      const title = el.querySelector('.gallery-overlay-title')?.textContent?.trim();
-      if (title && typeof HARDCODED_DATES !== 'undefined' && HARDCODED_DATES[title]) return HARDCODED_DATES[title];
-      return null;
-    },
-    observe: ['#gallery-grid', '#stills-grid', '#traditional-grid', '#wips-grid'],
-    bannerMount: '.gallery-search-wrap',
-    bannerText: n => `${n} new since your last visit`
-  });
-  if (window.LCWhatsNew) {
-    LCWhatsNew.navDot('nav a[href="gallery.html"]', ['gallery']);
-    LCWhatsNew.navDot('nav a[href="content.html"]', ['content']);
-    LCWhatsNew.navDot('nav a[href="videos.html"]', ['videos']);
-  }
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    const heroH = hero.offsetHeight;
+    const progress = Math.min(1, scrollY / heroH);
+    const pan = progress * 90;
+    bg.style.backgroundPositionY = pan + '%';
+    const fadeStart = heroH * 0.75;
+    const fadeEnd = heroH * 0.97;
+    const opacity = Math.max(0, 1 - (scrollY - fadeStart) / (fadeEnd - fadeStart));
+    bg.style.opacity = opacity;
+  }, { passive: true });
 </script>
 <script>
-/* Loaders run independently and async, so a title-hash (e.g. a linked still) can be
-   requested before its section has rendered its .gallery-item. Keep retrying
-   openFromHash until the item exists or a timeout hits, so clicking/linking a still
-   actually opens the lightbox instead of only scrolling to the section. */
-var _lcHashOpenDone = false;
-function _lcTryHashOpen() {
-  if (_lcHashOpenDone) return true;
-  if (lb.classList.contains('open')) { _lcHashOpenDone = true; return true; }
-  var q = new URLSearchParams(window.location.search);
-  var hasTarget = !!window.location.hash || !!q.get('piece') || !!q.get('item');
-  if (!hasTarget) return true;
-  if (openFromHash()) { _lcHashOpenDone = true; return true; }
-  return false;
-}
-function _lcHashOpenRetryLoop() {
-  if (_lcTryHashOpen()) return;
-  var tries = 0;
-  var iv = setInterval(function () {
-    tries++;
-    if (_lcTryHashOpen() || tries > 60) clearInterval(iv);
-  }, 100);
-}
-
-loadCMSGallery()
-  .then(function () { return checkHardcodedLocks(); })
-  .then(function () { _lcTryHashOpen(); });
-
-loadStills().then(_lcTryHashOpen);
-loadTraditional().then(_lcTryHashOpen);
-loadWips().then(_lcTryHashOpen);
-_lcHashOpenRetryLoop();
-</script>
-<script>
-function lcHashKey(s) {
-  return decodeURIComponent(String(s || '')).trim().toLowerCase()
-    .replace(/\s+/g, ' ')
-    .replace(/[^\w ]/g, '');   /* drop punctuation so quotes/braces/brackets never block a match */
-}
-function tagGalleryTiles() {
-  document.querySelectorAll('.gallery-item').forEach(item => {
-    if (item.dataset.lcHash) return;
-    const t = item.querySelector('.gallery-overlay-title')?.textContent;
-    if (t) item.dataset.lcHash = lcHashKey(t);
-  });
-}
-function openFromHash() {
-  /* Accept BOTH ?piece=Title (reaches the server, so link previews work) and
-     the older #Title form, so existing links keep working. */
-  const params = new URLSearchParams(window.location.search);
-  const fromQuery = params.get('piece') || params.get('item');
-  const hash = fromQuery || decodeURIComponent(window.location.hash.slice(1));
-  if (!hash) return false;
-  tagGalleryTiles();
-  const key = lcHashKey(hash);
-  let found = false;
-  document.querySelectorAll('.gallery-item:not(.locked)').forEach(item => {
-    if (found) return;
-    if (item.dataset.lcHash === key) {
-      item.click();
-      found = true;
-    }
-  });
-  return found;
-}
-window.addEventListener('load', () => {
-  const _q = new URLSearchParams(window.location.search);
-  if (!window.location.hash && !_q.get('piece') && !_q.get('item')) return;
-  if (openFromHash()) return;
-  const sect = window.location.hash;
-  if (sect === '#stills' || sect === '#traditional' || sect === '#wips') {
-    const id = sect.slice(1);
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    [50, 200, 500, 1000, 2000, 4000].forEach(delay => { setTimeout(() => { if (!lb.classList.contains('open')) openFromHash(); }, delay); });
-    return;
+  if (window.netlifyIdentity) {
+    window.netlifyIdentity.on("init", user => {
+      if (!user) {
+        window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; });
+      }
+    });
   }
-  [50, 200, 500, 1000, 2000, 4000].forEach(delay => { setTimeout(() => { if (!lb.classList.contains('open')) openFromHash(); }, delay); });
-});
 </script>
 <script>
   (function() {
     const cord = document.getElementById('cord-wrap');
-    const dot  = document.getElementById('news-dot');
+    const dot = document.getElementById('news-dot');
     const dismissed = localStorage.getItem('news-dismissed');
-    if (dismissed) { if (cord) cord.classList.add('pulled'); if (dot) dot.classList.add('off'); }
-    if (cord) { cord.addEventListener('click', () => { cord.classList.add('pulled'); if (dot) dot.classList.add('off'); localStorage.setItem('news-dismissed', '1'); }); }
+    if (dismissed) {
+      if (cord) cord.classList.add('pulled');
+      if (dot) dot.classList.add('off');
+    }
+    if (cord) {
+      cord.addEventListener('click', () => {
+        cord.classList.add('pulled');
+        if (dot) dot.classList.add('off');
+        localStorage.setItem('news-dismissed', '1');
+      });
+    }
   })();
 </script>
+<script src="auth.js"></script>
+<script src="socials.js"></script>
 </body>
 </html>
