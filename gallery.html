@@ -894,9 +894,9 @@ async function loadGalleryComments(title) {
         </div>
         <div class="lb-comment-body">${window.renderEmojiShortcodes ? window.renderEmojiShortcodes(c.message) : c.message}</div>
         <div class="lb-comment-footer">
-          <button class="lb-comment-like-btn${liked ? ' liked' : ''}" data-id="${c.id}">
+          <button class="lb-comment-like-btn${liked ? ' liked' : ''}" data-id="${c.id}" title="${likeCount} ${likeCount === 1 ? 'person likes' : 'people like'} this">
             <svg viewBox="0 0 24 24"><path d="M12 21.4l-1.4-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6L12 21.4z"/></svg>
-            <span class="lb-clc">${likeCount > 0 ? likeCount : ''}</span>
+            <span class="lb-clc" data-count="${likeCount}">${likeCount}</span>
           </button>
           <button class="lb-comment-delete-btn" data-id="${c.id}">Delete</button>
         </div>`;
@@ -907,7 +907,11 @@ async function loadGalleryComments(title) {
           await gcFetch('comment_likes', { method: 'POST', body: { comment_id: c.id, visitor_id: visitorId }, prefer: 'return=minimal' });
           this.classList.add('liked');
           const countEl = this.querySelector('.lb-clc');
-          countEl.textContent = (parseInt(countEl.textContent || 0) + 1) || 1;
+          /* read from data-count, not textContent — reliable even when blank/odd */
+          const next = (parseInt(countEl.dataset.count, 10) || 0) + 1;
+          countEl.dataset.count = next;
+          countEl.textContent = next;
+          this.title = `${next} ${next === 1 ? 'person likes' : 'people like'} this`;
           likedSet.add(String(c.id));
           try { localStorage.setItem(likedLocalKey, JSON.stringify([...likedSet])); } catch(e) {}
         } catch(e) {}
@@ -1492,8 +1496,9 @@ var _lcHashOpenDone = false;
 function _lcTryHashOpen() {
   if (_lcHashOpenDone) return true;
   if (lb.classList.contains('open')) { _lcHashOpenDone = true; return true; }
-  var hash = window.location.hash;
-  if (!hash) return true;
+  var q = new URLSearchParams(window.location.search);
+  var hasTarget = !!window.location.hash || !!q.get('piece') || !!q.get('item');
+  if (!hasTarget) return true;
   if (openFromHash()) { _lcHashOpenDone = true; return true; }
   return false;
 }
@@ -1529,7 +1534,11 @@ function tagGalleryTiles() {
   });
 }
 function openFromHash() {
-  const hash = decodeURIComponent(window.location.hash.slice(1));
+  /* Accept BOTH ?piece=Title (reaches the server, so link previews work) and
+     the older #Title form, so existing links keep working. */
+  const params = new URLSearchParams(window.location.search);
+  const fromQuery = params.get('piece') || params.get('item');
+  const hash = fromQuery || decodeURIComponent(window.location.hash.slice(1));
   if (!hash) return false;
   tagGalleryTiles();
   const key = lcHashKey(hash);
@@ -1544,7 +1553,8 @@ function openFromHash() {
   return found;
 }
 window.addEventListener('load', () => {
-  if (!window.location.hash) return;
+  const _q = new URLSearchParams(window.location.search);
+  if (!window.location.hash && !_q.get('piece') && !_q.get('item')) return;
   if (openFromHash()) return;
   const sect = window.location.hash;
   if (sect === '#stills' || sect === '#traditional' || sect === '#wips') {
