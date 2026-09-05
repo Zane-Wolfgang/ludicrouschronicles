@@ -1030,6 +1030,15 @@ function safeReplaceState(hash) {
   try { history.replaceState(null, '', hash); }
   catch (_) { /* sandboxed/cross-origin preview blocks replaceState — ignore */ }
 }
+
+/* Write a shareable address for the open piece. Uses ?piece=Title (a query
+   param) instead of #Title so that a link copied from the address bar reaches
+   the server, letting the og-preview edge function inject that piece's own
+   image/title into link cards. The path is preserved and the hash cleared. */
+function writePieceUrl(title) {
+  var url = location.pathname + '?piece=' + encodeURIComponent(title);
+  safeReplaceState(url);
+}
 const galleryNotes = new Map();
 
 const lb      = document.getElementById('lightbox');
@@ -1122,7 +1131,7 @@ var _prevHash = '';
 
 function openLightbox(src, title, type, notes) {
   _prevHash = location.hash;
-  safeReplaceState('#' + encodeURIComponent(title));
+  writePieceUrl(title);
   slideImages = [src]; slideTitles = [title]; slideIndex = 0;   /* single image: no paging */
   lbImg.src = src;
   lb.classList.add('open'); lb.classList.remove('zoomed');
@@ -1141,7 +1150,7 @@ function openLightbox(src, title, type, notes) {
 
 function openSlideshow(images, titles, type, notes) {
   _prevHash = location.hash;
-  safeReplaceState('#' + encodeURIComponent(titles[0]));
+  writePieceUrl(titles[0]);
   slideImages = images; slideTitles = titles; slideType = type; slideIndex = 0;
   lb.classList.add('open'); lb.classList.remove('zoomed');
   document.body.classList.remove('lc-zoomed');
@@ -1154,7 +1163,7 @@ function openSlideshow(images, titles, type, notes) {
 
 function showSlide(index) {
   if (slideTitles && slideTitles[index])
-    safeReplaceState('#' + encodeURIComponent(slideTitles[index]));
+    writePieceUrl(slideTitles[index]);
   lbImg.style.opacity = '0.2';
   const incoming = new Image();
   incoming.onload = () => { lbImg.src = slideImages[index]; lbImg.style.opacity = '1'; };
