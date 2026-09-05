@@ -1682,5 +1682,182 @@
     };
   })();
   </script>
+
+  <!-- ── Foreign Text Grammar Check ──
+       Scans the OPEN entry's fields (via window.CMS.store, same pattern as the
+       image-rescue and publish-verifier tools above) for non-Latin script, pulls
+       the full sentence around each run so grammar can be judged in context
+       (not just the isolated word — that's what causes gender/case mistakes to
+       slip through), and checks it with a free AI model. Needs one free
+       OpenRouter key, asked once, remembered in this browser after that. -->
+  <style>
+    #fgc-btn {
+      position: fixed; bottom: 8rem; left: 1.5rem; z-index: 99998;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #2a2218; border: 2px solid rgba(201,168,76,0.5); color: #c9a84c;
+      font-family: Georgia, serif; font-size: 17px; font-weight: bold; line-height: 1; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4); transition: background .2s;
+    }
+    #fgc-btn:hover { background: #3a3020; }
+    #fgc-btn:disabled { opacity: .5; cursor: default; }
+    #fgc-panel {
+      display: none; position: fixed; top: 0; right: 0; bottom: 0; width: 380px; max-width: 90vw;
+      background: #17150f; border-left: 1px solid rgba(201,168,76,0.35); z-index: 99999;
+      flex-direction: column; font-family: Georgia, serif; color: #ccc5b0;
+      box-shadow: -10px 0 40px rgba(0,0,0,.6);
+    }
+    #fgc-panel.open { display: flex; }
+    #fgc-head {
+      padding: 1rem 1.25rem; border-bottom: 1px solid rgba(201,168,76,.2);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; letter-spacing: .25em; text-transform: uppercase; color: #c9a84c;
+    }
+    #fgc-close { cursor: pointer; color: #8a6e2f; font-size: 18px; line-height: 1; }
+    #fgc-close:hover { color: #c9a84c; }
+    #fgc-body { flex: 1; overflow-y: auto; padding: 1rem 1.1rem; }
+    .fgc-item { border: 1px solid rgba(201,168,76,.15); border-radius: 4px; padding: .8rem .9rem; margin-bottom: .7rem; font-size: 13px; line-height: 1.6; }
+    .fgc-item .fgc-lang { display: inline-block; font-size: 9px; letter-spacing: .15em; color: #8a6e2f; border: 1px solid rgba(201,168,76,.3); border-radius: 3px; padding: 2px 6px; margin-bottom: .5rem; text-transform: uppercase; font-family: monospace; }
+    .fgc-item .fgc-orig { color: #ccc5b0; margin-bottom: .5rem; }
+    .fgc-item .fgc-flag { color: #d99a8a; font-style: italic; text-decoration: underline wavy #d99a8a; text-underline-offset: 3px; }
+    .fgc-item .fgc-fix { color: #a9c99a; margin-top: .4rem; }
+    .fgc-item .fgc-why { color: #8a8378; font-size: 11px; margin-top: .3rem; font-family: monospace; }
+    .fgc-ok { color: #a9c99a; }
+    .fgc-empty { color: #8a8378; font-size: 12px; padding: 1.5rem 0; text-align: center; }
+  </style>
+  <button id="fgc-btn" title="Check Foreign Text">Æ</button>
+  <div id="fgc-panel">
+    <div id="fgc-head"><span>Foreign Text Check</span><span id="fgc-close">✕</span></div>
+    <div id="fgc-body"><div class="fgc-empty">Open an entry, then click the 文 button.</div></div>
+  </div>
+  <script>
+  (function () {
+    function getKey() {
+      var k = localStorage.getItem('lc_fgc_key');
+      if (!k) {
+        k = prompt("Paste your free OpenRouter API key (openrouter.ai \u2192 Keys \u2192 Create Key). Saved in this browser from now on:");
+        if (k) localStorage.setItem('lc_fgc_key', k.trim());
+      }
+      return k ? k.trim() : null;
+    }
+
+    /* Non-Latin script run: Cyrillic, Greek, Hebrew, Arabic, CJK, etc. Never matches Latin/English. */
+    var SCRIPT_RE = /[\u0370-\u1FFF\u2C00-\uD7FF\uF900-\uFFDC]+(?:[\s'\u2019\-][\u0370-\u1FFF\u2C00-\uD7FF\uF900-\uFFDC]+)*/g;
+
+    /* Read every string field on the OPEN entry draft, same store path your image-rescue tool uses. */
+    function draftTextFields() {
+      var out = [];
+      try {
+        var st = window.CMS.store.getState();
+        var data = st.getIn(['entryDraft', 'entry', 'data']);
+        if (!data) return out;
+        var obj = data.toJS ? data.toJS() : data;
+        Object.keys(obj).forEach(function (k) {
+          var v = obj[k];
+          if (typeof v === 'string' && v.length > 20) out.push(v);
+        });
+      } catch (_) {}
+      return out;
+    }
+
+    function findFlaggedSentences(text) {
+      var sentences = text.split(/(?<=[.!?~])\s+/);
+      var hits = [];
+      sentences.forEach(function (s) {
+        if (SCRIPT_RE.test(s)) hits.push(s.trim());
+        SCRIPT_RE.lastIndex = 0;
+      });
+      return hits;
+    }
+
+    var FGC_MODELS = ["google/gemini-2.0-flash-exp:free", "meta-llama/llama-3.3-70b-instruct:free", "deepseek/deepseek-chat:free"];
+
+    async function checkSentence(sentence, key) {
+      var sys = "You check grammatical correctness of non-English/non-Latin-script text embedded in English prose. You will be given one sentence containing such text. Identify the language, then check the non-English portion for grammatical correctness in context \u2014 agreement (gender, number, case), verb conjugation, word order \u2014 the kind of error that happens when words are translated in isolation rather than as a sentence (e.g. an adjective defaulting to masculine form when modifying a feminine noun). Do NOT flag stylistic choices, transliteration spelling variants, or intentional slang \u2014 only genuine grammatical errors. If you're not confident about the language or the correction, say so rather than guessing.\nReturn ONLY JSON: {\"language\":\"\",\"flagged_phrase\":\"\",\"correct\":true,\"suggestion\":\"\",\"reason\":\"\"}";
+      var lastErr = null;
+      for (var m = 0; m < FGC_MODELS.length; m++) {
+        var ctrl = new AbortController();
+        var kill = setTimeout(function () { ctrl.abort(); }, 30000);
+        try {
+          var r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST", signal: ctrl.signal,
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+            body: JSON.stringify({
+              model: FGC_MODELS[m],
+              messages: [{ role: "system", content: sys }, { role: "user", content: sentence }]
+            })
+          });
+          clearTimeout(kill);
+          if (!r.ok) { lastErr = new Error(FGC_MODELS[m].split("/")[1] + ": " + r.status); continue; }
+          var d = await r.json();
+          var raw = (d.choices && d.choices[0] && d.choices[0].message.content) || "";
+          var clean = raw.replace(/```json|```/g, "").trim();
+          var a = clean.indexOf("{"), b = clean.lastIndexOf("}");
+          if (a === -1 || b === -1) { lastErr = new Error(FGC_MODELS[m].split("/")[1] + ": no readable result"); continue; }
+          return JSON.parse(clean.slice(a, b + 1));
+        } catch (e) {
+          clearTimeout(kill);
+          lastErr = e.name === "AbortError" ? new Error(FGC_MODELS[m].split("/")[1] + " stalled past 30s") : e;
+        }
+      }
+      throw lastErr || new Error("every free model failed");
+    }
+
+    function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+    function renderResults(results) {
+      var body = document.getElementById('fgc-body');
+      if (!results.length) { body.innerHTML = '<div class="fgc-empty">No non-English text found in this entry.</div>'; return; }
+      body.innerHTML = results.map(function (r) {
+        if (r.error) return '<div class="fgc-item"><div class="fgc-orig">' + esc(r.sentence) + '</div><div class="fgc-why">Couldn\u2019t check this one: ' + esc(r.error) + '</div></div>';
+        if (r.correct) return '<div class="fgc-item"><div class="fgc-lang">' + esc(r.language || '?') + '</div><div class="fgc-orig">' + esc(r.sentence) + '</div><div class="fgc-ok">\u2713 looks grammatically correct</div></div>';
+        return '<div class="fgc-item"><div class="fgc-lang">' + esc(r.language || '?') + '</div><div class="fgc-orig">' + esc(r.sentence) + '</div>'
+          + '<div class="fgc-flag">flagged: ' + esc(r.flagged_phrase || '') + '</div>'
+          + '<div class="fgc-fix">try instead: ' + esc(r.suggestion || '') + '</div>'
+          + '<div class="fgc-why">' + esc(r.reason || '') + '</div></div>';
+      }).join('');
+    }
+
+    function fgcInOpenEditor() {
+      var h = window.location.hash || '';
+      return /\/collections\/[^\/]+\/(new$|entries\/)/.test(h);
+    }
+
+    async function runCheck() {
+      if (!fgcInOpenEditor()) {
+        document.getElementById('fgc-panel').classList.add('open');
+        document.getElementById('fgc-body').innerHTML = '<div class="fgc-empty">No entry is open \u2014 open one first, then click \u6587 again.</div>';
+        return;
+      }
+      var key = getKey();
+      if (!key) return;
+      var btn = document.getElementById('fgc-btn');
+      var panel = document.getElementById('fgc-panel');
+      panel.classList.add('open');
+      btn.disabled = true;
+      document.getElementById('fgc-body').innerHTML = '<div class="fgc-empty">Scanning the open entry\u2026</div>';
+      try {
+        var texts = draftTextFields();
+        var allHits = [];
+        texts.forEach(function (t) { allHits = allHits.concat(findFlaggedSentences(t)); });
+        allHits = allHits.filter(function (s, i) { return allHits.indexOf(s) === i; }); // dedupe
+        if (!allHits.length) { renderResults([]); return; }
+        var results = [];
+        for (var i = 0; i < allHits.length; i++) {
+          try { results.push(Object.assign({ sentence: allHits[i] }, await checkSentence(allHits[i], key))); }
+          catch (e) { results.push({ sentence: allHits[i], error: e.message }); }
+          renderResults(results); // progressive — no waiting on the whole batch
+        }
+      } catch (e) {
+        document.getElementById('fgc-body').innerHTML = '<div class="fgc-empty">Something went wrong: ' + esc(e.message) + '</div>';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    document.getElementById('fgc-btn').addEventListener('click', runCheck);
+    document.getElementById('fgc-close').addEventListener('click', function () { document.getElementById('fgc-panel').classList.remove('open'); });
+  })();
+  </script>
 </body>
 </html>
