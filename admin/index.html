@@ -609,14 +609,31 @@
       return wrap;
     }
 
-    /* Find every image widget on the page and inject a box under its buttons, once each. */
+    /* Inject exactly one paste box per image field. After an upload Decap
+       restructures the field's DOM, which is why the old wrapper-guard lost track
+       of the existing box and added a second. Fix: before adding, remove EVERY
+       paste box already inside the resolved wrapper's subtree, then add one — and a
+       global dedupe pass guarantees no two boxes ever share a parent. */
     function inject() {
       var buttons = document.querySelectorAll('button');
+      /* Build the Choose-button list once (not per-iteration) so N fields don't
+         cause N full-document scans. */
+      var allChoose = Array.prototype.filter.call(buttons, function (b) {
+        var x = (b.textContent || '').trim();
+        return x === 'Choose an image' || x === 'Choose different image';
+      });
+      /* de-dupe: a field can momentarily have two Choose buttons mid-render; only
+         act on the first button we see per position this pass */
+      var handled = {};
       buttons.forEach(function (btn) {
         var t = (btn.textContent || '').trim();
         if (t !== 'Choose an image' && t !== 'Choose different image') return;
 
-        /* Walk to the button-group wrapper (same logic as before). */
+        var idx = allChoose.indexOf(btn);
+        if (handled[idx]) return;
+        handled[idx] = true;
+
+        /* Walk to the button-group wrapper. */
         var wrapper = btn.parentElement;
         var hops = 0;
         while (wrapper && hops < 4) {
@@ -632,21 +649,40 @@
         }
         if (!wrapper) wrapper = btn.parentElement;
 
-        /* Remove any stale paste box in this wrapper first (handles re-renders where
-           the box already exists but the button was replaced). Then add a fresh one.
-           This ensures one box per wrapper regardless of how many times Decap
-           re-renders the inner buttons — and avoids walking up to shared ancestors. */
-        var existing = wrapper.querySelector(':scope > .lc-pastebox, :scope > * > .lc-pastebox');
-        if (existing) return;
+        /* Idempotency: if this wrapper already has exactly one paste box as a
+           DIRECT child, it's correct — leave it untouched so we don't churn the DOM
+           or steal focus every 1.5s. Only act when it's missing or duplicated. */
+        var direct = wrapper.querySelectorAll(':scope > .lc-pastebox');
+        var anywhere = wrapper.querySelectorAll('.lc-pastebox');
+        if (direct.length === 1 && anywhere.length === 1) return;
+
+        /* Otherwise clear EVERY box in this wrapper's subtree (including one Decap
+           orphaned deeper on re-render) and add exactly one fresh box. */
+        for (var s = 0; s < anywhere.length; s++) anywhere[s].remove();
 
         var thisBtn = btn;
-        wrapper.appendChild(makeBox(function () {
+        var box = makeBox(function () {
           if (document.contains(thisBtn)) return thisBtn;
           return Array.prototype.find.call(wrapper.querySelectorAll('button'), function (b) {
             var x = (b.textContent || '').trim();
             return x === 'Choose an image' || x === 'Choose different image';
           }) || null;
-        }));
+        });
+        wrapper.appendChild(box);
+      });
+
+      /* Safety net: never allow two boxes under the same immediate parent. */
+      dedupeBoxes();
+    }
+
+    /* Remove duplicate paste boxes that share an immediate parent. */
+    function dedupeBoxes() {
+      var byParent = new Map();
+      document.querySelectorAll('.lc-pastebox').forEach(function (box) {
+        var parent = box.parentElement;
+        if (!parent) return;
+        if (byParent.has(parent)) { box.remove(); }
+        else byParent.set(parent, box);
       });
     }
 
