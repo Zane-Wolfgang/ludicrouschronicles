@@ -1376,21 +1376,27 @@ async function loadWips() {
     items.filter(item => !isScheduled(item)).forEach(item => {
       if (item.date) galleryDates.set(item.title, item.date);
       const isLocked = tRank[item.tier || 'free'] > tRank[userTier];
+      const images = item.images && item.images.length > 0 ? item.images : [item.image].filter(Boolean);
+      const titles = images.map((_, i) => i === 0 ? item.title : `${item.title} (${i+1})`);
+      const isSlideshow = images.length > 1;
       const typeLabel = item.type || 'WIP';
       const notes = item.note || '';
+      const notesJson = JSON.stringify(notes);
       const div = document.createElement('div');
       if (isLocked) {
         div.className = 'gallery-item locked';
         div.setAttribute('onclick', "window.location.href='membership.html'");
-        div.innerHTML = `<img loading="lazy" src="${item.image}" alt="${item.title}" /><div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div><div class="gallery-tier-label">${item.tier === 'devoted' ? 'Devoted' : 'Bound'}</div><div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div></div>`;
+        div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-lock-badge"><svg viewBox="0 0 10 12"><rect x="2" y="5" width="6" height="6" rx="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke-width="1.2" stroke="#8a6e2f" fill="none"/></svg></div><div class="gallery-tier-label">${item.tier === 'devoted' ? 'Devoted' : 'Bound'}</div><div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div></div>`;
       } else {
-        const notesJson = JSON.stringify(notes);
         div.className = 'gallery-item';
-        div.setAttribute('onclick', `openLightbox(${JSON.stringify(item.image)}, ${JSON.stringify(item.title)}, ${JSON.stringify(typeLabel)}, ${notesJson})`);
-        div.innerHTML = `<img loading="lazy" src="${item.image}" alt="${item.title}" /><div class="gallery-overlay-date" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(10,8,6,0.7);padding:0.15em 0.5em;">${item.date ? parseLocalDate(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div><div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">${typeLabel}</div></div>`;
+        div.setAttribute('onclick', isSlideshow
+          ? `openSlideshow(${JSON.stringify(images)}, ${JSON.stringify(titles)}, ${JSON.stringify(typeLabel)}, ${notesJson})`
+          : `openLightbox(${JSON.stringify(images[0])}, ${JSON.stringify(item.title)}, ${JSON.stringify(typeLabel)}, ${notesJson})`);
+        div.innerHTML = `<img loading="lazy" src="${images[0]}" alt="${item.title}" /><div class="gallery-overlay-date" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(10,8,6,0.7);padding:0.15em 0.5em;">${item.date ? parseLocalDate(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div>${isSlideshow ? `<div class="gallery-page-indicator" style="position:absolute;bottom:0.75rem;right:0.75rem;font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;color:var(--gold-dim);background:rgba(10,8,6,0.8);padding:0.2em 0.5em;border:1px solid var(--border);">1 / ${images.length}</div>` : ''}<div class="gallery-overlay"><div class="gallery-overlay-title">${item.title}</div><div class="gallery-overlay-type">${typeLabel}${isSlideshow ? ' · ' + images.length + ' pages' : ''}</div></div>`;
       }
       grid.appendChild(div);
     });
+    if (typeof _lcTryHashOpen === 'function') _lcTryHashOpen();
   } catch(e) { if (loading) loading.textContent = 'No WIPs yet.'; }
 }
 
