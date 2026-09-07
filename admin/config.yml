@@ -279,6 +279,42 @@ collections:
   - label: Image
     name: image
     widget: image
+  - label: Image 2
+    name: image2
+    widget: image
+    required: false
+  - label: Image 3
+    name: image3
+    widget: image
+    required: false
+  - label: Image 4
+    name: image4
+    widget: image
+    required: false
+  - label: Image 5
+    name: image5
+    widget: image
+    required: false
+  - label: Image 6
+    name: image6
+    widget: image
+    required: false
+  - label: Image 7
+    name: image7
+    widget: image
+    required: false
+  - label: Image 8
+    name: image8
+    widget: image
+    required: false
+  - label: Image 9
+    name: image9
+    widget: image
+    required: false
+  - label: Image 10
+    name: image10
+    widget: image
+    required: false
   - label: Note
     name: note
     widget: markdown
