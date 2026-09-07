@@ -215,7 +215,7 @@ console.log(`Traditional Art: ${traditionalArt.length} items`);
 
 // ── WIPs & Sketches index (standalone, for gallery.html display) ──
 const wipsRaw = readDataDir('_data/wips');
-const wipsIndex = wipsRaw.map(item => ({ ...item, image: normImg(item.image) }));
+const wipsIndex = wipsRaw.map(item => ({ ...item, images: getImages(item, 10) }));
 fs.writeFileSync('_data/wips-index.json', JSON.stringify(wipsIndex, null, 2));
 console.log(`WIPs: ${wipsIndex.length} items`);
 
@@ -261,23 +261,23 @@ const shortStories = readDataDir('_data/short-stories').map(s => {
 
 const wips = readDataDir('_data/wips').map(w => ({
   ...w, type: 'WIP', label: w.type || 'WIP', filter_type: 'behind',
-  href: 'gallery.html#' + encodeURIComponent(w.title || ''), thumbnail: normImg(w.image) || ''
+  href: 'gallery.html?piece=' + encodeURIComponent(w.title || ''), thumbnail: normImg(w.image) || ''
 }));
 
 const stills_content = stills.map(s => ({
   ...s, type: 'Stills', label: 'Stills', filter_type: 'stills',
-  href: 'gallery.html#stills', thumbnail: normImg(s.image) || ''
+  href: 'gallery.html?piece=' + encodeURIComponent(s.title || ''), thumbnail: normImg(s.image) || ''
 }));
 
 const traditional_content = traditionalArt.map(t => ({
   ...t, type: 'Traditional Art', label: 'Traditional Art', filter_type: 'art',
-  href: 'gallery.html#traditional', thumbnail: normImg(t.image) || ''
+  href: 'gallery.html?piece=' + encodeURIComponent(t.title || ''), thumbnail: normImg(t.image) || ''
 }));
 
 /* Gallery art — uses first image as thumbnail so no double-upload needed */
 const gallery_content = gallery.map(g => ({
   ...g, type: g.type || 'Character Art', label: g.type || 'Character Art', filter_type: 'art',
-  href: 'gallery.html#' + encodeURIComponent(g.title || ''),
+  href: 'gallery.html?piece=' + encodeURIComponent(g.title || ''),
   thumbnail: (g.images && g.images[0]) ? normImg(g.images[0]) : normImg(g.image) || ''
 }));
 
