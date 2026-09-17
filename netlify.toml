@@ -1,5 +1,5 @@
 [build]
-  command = "npm install && node cms-build.js"
+  command = "npm install && node cms-build.js && node og-inject.js"
   publish = "."
   functions = "netlify/functions"
 [build.environment]
