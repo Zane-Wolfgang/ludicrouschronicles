@@ -633,18 +633,20 @@
         if (handled[idx]) return;
         handled[idx] = true;
 
-        /* Walk to the button-group wrapper. */
+        /* Walk to the button-group wrapper. Stop at the first ancestor that
+           contains BOTH a Choose button AND either a URL/Remove/Replace button
+           — these always appear together in one field's control group. */
         var wrapper = btn.parentElement;
         var hops = 0;
-        while (wrapper && hops < 4) {
+        while (wrapper && hops < 3) {
           var btns = wrapper.querySelectorAll('button');
-          var hasChoose = false, hasUrl = false;
+          var hasChoose = false, hasPeer = false;
           for (var i = 0; i < btns.length; i++) {
             var bt = (btns[i].textContent || '').trim();
             if (bt === 'Choose an image' || bt === 'Choose different image') hasChoose = true;
-            if (/url/i.test(bt)) hasUrl = true;
+            if (/url|replace|remove|link/i.test(bt)) hasPeer = true;
           }
-          if (hasChoose && (hasUrl || hops >= 1)) break;
+          if (hasChoose && hasPeer) break;
           wrapper = wrapper.parentElement; hops++;
         }
         if (!wrapper) wrapper = btn.parentElement;
