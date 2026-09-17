@@ -164,6 +164,41 @@ function setMeta(html, attr, name, value) {
 
 export default async function handler(request, context) {
   const url = new URL(request.url);
+  const pathname = url.pathname;
+
+  /* ── Chapter pages: look up by number from chapters-index.json ────────
+     chapter-1.html → chapter 1; chapter.html?chapter=N → chapter N */
+  const isChapterPage = /chapter(-1)?\.html$/i.test(pathname);
+  if (isChapterPage) {
+    const chNum = pathname.includes("chapter-1.html") ? "1" :
+                  (url.searchParams.get("chapter") || url.searchParams.get("ch"));
+    if (chNum) {
+      try {
+        const r = await fetch(`${SITE}/_data/chapters-index.json`, { cache: "no-store" });
+        if (r.ok) {
+          const chapters = await r.json();
+          const ch = chapters.find(c => String(c.number) === String(chNum));
+          if (ch && ch.image) {
+            const response = await context.next();
+            if (!response.headers.get("content-type")?.includes("text/html")) return response;
+            const isLocked = (TIER_RANK[ch.tier || "free"] || 0) > 0;
+            let html = await response.text();
+            const title = isLocked ? "Members Only — Ludicrous Chronicles" : `${ch.title} — Ludicrous Chronicles`;
+            const img = isLocked ? null : previewVersion(absolute(ch.image));
+            html = setMeta(html, "property", "og:title", title);
+            html = setMeta(html, "name", "twitter:title", title);
+            if (img) {
+              html = setMeta(html, "property", "og:image", img);
+              html = setMeta(html, "property", "og:image:secure_url", img);
+              html = setMeta(html, "name", "twitter:image", img);
+              html = setMeta(html, "property", "og:image:type", "image/jpeg");
+            }
+            return new Response(html, { status: response.status, headers: response.headers });
+          }
+        }
+      } catch (_) {}
+    }
+  }
 
   /* Which query param carries the item name on this page? */
   const wanted =
