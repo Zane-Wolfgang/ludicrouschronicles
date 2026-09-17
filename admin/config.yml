@@ -693,3 +693,63 @@ collections:
       max: 100
       hint: How strong the radio effect is on the music player (0 = subtle warmth,
         100 = heavy crackle). Visitors can toggle it on/off.
+  - name: page_previews
+    label: Page Preview Images
+    file: _data/page-previews.yml
+    fields:
+    - label: Homepage Preview
+      name: homepage
+      widget: image
+      required: false
+      hint: Screenshot shown when someone links to the main site URL
+    - label: Gallery Preview
+      name: gallery
+      widget: image
+      required: false
+      hint: Screenshot shown when someone links to gallery.html
+    - label: Videos Preview
+      name: videos
+      widget: image
+      required: false
+      hint: Screenshot shown when someone links to videos.html
+    - label: Content Preview
+      name: content
+      widget: image
+      required: false
+      hint: Screenshot shown when someone links to content.html
+    - label: Membership Preview
+      name: membership
+      widget: image
+      required: false
+      hint: Screenshot shown when someone links to membership.html
+    - label: News Preview
+      name: news
+      widget: image
+      required: false
+      hint: Screenshot shown when someone links to news.html
+    - label: About Preview
+      name: about
+      widget: image
+      required: false
+      hint: Screenshot shown when someone links to about.html
+    - label: Contact Preview
+      name: contact
+      widget: image
+      required: false
+      hint: Screenshot shown when someone links to contact.html
+    - label: Merch Preview
+      name: merch
+      widget: image
+      required: false
+      hint: Screenshot shown when someone links to merch.html
+    - label: Chapter Preview
+      name: chapter
+      widget: image
+      required: false
+      hint: Screenshot shown when someone links to chapter.html
+    - label: Members Only Card
+      name: members_only
+      widget: image
+      required: false
+      hint: Image shown when a locked/paywalled piece is linked. Upload a blurred
+        screenshot of a locked gallery tile.
