@@ -239,6 +239,14 @@ const chapters = readDataDir('_data/chapters').map(c => ({
   thumbnail: normImg(c.art) || '', body: c.body || ''
 }));
 
+/* Write chapters-index.json so the OG preview edge function can look up
+   each chapter's art for per-chapter link preview cards. */
+fs.writeFileSync('_data/chapters-index.json', JSON.stringify(
+  chapters.map(c => ({ number: c.number, title: c.title, image: normImg(c.art) || '', tier: c.tier || 'free' })),
+  null, 2
+));
+console.log(`Chapters: ${chapters.length} items`);
+
 const videos = readDataDir('_data/videos').map(v => {
   /* Auto-generate thumbnail from YouTube/Vimeo URL if no manual thumbnail */
   let thumb = normImg(v.thumbnail) || '';
