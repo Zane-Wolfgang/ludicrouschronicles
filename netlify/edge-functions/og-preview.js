@@ -30,6 +30,38 @@
    ───────────────────────────────────────────────────────────────────────── */
 
 const SITE = "https://ludicrous-chronicles.netlify.app";
+const TIER_RANK = { free: 0, devoted: 1, bound: 2 };
+
+/* Fetch page-preview screenshots set via the CMS admin. Falls back to null
+   gracefully so the page's static OG tags apply if not yet configured. */
+async function fetchPagePreviews() {
+  try {
+    const r = await fetch(`${SITE}/_data/page-previews.yml`, { cache: "no-store" });
+    if (!r.ok) return null;
+    const text = await r.text();
+    const out = {};
+    for (const raw of text.split("\n")) {
+      const line = raw.trim();
+      if (!line || line.startsWith("#")) continue;
+      const colon = line.indexOf(":");
+      if (colon === -1) continue;
+      const k = line.slice(0, colon).trim();
+      let v = line.slice(colon + 1).trim();
+      if ((v.startsWith('"') && v.endsWith('"')) ||
+          (v.startsWith("'") && v.endsWith("'"))) {
+        v = v.slice(1, -1);
+      }
+      if (k && v) out[k] = v;
+    }
+    return Object.keys(out).length ? out : null;
+  } catch (_) { return null; }
+}
+
+/* Which page slug matches this request path? */
+function pageSlug(pathname) {
+  const name = pathname.split("/").pop().replace(/\.html$/i, "");
+  return name || "index";
+}
 
 /* Feeds searched, in order. First title match wins. */
 const FEEDS = [
@@ -150,7 +182,49 @@ export default async function handler(request, context) {
   if (!type.includes("text/html")) return response;
 
   const item = await findItem(request, wanted);
-  if (!item) return response;   /* unknown item → leave the page's own tags */
+
+  /* ── Paywall check ─────────────────────────────────────────────────────
+     If the piece requires a paid tier, don't reveal its image or title.
+     Instead show the members-only card (a blurred screenshot the admin sets)
+     so the preview is enticing but not stolen. */
+  const previews = await fetchPagePreviews();
+  const itemTier = TIER_RANK[item ? (item.tier || "free") : "free"];
+  const isLocked = item && itemTier > 0;   /* devoted or bound = locked */
+
+  if (isLocked) {
+    /* Use the members-only card image if set, otherwise the page screenshot. */
+    const slug = pageSlug(url.pathname);
+    const rawImg = (previews && (previews.members_only || previews[slug])) || null;
+    const lockedImg = rawImg ? previewVersion(absolute(rawImg)) : null;
+
+    let html = await response.text();
+    html = setMeta(html, "property", "og:title", "Members Only — Ludicrous Chronicles");
+    html = setMeta(html, "property", "og:description", "This content is for members. Join to unlock it.");
+    html = setMeta(html, "name", "twitter:title", "Members Only — Ludicrous Chronicles");
+    html = setMeta(html, "name", "twitter:description", "This content is for members. Join to unlock it.");
+    if (lockedImg) {
+      html = setMeta(html, "property", "og:image", lockedImg);
+      html = setMeta(html, "property", "og:image:secure_url", lockedImg);
+      html = setMeta(html, "name", "twitter:image", lockedImg);
+      html = setMeta(html, "property", "og:image:type", "image/jpeg");
+    }
+    return new Response(html, { status: response.status, headers: response.headers });
+  }
+
+  if (!item) {
+    /* No matching item found — check if the admin set a screenshot for this page. */
+    const slug = pageSlug(url.pathname);
+    if (previews && previews[slug]) {
+      const pageImg = previewVersion(absolute(previews[slug]));
+      let html = await response.text();
+      html = setMeta(html, "property", "og:image", pageImg);
+      html = setMeta(html, "property", "og:image:secure_url", pageImg);
+      html = setMeta(html, "name", "twitter:image", pageImg);
+      html = setMeta(html, "property", "og:image:type", "image/jpeg");
+      return new Response(html, { status: response.status, headers: response.headers });
+    }
+    return response;
+  }
 
   const title = item.title || wanted;
   const img = absolute(itemImage(item));
