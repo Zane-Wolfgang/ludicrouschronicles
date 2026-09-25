@@ -321,7 +321,7 @@ Others that recently arrived in the lobby glance at him shortly, then resume to 
 ***RACE: WHITE / RUSSIAN / AMERICAN***\
 \
 -﻿\
-***BIRTHDAY: 1908 10/18***\
+***BIRTHDAY: 1907 10/18***\
 \
 ***\-***﻿
 
@@ -329,7 +329,7 @@ Others that recently arrived in the lobby glance at him shortly, then resume to 
 
 \-﻿
 
-**DESCRIPTION: FLOWING BLACK & WHITE HAIR, GENERALLY TIED IN A PONYTAIL OF THREE WAYS, MANDARIN COLOR EYES, FAIR COMPLEXTION, SMALL BUILD, MECHANICAL LEGS, USUALLY WEARING BROWN TRENCHCOAT AND YELLOW JABOT**
+**DESCRIPTION: FLOWING BLACK & WHITE HAIR, GENERALLY TIED IN A PONYTAIL OF THREE WAYS, MANDARIN COLOR EYES, FAIR COMPLEXION, SMALL BUILD, MECHANICAL LEGS, USUALLY WEARING BROWN TRENCHCOAT AND YELLOW JABOT**
 
 *\-*﻿
 
@@ -352,7 +352,7 @@ Zane felt the grind of his teeth as he tried to open his mouth to talk—\
 He hardly could even comprehend the mere fact she’d risen her face against him; that alone would have warranted his hand to fly on his own (had there been no glass barrier), but her logic had rattled him furthermore.\
 “Swallow that pride of yours, son.” She landed back in her seat, out of fumes. “Tuck the tail between your legs n’ go. Keep that head of yours. Any one object can be replaced, but not a life.”
 
-\-     **                                                       . —«——⁜——»— .**
+\-      **                                                      . —«——⁜——»— .**
 
 Zane held the copy of a document of this *Rachel* girl’s information a few minutes later, finding himself seated on one of the first few stone steps toward Ashoft’s Public Records Archive, or what other name it went by.\
 He felt as defused as the woman had, and defeated as his threads felt among the rustles of his clothes. As though the clouds felt this, they accentuated the gloomy atmosphere by swallowing up the sun as a great mythical beast would.
