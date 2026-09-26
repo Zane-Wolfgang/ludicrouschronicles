@@ -68,7 +68,7 @@ It appeared as if the road led back to the inner dwellings of the unknown.. Or r
 “Seems we shaved off a rather ample amount of time,” Elijah mumbled once he returned to her side, gazing at her copper-plated pocket watch, which she re-stuffed back into her skirt.\
 “We’ll only be a moment!” She then called, hoisting her luggage with renewed sense of jubilation to the coachman, who agreed with some noise.                                                                                                           
 
-Zane wasn’t able to adjust further before the woman hustled him toward the house and up the few steps, his heels digging into the ply-wood underneath as he was effortlessly shuffled to the entryway.\
+Zane wasn’t able to adjust further before the woman hustled him toward the house and up the few steps, his heels digging into the plywood underneath as he was effortlessly shuffled to the entryway.\
 \
 “Elijah!” He exclaimed in an exasperated manner, nearly tripping over his soles as his nose just about whacked right into glass molded into the door.
 
@@ -352,7 +352,7 @@ Zane felt the grind of his teeth as he tried to open his mouth to talk—\
 He hardly could even comprehend the mere fact she’d risen her face against him; that alone would have warranted his hand to fly on his own (had there been no glass barrier), but her logic had rattled him furthermore.\
 “Swallow that pride of yours, son.” She landed back in her seat, out of fumes. “Tuck the tail between your legs n’ go. Keep that head of yours. Any one object can be replaced, but not a life.”
 
-\-      **                                                      . —«——⁜——»— .**
+\-       **                                                     . —«——⁜——»— .**
 
 Zane held the copy of a document of this *Rachel* girl’s information a few minutes later, finding himself seated on one of the first few stone steps toward Ashoft’s Public Records Archive, or what other name it went by.\
 He felt as defused as the woman had, and defeated as his threads felt among the rustles of his clothes. As though the clouds felt this, they accentuated the gloomy atmosphere by swallowing up the sun as a great mythical beast would.
