@@ -1261,17 +1261,21 @@
 
     /* ---- autosave ---- */
     var lastSerialized = '';
-    function autosave() {
+    var lastCtxId = '';
+    function saveDraft(force) {
       var ctx = editorContext();
-      if (!ctx) return;
+      if (!ctx) return false;
       var data = readDraftData();
-      if (isEmpty(data)) return;                 /* nothing worth saving yet */
+      if (isEmpty(data) && !force) return false;
       var serialized = JSON.stringify(data);
-      if (serialized === lastSerialized) return; /* unchanged since last save */
+      var ctxId = draftId(ctx);
+      /* reset comparison when editor context changes (new entry opened) */
+      if (ctxId !== lastCtxId) { lastSerialized = ''; lastCtxId = ctxId; }
+      if (serialized === lastSerialized && !force) return false;
       lastSerialized = serialized;
 
       var drafts = readDrafts();
-      var id = draftId(ctx);
+      var id = ctxId;
       var existing = null;
       for (var i = 0; i < drafts.length; i++) { if (drafts[i].id === id) { existing = drafts[i]; break; } }
       var entry = {
@@ -1286,10 +1290,12 @@
       else drafts.push(entry);
       writeDrafts(drafts);
       refreshPanel();
+      return true;
     }
+    function autosave() { saveDraft(false); }
     setInterval(autosave, AUTOSAVE_MS);
-    window.addEventListener('beforeunload', autosave);
-    window.addEventListener('hashchange', function () { lastSerialized = ''; setTimeout(refreshPanel, 300); });
+    window.addEventListener('beforeunload', function () { saveDraft(true); });
+    window.addEventListener('hashchange', function () { lastSerialized = ''; lastCtxId = ''; setTimeout(refreshPanel, 300); });
 
     /* ---- auto-clear on CONFIRMED publish ---- */
     /* Only delete a draft once its entry is confirmed committed, so a bad-wifi false
@@ -1412,11 +1418,20 @@
       var drafts = readDrafts().sort(function (a, b) { return b.savedAt - a.savedAt; });
       btn.textContent = '📝 Drafts' + (drafts.length ? ' (' + drafts.length + ')' : '');
       if (panel.style.display === 'none') return;
+      /* Manual save button — always shown at the top of the panel */
+      var saveNowHtml = editorContext()
+        ? '<button id="_lc_save_now" style="width:100%;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#1c140c;background:#c9a84c;border:none;border-radius:7px;padding:.5em 1em;cursor:pointer;margin-bottom:.65rem;">💾 Save Draft Now</button>'
+        : '';
       if (!drafts.length) {
-        panel.innerHTML = '<div style="font-size:12px;color:#9a8c78;padding:.5rem;">No saved drafts. Your work autosaves here while you edit — a safety net for bad connections.</div>';
+        panel.innerHTML = saveNowHtml + '<div style="font-size:12px;color:#9a8c78;padding:.5rem;">No saved drafts. Your work autosaves here while you edit — a safety net for bad connections.</div>';
+        var sn = panel.querySelector('#_lc_save_now');
+        if (sn) sn.addEventListener('click', function () {
+          var saved = saveDraft(true);
+          toast(saved ? '✓ Draft saved.' : '⚠ Nothing to save yet — fill in some fields first.', 2500);
+        });
         return;
       }
-      var html = '<div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#c9a84c;margin:.2rem 0 .6rem;">Local Drafts</div>';
+      var html = saveNowHtml + '<div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#c9a84c;margin:.2rem 0 .6rem;">Local Drafts</div>';
       drafts.forEach(function (d) {
         html += '<div style="border:1px solid #2a2018;border-radius:8px;padding:.55rem .6rem;margin-bottom:.5rem;">'
           + '<div style="font-size:13px;color:#f0e6d2;margin-bottom:.15rem;">' + esc(d.title) + '</div>'
@@ -1426,6 +1441,11 @@
           + '</div>';
       });
       panel.innerHTML = html;
+      var sn2 = panel.querySelector('#_lc_save_now');
+      if (sn2) sn2.addEventListener('click', function () {
+        var saved = saveDraft(true);
+        toast(saved ? '✓ Draft saved.' : '⚠ Nothing to save yet — fill in some fields first.', 2500);
+      });
       panel.querySelectorAll('button[data-act]').forEach(function (b) {
         b.addEventListener('click', function () {
           var id = b.getAttribute('data-id'), act = b.getAttribute('data-act');
