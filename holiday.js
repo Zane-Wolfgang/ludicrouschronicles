@@ -61,36 +61,13 @@
   }
 
   /* ── Apply mode ─────────────────────────────────────────────────────── */
-  var EMOJIS = { off: '✦', vintage: 'Æ', halloween: '🎃', christmas: '🎄' };
-  var LABELS = { off: 'Off', vintage: '1920s Vintage', halloween: 'Halloween', christmas: 'Christmas' };
+
 
   function applyMode(mode) {
     document.body.classList.remove('vintage', 'halloween', 'christmas');
     if (mode === 'vintage')   document.body.classList.add('vintage');
     if (mode === 'halloween') document.body.classList.add('halloween');
     if (mode === 'christmas') document.body.classList.add('christmas');
-
-    /* sync the existing vintage-on class on the button wrap */
-    var wrap = document.querySelector('.lc-btn-wrap');
-    if (wrap) {
-      wrap.classList.toggle('vintage-on', mode === 'vintage');
-      wrap.classList.toggle('halloween-on', mode === 'halloween');
-      wrap.classList.toggle('christmas-on', mode === 'christmas');
-    }
-
-    /* update button emoji */
-    var circle = document.querySelector('.lc-btn-circle');
-    if (circle) {
-      /* preserve existing children (ornament etc.) — just update the text node */
-      var emojiSpan = circle.querySelector('.lc-mode-emoji');
-      if (!emojiSpan) {
-        emojiSpan = document.createElement('span');
-        emojiSpan.className = 'lc-mode-emoji';
-        circle.insertBefore(emojiSpan, circle.firstChild);
-      }
-      emojiSpan.textContent = EMOJIS[mode] || '✦';
-      circle.title = LABELS[mode] || '';
-    }
 
     stopAnimations();
     if (mode === 'halloween') startHalloween();
@@ -100,16 +77,63 @@
     currentMode = mode;
   }
 
-  /* ── Intercept the existing toggle button click ──────────────────────
-     The button already has its own click handler for vintage mode.
-     We hook into it and override the behaviour so the cycle covers all modes. */
+  /* ── Holiday mode picker — sits ABOVE the existing Æ button ───────────
+     We do NOT touch the Æ button itself (it has its own click handler for
+     vintage mode and a tooltip; intercepting it breaks both). Instead we
+     inject a small pill above it that only shows when a holiday is enabled. */
+  var picker = null;
+  function buildPicker() {
+    if (picker) return;
+    var wrap = document.querySelector('.lc-btn-wrap');
+    if (!wrap) return;
+
+    picker = document.createElement('div');
+    picker.id = '_lc_holiday_picker';
+    picker.style.cssText = 'position:absolute;bottom:calc(100% + 8px);left:0;display:flex;flex-direction:column;gap:4px;';
+
+    var modes = [];
+    if (settings.halloween_enabled) modes.push({ key: 'halloween', emoji: '🎃', label: 'Halloween' });
+    if (settings.christmas_enabled) modes.push({ key: 'christmas', emoji: '🎄', label: 'Christmas' });
+    if (!modes.length) return; /* nothing to show */
+
+    modes.forEach(function (m) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.dataset.mode = m.key;
+      btn.title = m.label + ' mode';
+      btn.style.cssText = 'width:38px;height:38px;border-radius:50%;background:rgba(10,8,6,0.92);border:1px solid var(--gold-dim);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color 0.3s,background 0.3s;';
+      btn.textContent = m.emoji;
+      btn.addEventListener('click', function () {
+        var next = currentMode === m.key ? 'off' : m.key;
+        applyMode(next);
+        updatePicker();
+      });
+      picker.appendChild(btn);
+    });
+
+    wrap.style.position = 'relative'; /* ensure absolute children position correctly */
+    wrap.appendChild(picker);
+    updatePicker();
+  }
+
+  function updatePicker() {
+    if (!picker) return;
+    picker.querySelectorAll('button').forEach(function (btn) {
+      var active = currentMode === btn.dataset.mode;
+      btn.style.borderColor = active ? 'var(--gold)' : 'var(--gold-dim)';
+      btn.style.background = active ? 'rgba(201,168,76,0.12)' : 'rgba(10,8,6,0.92)';
+      btn.style.boxShadow = active ? '0 0 14px rgba(201,168,76,0.3)' : 'none';
+    });
+  }
+
   function hookButton() {
-    var circle = document.querySelector('.lc-btn-circle');
-    if (!circle) return;
-    circle.addEventListener('click', function (e) {
-      e.stopImmediatePropagation(); /* take over from the vintage-only handler */
-      applyMode(nextMode());
-    }, true /* capture — fires before existing handlers */);
+    /* Wait for the Æ button wrap to exist, then attach the picker beside it */
+    var attempts = 0;
+    function tryBuild() {
+      if (document.querySelector('.lc-btn-wrap')) { buildPicker(); return; }
+      if (++attempts < 20) setTimeout(tryBuild, 300);
+    }
+    tryBuild();
   }
 
   /* ── HALLOWEEN ANIMATIONS ────────────────────────────────────────────
