@@ -802,3 +802,166 @@ body.vintage .lightbox-card::after {
   bottom: 8px; right: 8px;
   border-width: 0 1px 1px 0;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   🎃 HALLOWEEN MODE  ·  body.halloween activates all of this
+   ══════════════════════════════════════════════════════════════════════ */
+
+body.halloween {
+  --deep:       #0a0408;
+  --bg:         #0d0509;
+  --surface:    #130810;
+  --border:     #3a1a2e;
+  --border-bright: #6b2d52;
+  --gold:       #e07a2f;
+  --gold-dim:   #8a4a1f;
+  --gold-bright:#f0a050;
+  --parchment:  #e8d0c8;
+  --text-body:  #c8a8a0;
+  --text-muted: #7a5850;
+  background: var(--bg);
+  color: var(--text-body);
+}
+
+/* Gallery — gothic purple */
+body.halloween #gallery-grid .gallery-item,
+body.halloween #stills .gallery-item { filter: hue-rotate(200deg) saturate(0.7) brightness(0.85); }
+body.halloween #gallery-grid .gallery-item:hover,
+body.halloween #stills .gallery-item:hover { filter: hue-rotate(200deg) saturate(1.1) brightness(1); }
+
+/* Videos — horror red */
+body.halloween .video-item { border-color: #5a0a0a; }
+body.halloween .video-item.active { border-color: #c01010; box-shadow: 0 0 18px rgba(192,16,16,0.4); }
+body.halloween .video-thumb img { filter: sepia(0.6) hue-rotate(320deg) saturate(1.4) brightness(0.8); }
+
+/* Content — noir fog */
+body.halloween .content-card { border-color: #2a1a2a; }
+body.halloween .content-thumb { filter: sepia(0.3) hue-rotate(230deg) saturate(0.6) brightness(0.75); }
+
+/* Nav */
+body.halloween nav { background: rgba(8,3,10,0.97); border-bottom-color: #3a1a2e; }
+body.halloween .nav-links a { color: #c8a8a0; }
+body.halloween .nav-links a:hover, body.halloween .nav-links a.active { color: #e07a2f; }
+
+/* Sections & text */
+body.halloween .section-title,
+body.halloween .page-header .section-title { color: #e07a2f; text-shadow: 0 0 30px rgba(224,122,47,0.3); }
+body.halloween .section-label { color: #8a4a1f; }
+body.halloween .section-body { color: var(--text-muted); }
+
+/* Lightbox */
+body.halloween .lightbox { background: rgba(8,2,10,0.97); }
+body.halloween .lightbox-title { color: #e07a2f; }
+
+/* Buttons */
+body.halloween .btn-primary { background: #6b1a1a; border-color: #c01010; color: #f0c0b0; }
+body.halloween .btn-ghost { border-color: #6b2d52; color: #c8a0b8; }
+
+/* Fog animation layer — JS adds the canvas above this */
+body.halloween #lc-holiday-canvas { opacity: 0.7; }
+
+/* Flicker effect on gallery images */
+@keyframes lcFlicker {
+  0%,100% { opacity: 1; } 92% { opacity: 1; } 93% { opacity: 0.85; }
+  94% { opacity: 1; } 96% { opacity: 0.9; } 97% { opacity: 1; }
+}
+body.halloween .gallery-item img { animation: lcFlicker 8s infinite; }
+body.halloween .gallery-item:nth-child(2n) img { animation-delay: -2.3s; }
+body.halloween .gallery-item:nth-child(3n) img { animation-delay: -5.1s; }
+
+/* Spooky mode toggle button */
+body.halloween .lc-btn-circle {
+  border-color: #c01010;
+  background: rgba(30,5,5,0.95);
+  box-shadow: 0 4px 28px rgba(192,16,16,0.3), 0 0 0 4px rgba(192,16,16,0.08);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   🎄 CHRISTMAS MODE  ·  body.christmas activates all of this
+   ══════════════════════════════════════════════════════════════════════ */
+
+body.christmas {
+  --deep:       #04100a;
+  --bg:         #050f08;
+  --surface:    #081508;
+  --border:     #1a3a22;
+  --border-bright: #2d6a3a;
+  --gold:       #e8c84a;
+  --gold-dim:   #8a7a2a;
+  --gold-bright:#f0d870;
+  --parchment:  #f0ece8;
+  --text-body:  #d0e8d8;
+  --text-muted: #6a8872;
+  background: var(--bg);
+  color: var(--text-body);
+}
+
+/* Gallery — warm candlelight */
+body.christmas .gallery-item img { filter: brightness(0.92) saturate(0.9); transition: filter 0.4s; }
+body.christmas .gallery-item:hover img { filter: brightness(1.08) saturate(1.15); }
+
+/* Videos — deep red accent */
+body.christmas .video-item { border-color: #2a1010; }
+body.christmas .video-item.active { border-color: #b01020; box-shadow: 0 0 18px rgba(176,16,32,0.35); }
+
+/* Content — evergreen */
+body.christmas .content-card { border-color: #1a3a22; }
+
+/* Nav */
+body.christmas nav { background: rgba(3,10,5,0.97); border-bottom-color: #1a3a22; }
+body.christmas .nav-links a { color: #c8e0d0; }
+body.christmas .nav-links a:hover, body.christmas .nav-links a.active { color: #e8c84a; }
+
+/* Sections & text */
+body.christmas .section-title,
+body.christmas .page-header .section-title {
+  color: #e8c84a;
+  text-shadow: 0 0 30px rgba(232,200,74,0.25);
+}
+body.christmas .section-label { color: #b01020; }
+body.christmas .section-body { color: var(--text-muted); }
+
+/* Lightbox */
+body.christmas .lightbox { background: rgba(3,10,5,0.97); }
+body.christmas .lightbox-title { color: #e8c84a; }
+
+/* Buttons */
+body.christmas .btn-primary { background: #7a1020; border-color: #b01020; color: #f0e8e0; }
+body.christmas .btn-ghost { border-color: #2d6a3a; color: #c0e0c8; }
+
+/* Twinkling nav lights — JS adds spans, this animates them */
+@keyframes lcTwinkle {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.6); }
+}
+.lc-xmas-light {
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  margin: 0 3px;
+  vertical-align: middle;
+  animation: lcTwinkle 1.2s ease-in-out infinite;
+}
+.lc-xmas-light.red   { background: #e02030; box-shadow: 0 0 4px #e02030; }
+.lc-xmas-light.green { background: #20c040; box-shadow: 0 0 4px #20c040; }
+.lc-xmas-light.gold  { background: #e8c84a; box-shadow: 0 0 4px #e8c84a; }
+.lc-xmas-light.blue  { background: #60a8e8; box-shadow: 0 0 4px #60a8e8; }
+.lc-xmas-light.white { background: #f0f8ff; box-shadow: 0 0 4px #f0f8ff; }
+
+/* Christmas mode toggle button */
+body.christmas .lc-btn-circle {
+  border-color: #b01020;
+  background: rgba(5,15,8,0.95);
+  box-shadow: 0 4px 28px rgba(176,16,32,0.25), 0 0 0 4px rgba(176,16,32,0.08);
+}
+
+/* ── Holiday mode toggle states (generic) ── */
+body.halloween .lc-btn-wrap .lc-btn-circle::after,
+body.christmas .lc-btn-wrap .lc-btn-circle::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  pointer-events: none;
+}
