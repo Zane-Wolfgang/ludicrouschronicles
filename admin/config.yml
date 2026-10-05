@@ -688,16 +688,19 @@ collections:
       name: halloween_enabled
       widget: boolean
       default: false
+      required: false
       hint: Shows the Halloween mode option on the theme toggle. Turn off after the season.
     - label: "\U0001F384 Enable Christmas Mode"
       name: christmas_enabled
       widget: boolean
       default: false
+      required: false
       hint: Shows the Christmas mode option on the theme toggle. Turn off after the season.
     - label: Radio Filter Strength
       name: radio_strength
       widget: number
       default: 50
+      required: false
       value_type: int
       min: 0
       max: 100
