@@ -684,6 +684,16 @@ collections:
       default: false
       hint: Applies sepia filters, vintage fonts and Art Deco patterns across the
         site
+    - label: "\U0001F383 Enable Halloween Mode"
+      name: halloween_enabled
+      widget: boolean
+      default: false
+      hint: Shows the Halloween mode option on the theme toggle. Turn off after the season.
+    - label: "\U0001F384 Enable Christmas Mode"
+      name: christmas_enabled
+      widget: boolean
+      default: false
+      hint: Shows the Christmas mode option on the theme toggle. Turn off after the season.
     - label: Radio Filter Strength
       name: radio_strength
       widget: number
