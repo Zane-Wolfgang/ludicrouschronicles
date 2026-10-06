@@ -965,3 +965,11 @@ body.christmas .lc-btn-wrap .lc-btn-circle::after {
   border: 1px solid rgba(255,255,255,0.15);
   pointer-events: none;
 }
+
+/* ── Holiday tooltip pin state ── */
+.lc-btn-wrap.lc-tooltip-open .lc-btn-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
