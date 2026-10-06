@@ -203,10 +203,42 @@ window.tierRank        = tierRank;
 window.waitForIdentity = waitForIdentity;
 window.tierFromUser    = tierFromUser;
 
-/* ── Combined: Vintage Toggle + Gatsby Quote ── */
+/* \u2500\u2500 Combined: Vintage Toggle + Gatsby Quote + Holiday Modes \u2500\u2500 */
 (function () {
-  var LS_KEY = 'lc_vintage_mode';
+  var LS_KEY         = 'lc_vintage_mode';
+  var LS_HOLIDAY_KEY = 'lc_holiday_mode';
 
+  /* \u2500\u2500 Settings fetch \u2500\u2500 */
+  var siteSettings = null;
+  function loadSiteSettings() {
+    return fetch('/_data/site-settings.yml', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.text() : ''; })
+      .then(function (t) {
+        var out = {};
+        t.split('\n').forEach(function (raw) {
+          var line = raw.trim();
+          if (!line || line[0] === '#') return;
+          var c = line.indexOf(':');
+          if (c === -1) return;
+          var k = line.slice(0, c).trim();
+          var v = line.slice(c + 1).trim().replace(/^['"]|['"]$/g, '');
+          if (k) out[k] = v;
+        });
+        siteSettings = out;
+        return out;
+      })
+      .catch(function () { siteSettings = {}; return {}; });
+  }
+
+  function holidaysEnabled() {
+    if (!siteSettings) return [];
+    var h = [];
+    if (siteSettings.halloween_enabled === 'true') h.push('halloween');
+    if (siteSettings.christmas_enabled === 'true') h.push('christmas');
+    return h;
+  }
+
+  /* \u2500\u2500 Vintage \u2500\u2500 */
   function getDefault() {
     return fetch('/_data/site-settings.json')
       .then(function (r) { return r.ok ? r.json() : {}; })
@@ -222,9 +254,8 @@ window.tierFromUser    = tierFromUser;
     var btn = wrap.querySelector('.lc-btn-circle');
     if (btn) {
       btn.setAttribute('aria-pressed', String(on));
-      btn.title = on ? 'Vintage ON — click to turn off' : 'Vintage OFF — click to turn on';
-      /* ◆ = solid diamond (vintage off) · ✓ = check (vintage on) */
-      btn.innerHTML = on ? '✓' : '◆';
+      btn.title = on ? 'Vintage ON \u2014 click to turn off' : 'Vintage OFF \u2014 click to turn on';
+      btn.innerHTML = on ? '\u2713' : '\u25c6';
     }
   }
 
@@ -234,7 +265,64 @@ window.tierFromUser    = tierFromUser;
     applyVintage(next);
   }
 
-  function inject() {
+  /* \u2500\u2500 Holiday \u2500\u2500 */
+  function applyHoliday(mode) {
+    document.body.classList.remove('halloween', 'christmas');
+    if (mode === 'halloween' || mode === 'christmas') document.body.classList.add(mode);
+    localStorage.setItem(LS_HOLIDAY_KEY, mode || '');
+    updateHolidayButtons();
+  }
+
+  function updateHolidayButtons() {
+    var current = localStorage.getItem(LS_HOLIDAY_KEY) || '';
+    document.querySelectorAll('.lc-holiday-btn').forEach(function (b) {
+      var active = b.dataset.mode === current;
+      b.style.borderColor = active ? 'var(--gold)' : 'rgba(201,168,76,0.3)';
+      b.style.background  = active ? 'rgba(201,168,76,0.15)' : 'transparent';
+      b.style.color       = active ? 'var(--gold)' : 'var(--text-muted)';
+    });
+  }
+
+  function buildHolidaySection(tip, holidays) {
+    var old = tip.querySelector('.lc-holiday-section');
+    if (old) old.remove();
+    if (!holidays.length) return;
+
+    var section = document.createElement('div');
+    section.className = 'lc-holiday-section';
+    section.style.cssText = 'margin-top:0.9rem;padding-top:0.75rem;border-top:1px solid var(--border);';
+
+    var label = document.createElement('div');
+    label.style.cssText = 'font-family:"Cinzel",serif;font-size:8px;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:0.5rem;';
+    label.textContent = 'Seasonal Themes';
+    section.appendChild(label);
+
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
+
+    var current = localStorage.getItem(LS_HOLIDAY_KEY) || '';
+    holidays.forEach(function (mode) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'lc-holiday-btn';
+      btn.dataset.mode = mode;
+      btn.textContent = mode === 'halloween' ? '\ud83c\udf83 Halloween' : '\ud83c\udf84 Christmas';
+      var active = current === mode;
+      btn.style.cssText = 'font-family:"Cinzel",serif;font-size:9px;letter-spacing:0.1em;padding:0.4em 0.7em;cursor:pointer;border-radius:3px;transition:all 0.2s;border:1px solid ' + (active ? 'var(--gold)' : 'rgba(201,168,76,0.3)') + ';background:' + (active ? 'rgba(201,168,76,0.15)' : 'transparent') + ';color:' + (active ? 'var(--gold)' : 'var(--text-muted)') + ';';
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var cur = localStorage.getItem(LS_HOLIDAY_KEY) || '';
+        applyHoliday(cur === mode ? '' : mode);
+      });
+      row.appendChild(btn);
+    });
+
+    section.appendChild(row);
+    tip.appendChild(section);
+  }
+
+  /* \u2500\u2500 Inject \u2500\u2500 */
+  function inject(holidays) {
     if (document.getElementById('lc-btn-wrap')) return;
     var isOn = document.body.classList.contains('vintage');
 
@@ -242,49 +330,81 @@ window.tierFromUser    = tierFromUser;
     wrap.id        = 'lc-btn-wrap';
     wrap.className = 'lc-btn-wrap' + (isOn ? ' vintage-on' : '');
 
-    /* Circle button — click toggles vintage */
     var btn = document.createElement('button');
     btn.className = 'lc-btn-circle';
     btn.type      = 'button';
-    btn.innerHTML = isOn ? '✓' : '◆';
+    btn.innerHTML = isOn ? '\u2713' : '\u25c6';
     btn.setAttribute('aria-pressed', String(isOn));
-    btn.title = isOn ? 'Vintage ON — click to turn off' : 'Vintage OFF — click to turn on';
-    btn.addEventListener('click', toggle);
+    btn.title = isOn ? 'Vintage ON \u2014 click to turn off' : 'Vintage OFF \u2014 click to turn on';
+    btn.addEventListener('click', function () {
+      toggle(); /* always toggle vintage */
+      if (holidays.length > 0) {
+        /* Also open the tooltip so holiday options are visible */
+        wrap.classList.add('lc-tooltip-open');
+      }
+    });
 
-    /* Quote tooltip — shown on hover (desktop only via CSS) */
     var tip = document.createElement('div');
-    tip.className   = 'lc-btn-tooltip';
+    tip.className = 'lc-btn-tooltip';
     tip.setAttribute('role', 'tooltip');
     tip.setAttribute('aria-hidden', 'true');
     tip.innerHTML =
-      '<div class="lc-btn-ornament">◈ ― ◈ ― ◈</div>' +
+      '<div class="lc-btn-ornament">\u25c8 \u2015 \u25c8 \u2015 \u25c8</div>' +
       '<p class="lc-btn-quote-text">' +
         'Then wear the gold hat, if that will move her;<br>' +
         'If you can bounce high, bounce for her too,<br>' +
-        'till she cry “Lover, gold-hatted,<br>' +
+        'till she cry \u201cLover, gold-hatted,<br>' +
         'high-bouncing lover,<br>' +
-        'I must have you!”' +
+        'I must have you!\u201d' +
       '</p>' +
       '<hr class="lc-btn-divider">' +
-      '<div class="lc-btn-attr">Thomas Parke D’Invilliers</div>' +
-      '<div class="lc-btn-hint">Click to toggle 1920s mode</div>';
+      '<div class="lc-btn-attr">Thomas Parke D\u2019Invilliers</div>' +
+      '<div class="lc-btn-hint">' + (holidays.length > 0 ? 'Click for theme options' : 'Click to toggle 1920s mode') + '</div>';
+
+    buildHolidaySection(tip, holidays);
+
+    /* Vintage toggle row inside tooltip when holidays are active */
+    if (holidays.length > 0) {
+      var vintageRow = document.createElement('div');
+      vintageRow.style.cssText = 'margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid var(--border);';
+      var vintageBtn = document.createElement('button');
+      vintageBtn.type = 'button';
+      vintageBtn.className = 'lc-vintage-inner-btn';
+      vintageBtn.style.cssText = 'font-family:"Cinzel",serif;font-size:9px;letter-spacing:0.1em;padding:0.4em 0.8em;cursor:pointer;border-radius:3px;border:1px solid rgba(201,168,76,0.3);background:transparent;color:var(--text-muted);transition:all 0.2s;width:100%;';
+      vintageBtn.textContent = '\u00c6 Toggle 1920s Vintage Mode';
+      vintageBtn.addEventListener('click', function (e) { e.stopPropagation(); toggle(); });
+      vintageRow.appendChild(vintageBtn);
+      tip.appendChild(vintageRow);
+
+      /* Close when clicking outside */
+      document.addEventListener('click', function (e) {
+        if (!wrap.contains(e.target)) wrap.classList.remove('lc-tooltip-open');
+      });
+    }
 
     wrap.appendChild(tip);
     wrap.appendChild(btn);
     document.body.appendChild(wrap);
+
+    /* Restore saved holiday */
+    var savedHoliday = localStorage.getItem(LS_HOLIDAY_KEY) || '';
+    if (savedHoliday && holidays.indexOf(savedHoliday) !== -1) {
+      applyHoliday(savedHoliday);
+    }
   }
 
   function init() {
-    var saved = localStorage.getItem(LS_KEY);
-    if (saved !== null) {
-      applyVintage(saved === '1');
-      inject();
-    } else {
-      getDefault().then(function (def) {
-        applyVintage(def);
-        inject();
+    loadSiteSettings().then(function () {
+      var holidays = holidaysEnabled();
+      var saved = localStorage.getItem(LS_KEY);
+      var vintageDef = saved !== null
+        ? Promise.resolve(saved === '1')
+        : Promise.resolve(!!(siteSettings && siteSettings.vintage_mode === 'true'));
+      vintageDef.then(function (on) {
+        applyVintage(on);
+        inject(holidays);
       });
-    }
+    });
   }
 
   if (document.readyState === 'loading') {
