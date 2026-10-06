@@ -804,76 +804,216 @@ body.vintage .lightbox-card::after {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   🎃 HALLOWEEN MODE  ·  body.halloween activates all of this
+   🎃 HALLOWEEN MODE  ·  body.halloween — grand, gothic, grandiose
    ══════════════════════════════════════════════════════════════════════ */
 
 body.halloween {
-  --deep:       #0a0408;
-  --bg:         #0d0509;
-  --surface:    #130810;
-  --border:     #3a1a2e;
-  --border-bright: #6b2d52;
-  --gold:       #e07a2f;
-  --gold-dim:   #8a4a1f;
-  --gold-bright:#f0a050;
-  --parchment:  #e8d0c8;
-  --text-body:  #c8a8a0;
-  --text-muted: #7a5850;
+  --deep:          #06020a;
+  --bg:            #0a0410;
+  --surface:       #120818;
+  --border:        #3d1a30;
+  --border-bright: #7a2d5a;
+  --gold:          #e07a2f;
+  --gold-dim:      #8a4a1f;
+  --gold-bright:   #f5a050;
+  --parchment:     #f0d8c8;
+  --text-body:     #d0a898;
+  --text-muted:    #7a5048;
   background: var(--bg);
   color: var(--text-body);
 }
 
-/* Gallery — gothic purple */
-body.halloween #gallery-grid .gallery-item,
-body.halloween #stills .gallery-item { filter: hue-rotate(200deg) saturate(0.7) brightness(0.85); }
-body.halloween #gallery-grid .gallery-item:hover,
-body.halloween #stills .gallery-item:hover { filter: hue-rotate(200deg) saturate(1.1) brightness(1); }
+/* Blood-moon radial behind everything */
+body.halloween::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 75% 10%, rgba(160,20,10,0.18) 0%, transparent 65%),
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(80,5,60,0.25) 0%, transparent 60%);
+}
 
-/* Videos — horror red */
-body.halloween .video-item { border-color: #5a0a0a; }
-body.halloween .video-item.active { border-color: #c01010; box-shadow: 0 0 18px rgba(192,16,16,0.4); }
-body.halloween .video-thumb img { filter: sepia(0.6) hue-rotate(320deg) saturate(1.4) brightness(0.8); }
+/* ── Nav ── */
+body.halloween nav {
+  background: rgba(6,2,10,0.98);
+  border-bottom: 1px solid #4a1a38;
+  box-shadow: 0 2px 40px rgba(100,10,60,0.35);
+}
+body.halloween .nav-links a { color: #d0a898; }
+body.halloween .nav-links a:hover,
+body.halloween .nav-links a.active { color: #e07a2f; text-shadow: 0 0 12px rgba(224,122,47,0.6); }
+body.halloween .nav-brand { color: #e07a2f; }
 
-/* Content — noir fog */
-body.halloween .content-card { border-color: #2a1a2a; }
-body.halloween .content-thumb { filter: sepia(0.3) hue-rotate(230deg) saturate(0.6) brightness(0.75); }
-
-/* Nav */
-body.halloween nav { background: rgba(8,3,10,0.97); border-bottom-color: #3a1a2e; }
-body.halloween .nav-links a { color: #c8a8a0; }
-body.halloween .nav-links a:hover, body.halloween .nav-links a.active { color: #e07a2f; }
-
-/* Sections & text */
+/* ── Page background & sections ── */
 body.halloween .section-title,
-body.halloween .page-header .section-title { color: #e07a2f; text-shadow: 0 0 30px rgba(224,122,47,0.3); }
-body.halloween .section-label { color: #8a4a1f; }
+body.halloween .page-header .section-title {
+  color: #e07a2f;
+  text-shadow: 0 0 20px rgba(224,122,47,0.5), 0 0 60px rgba(150,30,10,0.3);
+}
+body.halloween .section-label {
+  color: #8a3a1f;
+  letter-spacing: 0.4em;
+}
 body.halloween .section-body { color: var(--text-muted); }
 
-/* Lightbox */
-body.halloween .lightbox { background: rgba(8,2,10,0.97); }
-body.halloween .lightbox-title { color: #e07a2f; }
-
-/* Buttons */
-body.halloween .btn-primary { background: #6b1a1a; border-color: #c01010; color: #f0c0b0; }
-body.halloween .btn-ghost { border-color: #6b2d52; color: #c8a0b8; }
-
-/* Fog animation layer — JS adds the canvas above this */
-body.halloween #lc-holiday-canvas { opacity: 0.7; }
-
-/* Flicker effect on gallery images */
-@keyframes lcFlicker {
-  0%,100% { opacity: 1; } 92% { opacity: 1; } 93% { opacity: 0.85; }
-  94% { opacity: 1; } 96% { opacity: 0.9; } 97% { opacity: 1; }
+/* Ornamental section divider */
+body.halloween .section-inner::before {
+  content: '★ ― ★ ― ★';
+  display: block;
+  text-align: center;
+  color: rgba(224,122,47,0.25);
+  font-size: 11px;
+  letter-spacing: 0.5em;
+  margin-bottom: 1.5rem;
 }
-body.halloween .gallery-item img { animation: lcFlicker 8s infinite; }
-body.halloween .gallery-item:nth-child(2n) img { animation-delay: -2.3s; }
-body.halloween .gallery-item:nth-child(3n) img { animation-delay: -5.1s; }
 
-/* Spooky mode toggle button */
+/* ── Gallery — Art Deco gold frames ── */
+body.halloween .gallery-item {
+  position: relative;
+  filter: none;
+}
+body.halloween .gallery-item img {
+  filter: brightness(0.82) saturate(0.65) sepia(0.25);
+  transition: filter 0.5s ease;
+}
+body.halloween .gallery-item:hover img {
+  filter: brightness(1.05) saturate(1.0) sepia(0.1);
+}
+
+/* Gold corner frames on gallery tiles */
+body.halloween .gallery-item::before,
+body.halloween .gallery-item::after {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  z-index: 2;
+  pointer-events: none;
+  border-color: rgba(224,122,47,0.7);
+  border-style: solid;
+}
+body.halloween .gallery-item::before {
+  top: 6px; left: 6px;
+  border-width: 2px 0 0 2px;
+}
+body.halloween .gallery-item::after {
+  bottom: 6px; right: 6px;
+  border-width: 0 2px 2px 0;
+}
+/* Inner corner accent */
+body.halloween .gallery-item .gallery-overlay::before {
+  content: '';
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 14px; height: 14px;
+  border-top: 1px solid rgba(224,122,47,0.5);
+  border-right: 1px solid rgba(224,122,47,0.5);
+  pointer-events: none;
+}
+body.halloween .gallery-item .gallery-overlay::after {
+  content: '';
+  position: absolute;
+  bottom: 10px; left: 10px;
+  width: 14px; height: 14px;
+  border-bottom: 1px solid rgba(224,122,47,0.5);
+  border-left: 1px solid rgba(224,122,47,0.5);
+  pointer-events: none;
+}
+
+/* Amber vignette glow around each tile */
+body.halloween .gallery-item {
+  box-shadow: 0 0 0 1px rgba(100,20,40,0.6), 0 4px 24px rgba(60,5,30,0.5);
+  transition: box-shadow 0.4s ease;
+}
+body.halloween .gallery-item:hover {
+  box-shadow: 0 0 0 1px rgba(224,122,47,0.5), 0 6px 32px rgba(140,40,10,0.5), 0 0 18px rgba(224,122,47,0.15);
+}
+
+/* ── Videos — horror red ── */
+body.halloween .video-item {
+  border-color: #5a0a0a;
+  box-shadow: 0 2px 16px rgba(80,5,5,0.4);
+}
+body.halloween .video-item.active {
+  border-color: #c01010;
+  box-shadow: 0 0 24px rgba(192,16,16,0.45), 0 0 6px rgba(192,16,16,0.2);
+}
+body.halloween .video-thumb img {
+  filter: sepia(0.5) hue-rotate(320deg) saturate(1.3) brightness(0.78);
+}
+
+/* ── Content — noir fog ── */
+body.halloween .content-card {
+  border-color: #2a1020;
+  box-shadow: 0 2px 20px rgba(40,5,30,0.45);
+}
+body.halloween .content-thumb {
+  filter: sepia(0.3) hue-rotate(230deg) saturate(0.55) brightness(0.72);
+}
+
+/* ── Lightbox — grand framed ── */
+body.halloween .lightbox { background: rgba(6,2,10,0.98); }
+body.halloween .lightbox-title {
+  color: #e07a2f;
+  text-shadow: 0 0 20px rgba(224,122,47,0.45);
+}
+body.halloween .lightbox-card {
+  border-color: rgba(224,122,47,0.35);
+  box-shadow: 0 0 40px rgba(100,10,50,0.4), inset 0 0 30px rgba(6,2,10,0.3);
+}
+/* Gold Art Deco lightbox frame corners */
+body.halloween .lightbox-card::before,
+body.halloween .lightbox-card::after {
+  border-color: rgba(224,122,47,0.55);
+  width: 26px; height: 26px;
+}
+
+/* ── Buttons ── */
+body.halloween .btn-primary {
+  background: #6b1a1a;
+  border-color: #c01010;
+  color: #f0c0b0;
+  box-shadow: 0 2px 16px rgba(150,10,10,0.3);
+}
+body.halloween .btn-ghost {
+  border-color: #6b2d52;
+  color: #c8a0b8;
+}
+
+/* ── Toggle button ── */
 body.halloween .lc-btn-circle {
   border-color: #c01010;
-  background: rgba(30,5,5,0.95);
-  box-shadow: 0 4px 28px rgba(192,16,16,0.3), 0 0 0 4px rgba(192,16,16,0.08);
+  background: rgba(20,3,8,0.97);
+  box-shadow: 0 4px 28px rgba(192,16,16,0.35), 0 0 0 4px rgba(192,16,16,0.1), 0 0 60px rgba(100,5,30,0.2);
+}
+
+/* ── Flicker + lightning ── */
+@keyframes lcFlicker {
+  0%,89%,91%,93%,95%,100% { opacity: 1; }
+  90% { opacity: 0.7; }
+  92% { opacity: 0.88; }
+  94% { opacity: 0.75; }
+}
+@keyframes lcLightning {
+  0%,94%,96%,100% { opacity: 0; }
+  95% { opacity: 0.06; }
+}
+body.halloween .gallery-item img { animation: lcFlicker 9s infinite; }
+body.halloween .gallery-item:nth-child(2n) img { animation-delay: -3.1s; }
+body.halloween .gallery-item:nth-child(3n) img { animation-delay: -5.7s; }
+body.halloween .gallery-item:nth-child(5n) img { animation-delay: -1.4s; }
+
+/* Lightning flash overlay on whole page */
+body.halloween::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: rgba(255,240,200,1);
+  mix-blend-mode: overlay;
+  animation: lcLightning 12s infinite;
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -972,4 +1112,101 @@ body.christmas .lc-btn-wrap .lc-btn-circle::after {
   visibility: visible;
   transform: translateY(0) scale(1);
   pointer-events: auto;
+}
+
+/* ── Halloween per-section gradient atmospheres ─────────────────────────
+   Each section of the site has its own Halloween gradient wash.
+   Gradients sit behind content via pseudo-elements on the wrapping sections. */
+
+/* Gallery art — deep gothic purple bleeding from the sides */
+body.halloween #gallery-grid,
+body.halloween section:has(#gallery-grid) {
+  position: relative;
+}
+body.halloween section:has(#gallery-grid)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 55% 80% at 0% 50%, rgba(80,10,100,0.22) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 80% at 100% 50%, rgba(80,10,100,0.22) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 40% at 50% 100%, rgba(40,5,60,0.3) 0%, transparent 55%);
+}
+
+/* Stills — cold moonlight blue-black from above */
+body.halloween #stills {
+  position: relative;
+}
+body.halloween #stills::before {
+  content: '';
+  position: absolute;
+  inset: -2rem -4rem;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 100% 50% at 50% 0%, rgba(10,20,80,0.28) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 20% 50%, rgba(5,10,60,0.18) 0%, transparent 55%);
+}
+
+/* Traditional art — burnt amber candlelight from bottom-center */
+body.halloween #traditional {
+  position: relative;
+}
+body.halloween #traditional::before {
+  content: '';
+  position: absolute;
+  inset: -2rem -4rem;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(160,60,5,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 80% 40%, rgba(120,40,5,0.15) 0%, transparent 50%);
+}
+
+/* WIPs — swamp green-black, ethereal from the left */
+body.halloween #wips {
+  position: relative;
+}
+body.halloween #wips::before {
+  content: '';
+  position: absolute;
+  inset: -2rem -4rem;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 50% 80% at 0% 60%, rgba(10,50,20,0.25) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 40% at 50% 50%, rgba(5,30,15,0.18) 0%, transparent 60%);
+}
+
+/* Videos — blood red bleeding up from the bottom */
+body.halloween #video-list {
+  position: relative;
+}
+body.halloween #video-list::before {
+  content: '';
+  position: absolute;
+  inset: -2rem -4rem;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(160,10,10,0.28) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 80% at 100% 50%, rgba(120,5,5,0.18) 0%, transparent 50%);
+}
+
+/* Content — fog grey, oppressive noir washing in from all edges */
+body.halloween #content-grid {
+  position: relative;
+}
+body.halloween #content-grid::before {
+  content: '';
+  position: absolute;
+  inset: -2rem -4rem;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 40% at 50% 0%, rgba(20,15,30,0.3) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 80% at 0% 50%, rgba(15,10,25,0.22) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 80% at 100% 50%, rgba(15,10,25,0.22) 0%, transparent 50%);
 }
