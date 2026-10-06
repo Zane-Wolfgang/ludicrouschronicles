@@ -1210,3 +1210,29 @@ body.halloween #content-grid::before {
     radial-gradient(ellipse 40% 80% at 0% 50%, rgba(15,10,25,0.22) 0%, transparent 50%),
     radial-gradient(ellipse 40% 80% at 100% 50%, rgba(15,10,25,0.22) 0%, transparent 50%);
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   LOCKED CONTENT — anti-flash blur
+   Applied globally so blur is enforced before any theme or transition
+   can temporarily remove it on slow connections.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Gallery locked items */
+.gallery-item.locked { background: #0a0807; overflow: hidden; }
+.gallery-item.locked img {
+  filter: brightness(0.9) blur(8px) !important;
+  transform: scale(1.08) !important;
+  transition: none !important;
+  pointer-events: none !important;
+}
+.gallery-item.locked:hover img {
+  filter: brightness(1.0) blur(7px) !important;
+  transform: scale(1.08) !important;
+}
+
+/* Video locked thumbnails — target by onclick pointing to membership */
+.video-item[onclick*="membership"] .video-thumb img {
+  filter: blur(8px) brightness(0.7) !important;
+  transform: scale(1.08) !important;
+  transition: none !important;
+}
