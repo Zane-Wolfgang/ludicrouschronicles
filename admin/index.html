@@ -1342,22 +1342,36 @@
 
     /* ---- restore ---- */
     function restoreDraft(d) {
-      /* Navigate to the collection's new-entry editor, then write fields back in. */
+      /* Always navigate to a fresh new-entry editor for this collection,
+         then wait for Decap to finish loading before writing the fields back.
+         No alert — shows status inside the panel instead. */
       var targetHash = '#/collections/' + d.collection + '/new';
-      var needNav = (window.location.hash || '').indexOf('/collections/' + d.collection + '/new') === -1;
-      if (needNav) window.location.hash = targetHash;
+      window.location.hash = targetHash;
+
+      /* Close the panel so the editor is visible while loading */
+      if (panel) panel.style.display = 'none';
+
+      /* Show a loading indicator in the button */
+      if (btn) { btn.textContent = '⏳ Restoring…'; btn.disabled = true; }
 
       var tries = 0;
+      var MAX = 80; /* up to ~12s for slow connections */
       var iv = setInterval(function () {
         tries++;
         var st = window.CMS && window.CMS.store && window.CMS.store.getState();
-        var ready = st && st.getIn(['entryDraft', 'entry']);
+        var ready = st && st.getIn && st.getIn(['entryDraft', 'entry']);
         if (ready) {
           clearInterval(iv);
           writeFields(d.data);
-        } else if (tries > 40) {
+          if (btn) { btn.textContent = '📝 Drafts'; btn.disabled = false; }
+          toast('✓ Draft restored — check your fields.', 3000);
+        } else if (tries > MAX) {
           clearInterval(iv);
-          alert('Could not open the editor to restore this draft — open a New entry in "' + d.collection + '" first, then restore.');
+          if (btn) { btn.textContent = '📝 Drafts'; btn.disabled = false; }
+          /* Last resort: navigate again in case Decap got stuck */
+          window.location.hash = '';
+          setTimeout(function () { window.location.hash = targetHash; }, 200);
+          toast('⚠ Editor took too long to load — try clicking Restore again.', 4000);
         }
       }, 150);
     }
@@ -1391,7 +1405,7 @@
       setTimeout(refreshPanel, 300);
       if (missed.length) {
         setTimeout(function () {
-          alert('Restored. A few fields could not be auto-filled and may need re-entering: ' + missed.join(', '));
+          toast('⚠ Some fields need re-entering: ' + missed.join(', '), 5000);
         }, 400);
       }
     }
