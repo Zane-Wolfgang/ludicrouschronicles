@@ -45,6 +45,7 @@
   .announcement-body strong, .announcement-body b { font-weight: 600; color: #e0bc6a; font-style: normal; }
   .announcement-body strong em, .announcement-body em strong, .announcement-body b i, .announcement-body i b { font-style: italic; font-weight: 600; color: #e8c87a; }
   .announcement-body a { color: var(--gold); text-decoration: underline; }
+  .announcement-body img { display: block; max-width: 100%; height: auto; margin: 1.25rem 0; border: 1px solid var(--border); }
   .no-news { text-align: center; padding: 4rem 0; font-family: 'EB Garamond', serif; font-style: italic; color: var(--text-muted); font-size: 1.1rem; }
 
   /* Newsletter float box */
@@ -153,17 +154,44 @@ function markdownToHtml(md) {
   if (!md) return '';
   md = md.replace(/\\/g, '');
   function inlineConvert(str) {
-    return str
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+    /* Stash URLs/images behind placeholders so the bold/italic passes can't
+       mangle underscores or asterisks inside them (e.g. announcements-avur3g_1.png). */
+    var stash = [];
+    function hold(v) { stash.push(v); return '\u0000' + (stash.length - 1) + '\u0000'; }
+    str = str
+      /* images: ![alt](/path.png) */
+      .replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, function (m, alt, src) {
+        return hold('<img src="' + src.replace(/"/g, '%22') + '" alt="' + alt.replace(/"/g, '&quot;') + '" loading="lazy">');
+      })
+      /* links: [text](url) — only the URL is stashed so emphasis inside the text still works */
+      .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (m, text, href) {
+        return '<a href="' + hold(href.replace(/"/g, '%22')) + '" target="_blank" rel="noopener">' + text + '</a>';
+      })
       .replace(/\*\*\*(.*?)\*\*\*/gs, '<strong><em>$1</em></strong>')
       .replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/gs, '<em>$1</em>')
       .replace(/_(.*?)_/gs, '<em>$1</em>');
+    return str.replace(/\u0000(\d+)\u0000/g, function (m, i) { return stash[+i]; });
   }
   if (md.includes('<p>')) return inlineConvert(md);
-  return md.split(/\n\n+/).map(p => p.trim()).filter(p => p.length > 0)
-    .map(p => p.startsWith('<') ? inlineConvert(p) : `<p>${inlineConvert(p).replace(/\n/g, '<br>')}</p>`).join('\n');
+  return md.split(/\n\n+/).map(function (p) { return p.trim(); }).filter(function (p) { return p.length > 0; })
+    .map(function (p) { return p.startsWith('<') ? inlineConvert(p) : '<p>' + inlineConvert(p).replace(/\n/g, '<br>') + '</p>'; }).join('\n');
 }
+
+/* ── Per-visitor "unseen" tracking ───────────────────────────────────────
+   Each post has a stable id. localStorage remembers which ids this browser has
+   actually SEEN (scrolled into view). A post is highlighted only if its id is
+   not in that set — so publishing one new post highlights just that post, and
+   nothing resets on reload. Highlights stay visible for the current visit and
+   clear on the next one.
+   First-ever visit: everything currently posted counts as seen. */
+var NEWS_SEEN_KEY = 'lc_news_seen';
+function newsId(item) { return item.filename || ((item.title || '') + '|' + (item.date || '')); }
+function readNewsSeen() {
+  try { var raw = localStorage.getItem(NEWS_SEEN_KEY); return raw === null ? null : new Set(JSON.parse(raw)); }
+  catch (_) { return null; }
+}
+function writeNewsSeen(set) { try { localStorage.setItem(NEWS_SEEN_KEY, JSON.stringify(Array.from(set))); } catch (_) {} }
 
 async function loadAnnouncements() {
   const container = document.getElementById('announcements-container');
@@ -172,12 +200,19 @@ async function loadAnnouncements() {
     if (!res.ok) throw new Error();
     const items = await res.json();
     if (!items || items.length === 0) { container.innerHTML = '<p class="no-news">Nothing here yet. Check back soon.</p>'; return; }
-    const dismissedAt = parseInt(localStorage.getItem('news-dismissed-at') || '0');
+
+    var seen = readNewsSeen();
+    if (seen === null) {                     /* first-ever visit */
+      seen = new Set(items.map(newsId));
+      writeNewsSeen(seen);
+    }
+    const unseenAtLoad = new Set(items.map(newsId).filter(function (id) { return !seen.has(id); }));
+
     container.innerHTML = items.map(item => {
-      const itemDate = new Date(item.date).getTime();
-      const isNew = itemDate > dismissedAt;
+      const id = newsId(item);
+      const isNew = unseenAtLoad.has(id);
       const date = item.date ? new Date(item.date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
-      return `<div class="announcement${isNew ? ' announcement-new' : ''}">
+      return `<div class="announcement${isNew ? ' announcement-new' : ''}" data-news-id="${id.replace(/"/g, '&quot;')}">
         <div class="announcement-meta">
           <span class="announcement-date">${date}</span>
           ${isNew ? '<span class="announcement-tag" style="color:var(--gold);border-color:var(--gold-dim);">New</span>' : ''}
@@ -187,6 +222,30 @@ async function loadAnnouncements() {
         <div class="announcement-body">${markdownToHtml(item.body || '')}</div>
       </div>`;
     }).join('');
+
+    /* Mark a post seen once it scrolls into the top 60% of the screen. (A "50% visible"
+       rule never fires for posts taller than two screens, e.g. long posts with images.)
+       The highlight is left alone for this visit (no mid-read flicker) — it clears next visit. */
+    if (unseenAtLoad.size) {
+      var cards = container.querySelectorAll('.announcement-new');
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (!e.isIntersecting) return;
+            /* re-read before writing so a second open tab can't wipe out this one's entries */
+            var cur = readNewsSeen() || new Set();
+            cur.add(e.target.getAttribute('data-news-id'));
+            writeNewsSeen(cur);
+            io.unobserve(e.target);
+          });
+        }, { rootMargin: '0px 0px -40% 0px', threshold: 0 });
+        cards.forEach(function (c) { io.observe(c); });
+      } else {
+        var cur2 = readNewsSeen() || new Set();
+        unseenAtLoad.forEach(function (id) { cur2.add(id); });
+        writeNewsSeen(cur2);
+      }
+    }
   } catch(e) { container.innerHTML = '<p class="no-news">Nothing here yet. Check back soon.</p>'; }
 }
 loadAnnouncements();
